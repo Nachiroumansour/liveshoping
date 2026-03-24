@@ -117,6 +117,14 @@ const Product = sequelize.define('Product', {
   tableName: 'products',
   createdAt: 'created_at',
   updatedAt: 'updated_at',
+  indexes: [
+    { fields: ['seller_id'] },
+    { fields: ['status'] },
+    { fields: ['category'] },
+    { fields: ['seller_id', 'status'] },
+    { fields: ['is_pinned'] },
+    { fields: ['created_at'] }
+  ],
   hooks: {
     beforeCreate: async (product) => {
       // Générer le product_code automatiquement

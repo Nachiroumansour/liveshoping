@@ -81,6 +81,12 @@ const Seller = sequelize.define('Seller', {
   }
 }, {
   tableName: 'sellers',
+  indexes: [
+    { unique: true, fields: ['phone_number'] },
+    { unique: true, fields: ['public_link_id'] },
+    { fields: ['role'] },
+    { fields: ['is_active'] }
+  ],
   hooks: {
     beforeCreate: async (seller) => {
       // Générer un ID de lien public unique

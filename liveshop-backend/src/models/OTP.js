@@ -29,7 +29,12 @@ const OTP = sequelize.define('OTP', {
   }
 }, {
   tableName: 'otps',
-  timestamps: true
+  timestamps: true,
+  indexes: [
+    { fields: ['phone_number'] },
+    { fields: ['phone_number', 'type', 'used'] },
+    { fields: ['expires_at'] }
+  ]
 });
 
 module.exports = OTP; 

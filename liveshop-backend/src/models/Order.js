@@ -82,7 +82,15 @@ const Order = sequelize.define('Order', {
     allowNull: true
   }
 }, {
-  tableName: 'orders'
+  tableName: 'orders',
+  indexes: [
+    { fields: ['seller_id'] },
+    { fields: ['product_id'] },
+    { fields: ['status'] },
+    { fields: ['seller_id', 'status'] },
+    { fields: ['customer_phone'] },
+    { fields: ['created_at'] }
+  ]
 });
 
 module.exports = Order;
