@@ -7,108 +7,46 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Copy files to server
-        run: |
-          rsync -av --exclude='.git' $GITHUB_WORKSPACE/ /srv/projects/livelink/
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+            echo "📦 Syncing code..."
 
-      - name: Create .env file
-        run: |
-          cat > /srv/projects/livelink/.env <<EOF
-          VIRTUAL_HOST=${{ secrets.VIRTUAL_HOST }}
-          LETSENCRYPT_HOST=${{ secrets.VIRTUAL_HOST }}
-          LETSENCRYPT_EMAIL=${{ secrets.LETSENCRYPT_EMAIL }}
-          NODE_ENV=production
-          DB_HOST=db
-          DB_PORT=5432
-          DB_NAME=livelink_db
-          DB_USER=livelink_user
-          DB_PASSWORD=0UuJiS9C1YKfALpT
-          REACT_APP_API_URL=https://api.${{ secrets.VIRTUAL_HOST }}
-          EOF
+            # Créer le dossier si nécessaire
+            mkdir -p /srv/projects/livelink
 
-      - name: Build Backend Docker image
-        run: |
-          cd /srv/projects/livelink
-          docker build -t livelink/livelink-back:latest ./liveshop-backend
-
-      - name: Build Frontend Docker image
-        run: |
-          cd /srv/projects/livelink
-          docker build -t livelink/livelink-front:latest ./web-client/liveshop-client
-
-      - name: Build Mobile Docker image
-        run: |
-          cd /srv/projects/livelink
-          docker build -t livelink/livelink-mobile:latest ./mobile-app/liveshop-vendor
-
-      - name: Validate resource limits
-        run: |
-          cat > /tmp/validate.sh << 'VALIDATE_SCRIPT'
-          #!/bin/bash
-          set -e
-          TIER="pro"
-          COMPOSE_FILE="$GITHUB_WORKSPACE/docker-compose.yml"
-
-          declare -A RAM_LIMITS=( ["starter"]=512 ["pro"]=2048 ["business"]=4096 )
-          declare -A CPU_LIMITS=( ["starter"]=0.5 ["pro"]=2 ["business"]=4 )
-
-          MAX_RAM=${RAM_LIMITS[$TIER]}
-          MAX_CPU=${CPU_LIMITS[$TIER]}
-
-          echo "🔍 Validation tier: $TIER (${MAX_RAM}MB RAM, ${MAX_CPU} CPU max)"
-
-          # Vérifier mémoire
-          MEM_LIMITS=$(grep -E "mem_limit:" "$COMPOSE_FILE" | awk '{print $2}' | tr -d 'm' | tr -d '"' || echo "")
-          TOTAL_RAM=0
-          for limit in $MEM_LIMITS; do
-            if [[ $limit =~ ^[0-9]+$ ]]; then
-              TOTAL_RAM=$((TOTAL_RAM + limit))
+            # Cloner ou mettre à jour le code
+            if [ -d "/srv/projects/livelink/.git" ]; then
+              cd /srv/projects/livelink
+              git fetch origin main
+              git reset --hard origin/main
+            else
+              git clone https://github.com/${{ github.repository }}.git /srv/projects/livelink
+              cd /srv/projects/livelink
             fi
-          done
 
-          if (( TOTAL_RAM > MAX_RAM )); then
-            echo "❌ VIOLATION: ${TOTAL_RAM}MB dépasse le maximum autorisé (${MAX_RAM}MB)"
-            echo "   Contactez: info@nexteranga.com pour upgrader"
-            exit 1
-          fi
+            echo "🐳 Building and deploying..."
+            docker compose up -d --build
 
-          echo "✅ Ressources conformes (${TOTAL_RAM}MB / ${MAX_RAM}MB)"
-          VALIDATE_SCRIPT
+            echo "⏳ Waiting for services..."
+            sleep 15
 
-          chmod +x /tmp/validate.sh
-          /tmp/validate.sh
+            echo "🔍 Checking services..."
+            docker ps | grep -E "livelink" || true
 
-      - name: Deploy with Docker Compose
-        run: |
-          cd /srv/projects/livelink
-          docker compose up -d --build
+            echo "🧹 Cleanup..."
+            docker image prune -f
 
-      - name: Wait for services to be healthy
-        run: |
-          sleep 15
-          echo "🔍 Vérifying services..."
-          docker ps | grep -E "livelink-(backend|dashboard|mobile|db)"
-
-      - name: Health check
-        run: |
-          curl -f https://livelink.store || echo "⏳ Site not yet ready (SSL provisioning may take 2-5 min)"
-          curl -f https://api.livelink.store || echo "⏳ API not yet ready"
-          curl -f https://space.livelink.store || echo "⏳ Mobile not yet ready"
-
-      - name: Cleanup old images
-        run: |
-          docker image prune -f
-
-      - name: Show container logs
-        if: failure()
-        run: |
-          docker logs livelink-backend --tail 30 2>/dev/null || true
-          docker logs livelink-dashboard --tail 30 2>/dev/null || true
-          docker logs livelink-mobile --tail 30 2>/dev/null || true
-          docker logs livelink-db --tail 30 2>/dev/null || true
+            echo "✅ Deployment complete!"
