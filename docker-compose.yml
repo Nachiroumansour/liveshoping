@@ -13,6 +13,7 @@ services:
     
     environment:
       - VIRTUAL_HOST=api.livelink.store
+      - VIRTUAL_PORT=3001
       - LETSENCRYPT_HOST=api.livelink.store
       - LETSENCRYPT_EMAIL=mansournirou246@gmail.com
       - NODE_ENV=production

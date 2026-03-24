@@ -17,6 +17,36 @@ const ResetPinPage = () => {
 
   const apiService = api;
 
+  // Fonction pour formater le numéro de téléphone (comme LoginPage)
+  const formatPhoneNumber = (value) => {
+    // Supprimer tous les caractères non numériques sauf le +
+    let cleaned = value.replace(/[^\d+]/g, '');
+    
+    // Si ça ne commence pas par +221, l'ajouter automatiquement
+    if (!cleaned.startsWith('+221')) {
+      // Si ça commence par 221, ajouter le +
+      if (cleaned.startsWith('221')) {
+        cleaned = '+' + cleaned;
+      } else {
+        // Sinon, ajouter +221
+        cleaned = '+221' + cleaned.replace(/^\+/, '');
+      }
+    }
+    
+    // Limiter à 13 caractères (+221 + 9 chiffres)
+    if (cleaned.length > 13) {
+      cleaned = cleaned.substring(0, 13);
+    }
+    
+    return cleaned;
+  };
+
+  // Fonction pour gérer le changement du numéro de téléphone
+  const handlePhoneChange = (e) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhone(formatted);
+  };
+
   // Fonction pour obtenir le numéro complet avec le préfixe +221
   const getFullPhone = () => {
     if (phone.startsWith('+221')) {
@@ -121,7 +151,7 @@ const ResetPinPage = () => {
                   <Label htmlFor="phone">Numéro de téléphone</Label>
                   <div className="relative ">
                     <Smartphone className="absolute left-3 top-3 h-4 w-4 text-gray-400 " />
-                    <Input id="phone" type="tel" placeholder="Ex: 771234567 (prefixe +221 ajouté)" value={phone} onChange={e => setPhone(e.target.value)} className="pl-10 " required />
+                    <Input id="phone" type="tel" placeholder="Ex: 771234567 (prefixe +221 ajouté)" value={phone} onChange={handlePhoneChange} className="pl-10 " required />
                   </div>
                 </div>
                 <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 " disabled={loading}>

@@ -117,34 +117,23 @@ const io = socketIo(server, {
 
 const PORT = process.env.PORT || 3001;
 
-// Middleware CORS sécurisé
+// Middleware CORS unifié
 const corsOptions = {
   origin: function (origin, callback) {
-    console.log('🌐 CORS - Origine demandée:', origin);
-    console.log('🌐 CORS - NODE_ENV:', process.env.NODE_ENV);
-    console.log('🌐 CORS - Origines autorisées:', allowedOrigins);
-    
-    // Autoriser les requêtes sans origine (Postman, curl, etc.)
+    // Autoriser les requêtes sans origine (Postman, curl, apps mobiles)
     if (!origin) {
-      console.log('✅ CORS - Requête sans origine (autorisée)');
       callback(null, true);
       return;
     }
-    
-    // Vérifier si l'origine est autorisée
-    if (allowedOrigins.includes(origin)) {
-      console.log('✅ CORS - Origine autorisée:', origin);
+
+    // Vérifier si l'origine est dans la liste ou est un sous-domaine livelink.store
+    if (allowedOrigins.includes(origin) || origin.endsWith('.livelink.store') || origin === 'https://livelink.store') {
+      callback(null, true);
+    } else if (process.env.NODE_ENV === 'development' && origin.startsWith('http://localhost')) {
       callback(null, true);
     } else {
       console.log('🚫 CORS - Origine refusée:', origin);
-      console.log('💡 CORS - Essayez d\'ajouter cette origine à allowedOrigins');
-      // En production, autoriser quand même mais logger
-      if (origin.includes('livelink.store')) {
-        console.log('⚠️  CORS - Origine livelink.store autorisée par fallback');
-        callback(null, true);
-      } else {
-        callback(new Error('CORS non autorisé'));
-      }
+      callback(new Error('CORS non autorisé'));
     }
   },
   credentials: true,
@@ -153,39 +142,11 @@ const corsOptions = {
   exposedHeaders: ['Content-Length', 'X-Requested-With']
 };
 
-// Headers CORS manuels (avant le middleware cors)
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  
-  // Autoriser tous les domaines livelink.store
-  const isLocalhost = origin && origin.startsWith('http://localhost');
-  const isAllowedOrigin = origin && (origin.includes('livelink.store') || (process.env.NODE_ENV === 'development' && isLocalhost));
-
-  if (isAllowedOrigin) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Origin, Accept');
-    res.header('Access-Control-Expose-Headers', 'Content-Length, X-Requested-With');
-  }
-
-  // Répondre correctement aux pre-flight (OPTIONS)
-  if (req.method === 'OPTIONS') {
-    if (isAllowedOrigin) {
-      return res.sendStatus(200);
-    }
-    // Si origine non explicitement autorisée ici, déléguer au middleware `cors`
-    return cors(corsOptions)(req, res, next);
-  }
-
-  next();
-});
+// Pre-flight requests AVANT tout autre middleware
+app.options('*', cors(corsOptions));
 
 // Appliquer CORS middleware
 app.use(cors(corsOptions));
-
-// Pre-flight requests
-app.options('*', cors(corsOptions));
 
 // Middleware de debug pour logger les requêtes
 app.use(debugMiddleware.requestLogger());

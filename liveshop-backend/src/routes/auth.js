@@ -224,8 +224,12 @@ router.post('/login', async (req, res) => {
 
 // POST /api/auth/forgot-pin
 router.post('/forgot-pin', async (req, res) => {
-  const { phone_number } = req.body;
+  let { phone_number } = req.body;
   if (!phone_number) return res.status(400).json({ error: 'Numéro requis' });
+  
+  // Normaliser le numéro (format E.164)
+  phone_number = otpService.normalizePhone(phone_number);
+  
   // Limitation d'envoi OTP reset
   const limitCheck = OtpRateLimiter.canSend(phone_number);
   if (!limitCheck.ok) {
@@ -248,8 +252,12 @@ router.post('/forgot-pin', async (req, res) => {
 
 // POST /api/auth/reset-pin
 router.post('/reset-pin', async (req, res) => {
-  const { phone_number, otp, new_pin } = req.body;
+  let { phone_number, otp, new_pin } = req.body;
   if (!phone_number || !otp || !new_pin) return res.status(400).json({ error: 'Numéro, OTP et nouveau code requis' });
+  
+  // Normaliser le numéro (format E.164)
+  phone_number = otpService.normalizePhone(phone_number);
+  
   if (!/^[0-9]{4}$/.test(new_pin)) return res.status(400).json({ error: 'Le code PIN doit contenir 4 chiffres' });
   // Vérifier OTP
   const otpEntry = await OTP.findOne({

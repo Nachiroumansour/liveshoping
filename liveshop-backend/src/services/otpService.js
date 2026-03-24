@@ -99,15 +99,11 @@ class OtpService {
 
   // Nexteranga (custom WhatsApp API - message personnalisé)
   async sendViaNexteranga(originalPhone, otp) {
-    // Configuration (env ou valeurs par défaut pour dev)
-    const DIRECT_API_URL = 'https://wa.nexteranga.com/send';
-    const DIRECT_SECRET = 'e9c64f0193ce38099a5e59cfe15faa107325d92fddc655007f62914170e17645';
- 
-    const apiUrl = process.env.NEXTERANGA_API_URL || DIRECT_API_URL;
-    const secret = process.env.NEXTERANGA_SECRET || DIRECT_SECRET;
+    const apiUrl = process.env.NEXTERANGA_API_URL;
+    const secret = process.env.NEXTERANGA_SECRET;
 
-    if (!secret) {
-      console.warn('⚠️ NEXTERANGA_SECRET manquant, fallback console');
+    if (!apiUrl || !secret) {
+      console.warn('⚠️ NEXTERANGA_API_URL ou NEXTERANGA_SECRET manquant dans .env');
       console.log(`[DEV] OTP ${otp} -> ${originalPhone}`);
       return true;
     }
