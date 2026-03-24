@@ -1,4 +1,5 @@
 import io from 'socket.io-client';
+import { getBackendDomain } from '../config/domains';
 
 class RealtimeService {
   constructor() {
@@ -15,9 +16,7 @@ class RealtimeService {
     }
 
     try {
-      const serverUrl = window.location.hostname.includes('livelink.store') 
-        ? 'https://api.livelink.store'
-        : 'http://localhost:3001';
+      const serverUrl = getBackendDomain();
 
       console.log('🔌 Connexion WebSocket à:', serverUrl);
       

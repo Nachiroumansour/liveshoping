@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Star, Shield, Truck, CreditCard, Check, User, Package, Copy } from 'lucide-react';
 import ImageCapture from '@/components/ImageCapture';
+import { getApiUrl, getImageUrl } from '../config/domains';
 
 const OrderPage = () => {
   const { linkId, productId } = useParams();
@@ -41,9 +42,7 @@ const OrderPage = () => {
 
   const fetchPaymentMethods = useCallback(async () => {
     try {
-      const apiUrl = window.location.hostname.includes('livelink.store') 
-        ? `https://api.livelink.store/api/public/${linkId}/payment-methods`
-        : `http://localhost:3001/api/public/${linkId}/payment-methods`;
+      const apiUrl = getApiUrl(`/public/${linkId}/payment-methods`);
       
       const response = await fetch(apiUrl);
       if (response.ok) {
@@ -58,9 +57,7 @@ const OrderPage = () => {
   const fetchProduct = useCallback(async () => {
     try {
       setLoading(true);
-      const apiUrl = window.location.hostname.includes('livelink.store') 
-        ? `https://api.livelink.store/api/public/${linkId}/products/${productId}`
-        : `http://localhost:3001/api/public/${linkId}/products/${productId}`;
+      const apiUrl = getApiUrl(`/public/${linkId}/products/${productId}`);
       
       const response = await fetch(apiUrl);
       
@@ -124,9 +121,7 @@ const OrderPage = () => {
         quantity: parseInt(formData.quantity)
       };
 
-      const apiUrl = window.location.hostname.includes('livelink.store') 
-        ? `https://api.livelink.store/api/public/${linkId}/orders`
-        : `http://localhost:3001/api/public/${linkId}/orders`;
+      const apiUrl = getApiUrl(`/public/${linkId}/orders`);
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -522,7 +517,7 @@ const OrderPage = () => {
               <div className="mb-6">
                 <div className="bg-gray-100 rounded-lg p-4 mb-4">
                   <img 
-                    src={`http://localhost:3001${paymentMethods[selectedPaymentMethod]?.qr_code_url}`}
+                    src={getImageUrl(paymentMethods[selectedPaymentMethod]?.qr_code_url)}
                     alt={`QR Code ${selectedPaymentMethod}`}
                     className="w-48 h-48 mx-auto"
                   />

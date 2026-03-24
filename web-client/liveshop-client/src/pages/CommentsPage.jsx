@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Send, MessageCircle, Star, Package } from 'lucide-react';
+import { getApiUrl } from '../config/domains';
 
 const CommentsPage = () => {
   const { linkId, orderId: urlOrderId } = useParams();
@@ -26,9 +27,7 @@ const CommentsPage = () => {
 
   const loadComments = async () => {
     try {
-      const apiUrl = window.location.hostname.includes('livelink.store') 
-        ? `https://api.livelink.store/api/public/${linkId}/comments`
-        : `http://localhost:3001/api/public/${linkId}/comments`;
+      const apiUrl = getApiUrl(`/public/${linkId}/comments`);
       
       const response = await fetch(apiUrl);
       if (response.ok) {
@@ -57,9 +56,7 @@ const CommentsPage = () => {
       setSubmitting(true);
       setError(null);
       
-      const apiUrl = window.location.hostname.includes('livelink.store') 
-        ? `https://api.livelink.store/api/public/${linkId}/comments`
-        : `http://localhost:3001/api/public/${linkId}/comments`;
+      const apiUrl = getApiUrl(`/public/${linkId}/comments`);
       
       const response = await fetch(apiUrl, {
         method: 'POST',

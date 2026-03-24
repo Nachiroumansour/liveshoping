@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Camera, Upload, X, Check } from 'lucide-react';
 import { Button } from './ui/button';
+import { getApiUrl } from '../config/domains';
 
 const ImageCapture = ({ onImageCaptured, onImageRemoved }) => {
   const [capturedImage, setCapturedImage] = useState(null);
@@ -90,9 +91,7 @@ const ImageCapture = ({ onImageCaptured, onImageRemoved }) => {
       const formData = new FormData();
       formData.append('image', file);
 
-      const apiUrl = window.location.hostname.includes('livelink.store') 
-        ? 'https://api.livelink.store/api/public/upload/payment-proof'
-        : 'http://localhost:3001/api/public/upload/payment-proof';
+      const apiUrl = getApiUrl('/public/upload/payment-proof');
 
       const response = await fetch(apiUrl, {
         method: 'POST',

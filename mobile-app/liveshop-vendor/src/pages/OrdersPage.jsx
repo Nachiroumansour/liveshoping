@@ -38,6 +38,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '../components/ui/alert-dialog';
+import { getImageUrl } from '../config/domains';
 
 const OrdersPage = () => {
   const { refreshCredits } = useAuth();
@@ -731,7 +732,7 @@ const OrdersPage = () => {
                     <p>
                       <span className="font-medium ">Preuve:</span>{' '}
                       <a 
-                        href={selectedOrder.payment_proof_url?.startsWith('http') ? selectedOrder.payment_proof_url : `http://localhost:3001${selectedOrder.payment_proof_url}`}
+                        href={getImageUrl(selectedOrder.payment_proof_url)}
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-purple-600 hover:underline "

@@ -18,6 +18,7 @@ import {
   Copy
 } from 'lucide-react';
 import ImageCapture from '@/components/ImageCapture';
+import { getApiUrl, getImageUrl } from '../config/domains';
 
 const CheckoutPage = () => {
   const { linkId } = useParams();
@@ -46,9 +47,7 @@ const CheckoutPage = () => {
 
   const fetchPaymentMethods = useCallback(async () => {
     try {
-      const apiUrl = window.location.hostname.includes('livelink.store') 
-        ? `https://api.livelink.store/api/public/${linkId}/payment-methods`
-        : `http://localhost:3001/api/public/${linkId}/payment-methods`;
+      const apiUrl = getApiUrl(`/public/${linkId}/payment-methods`);
       
       const response = await fetch(apiUrl);
       if (response.ok) {
@@ -112,9 +111,7 @@ const CheckoutPage = () => {
         quantity: item.quantity
       }));
 
-      const apiUrl = window.location.hostname.includes('livelink.store') 
-        ? `https://api.livelink.store/api/public/${linkId}/orders`
-        : `http://localhost:3001/api/public/${linkId}/orders`;
+      const apiUrl = getApiUrl(`/public/${linkId}/orders`);
 
       // Envoyer toutes les commandes
       const responses = await Promise.all(
@@ -529,7 +526,7 @@ const CheckoutPage = () => {
               <div className="mb-6">
                 <div className="bg-gray-100 rounded-lg p-4 mb-4">
                   <img 
-                    src={`http://localhost:3001${paymentMethods[selectedPaymentMethod]?.qr_code_url}`}
+                    src={getImageUrl(paymentMethods[selectedPaymentMethod]?.qr_code_url)}
                     alt={`QR Code ${selectedPaymentMethod}`}
                     className="w-48 h-48 mx-auto"
                   />

@@ -72,4 +72,11 @@ export const getPublicLink = (sellerId) => {
   }
 };
 
+// Helper pour construire l'URL d'une image backend (QR code, preuve paiement, etc.)
+export const getImageUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `${getBackendUrl()}${path}`;
+};
+
 export default config; 

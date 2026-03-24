@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import VoiceControls from '../components/VoiceControls';
 import ApiService from '../services/api';
-import { getPublicLink } from '../config/domains';
+import { getPublicLink, getBackendUrl } from '../config/domains';
 
 
 export default function DashboardPage() {
@@ -56,7 +56,7 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const res = await fetch(`http://localhost:3001/api/public/sellers/${seller.id}/report`);
+        const res = await fetch(`${getBackendUrl()}/api/public/sellers/${seller.id}/report`);
         const csv = await res.text();
         // Simple stats parsing (for demo)
         const lines = csv.split('\n').slice(1).filter(Boolean);
@@ -208,7 +208,7 @@ export default function DashboardPage() {
   };
 
   const handleDownloadGlobalReport = () => {
-    window.open(`http://localhost:3001/api/public/sellers/${seller.id}/report`, '_blank');
+    window.open(`${getBackendUrl()}/api/public/sellers/${seller.id}/report`, '_blank');
   };
 
   const getStatusColor = (status) => {

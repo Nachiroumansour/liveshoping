@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getBackendUrl } from '../config/domains';
 
 /**
  * Intercepteur Axios pour gérer les erreurs de crédits insuffisants
@@ -7,7 +8,7 @@ import axios from 'axios';
 
 // Créer une instance axios personnalisée
 export const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001'
+  baseURL: import.meta.env.VITE_API_URL || getBackendUrl()
 });
 
 // Callbacks personnalisés

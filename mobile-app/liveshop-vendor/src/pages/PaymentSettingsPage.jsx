@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import ApiService from '../services/api';
+import { getImageUrl } from '../config/domains';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -273,7 +274,7 @@ const PaymentSettingsPage = () => {
                 
                 <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
                   <img 
-                    src={`http://localhost:3001${paymentSettings.wave_qr_code_url}`}
+                    src={getImageUrl(paymentSettings.wave_qr_code_url)}
                     alt="QR Code Wave"
                     className="w-32 h-32 mx-auto"
                   />
@@ -363,7 +364,7 @@ const PaymentSettingsPage = () => {
                 
                 <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
                   <img 
-                    src={`http://localhost:3001${paymentSettings.orange_money_qr_code_url}`}
+                    src={getImageUrl(paymentSettings.orange_money_qr_code_url)}
                     alt="QR Code Orange Money"
                     className="w-32 h-32 mx-auto"
                   />

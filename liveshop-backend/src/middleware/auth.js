@@ -15,17 +15,17 @@ const authenticateToken = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
-    console.log('🔍 Auth Middleware - Token décodé:', decoded);
-    
+    if (process.env.NODE_ENV !== 'production') console.log('🔍 Auth Middleware - Token décodé:', decoded);
+
     const seller = await Seller.findByPk(decoded.id);
 
     if (!seller) {
-      return res.status(401).json({ 
-        error: 'Vendeur non trouvé' 
+      return res.status(401).json({
+        error: 'Vendeur non trouvé'
       });
     }
 
-    console.log('🔍 Auth Middleware - Vendeur trouvé:', {
+    if (process.env.NODE_ENV !== 'production') console.log('🔍 Auth Middleware - Vendeur trouvé:', {
       id: seller.id,
       name: seller.name,
       role: seller.role

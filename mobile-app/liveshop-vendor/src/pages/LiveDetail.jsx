@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
+import { getBackendUrl } from '../config/domains';
 
 export default function LiveDetail({ live, onClose }) {
   const [products, setProducts] = useState([]);
@@ -84,7 +85,7 @@ export default function LiveDetail({ live, onClose }) {
     .sort(([,a], [,b]) => b.count - a.count)[0];
 
   const handleDownloadReport = () => {
-    window.open(`http://localhost:3001/api/lives/${live.id}/report`, '_blank');
+    window.open(`${getBackendUrl()}/api/lives/${live.id}/report`, '_blank');
   };
 
   const handleDeleteLive = async () => {

@@ -39,4 +39,11 @@ export const getApiUrl = (endpoint) => {
   return `${backendDomain}/api${endpoint}`;
 };
 
+// Helper pour construire l'URL d'une image backend (QR code, preuve paiement, etc.)
+export const getImageUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `${getBackendDomain()}${path}`;
+};
+
 export default config; 

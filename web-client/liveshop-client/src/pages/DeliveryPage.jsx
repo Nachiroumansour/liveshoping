@@ -5,6 +5,7 @@ import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Separator } from '../components/ui/separator';
 import { Phone, MapPin, Package, User, Calendar, DollarSign } from 'lucide-react';
+import { getApiUrl } from '../config/domains';
 
 const DeliveryPage = () => {
   const { orderId } = useParams();
@@ -15,9 +16,7 @@ const DeliveryPage = () => {
   useEffect(() => {
     const fetchOrderDetails = async () => {
       try {
-        const apiUrl = window.location.hostname.includes('livelink.store') 
-          ? `https://api.livelink.store/api/public/orders/${orderId}/delivery-info`
-          : `http://localhost:3001/api/public/orders/${orderId}/delivery-info`;
+        const apiUrl = getApiUrl(`/public/orders/${orderId}/delivery-info`);
         
         const response = await fetch(apiUrl);
         

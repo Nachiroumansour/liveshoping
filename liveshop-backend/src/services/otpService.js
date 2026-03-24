@@ -4,7 +4,7 @@ class OtpService {
   constructor() {
     // En prod: utilise OTP_PROVIDER de l'env; en dev: fallback nexteranga
     this.provider = process.env.OTP_PROVIDER || 'nexteranga';
-    console.log('🔐 OTP Service initialisé - Provider actif:', this.provider);
+    if (process.env.NODE_ENV !== 'production') console.log('🔐 OTP Service initialisé - Provider actif:', this.provider);
   }
 
   async sendOTP(phoneNumber, otp) {
@@ -28,7 +28,7 @@ class OtpService {
           return await this.sendViaCallMeBot(destination, message);
         case 'console':
         default:
-          console.log(`[DEV] OTP pour ${original} => envoyé à ${destination} : ${otp}`);
+          if (process.env.NODE_ENV !== 'production') console.log(`[DEV] OTP pour ${original} => envoyé à ${destination} : ${otp}`);
           return true;
       }
     } catch (error) {
@@ -64,7 +64,7 @@ class OtpService {
     const phoneId = process.env.WHATSAPP_CLOUD_PHONE_NUMBER_ID;
     if (!token || !phoneId) {
       console.warn('⚠️ WHATSAPP_CLOUD_* non configuré, fallback console');
-      console.log(`[DEV] ${body} -> ${to}`);
+      if (process.env.NODE_ENV !== 'production') console.log(`[DEV] ${body} -> ${to}`);
       return true;
     }
 
@@ -75,7 +75,7 @@ class OtpService {
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
     });
 
-    console.log('✅ OTP envoyé via WhatsApp Cloud:', res.data);
+    if (process.env.NODE_ENV !== 'production') console.log('✅ OTP envoyé via WhatsApp Cloud:', res.data);
     return true;
   }
 
@@ -86,14 +86,14 @@ class OtpService {
     const from = process.env.TWILIO_WHATSAPP_FROM;
     if (!sid || !auth || !from) {
       console.warn('⚠️ TWILIO_* non configuré, fallback console');
-      console.log(`[DEV] ${body} -> ${to}`);
+      if (process.env.NODE_ENV !== 'production') console.log(`[DEV] ${body} -> ${to}`);
       return true;
     }
 
     const twilio = require('twilio')(sid, auth);
     const result = await twilio.messages.create({ from: `whatsapp:${from}`, to: `whatsapp:${to}`, body });
 
-    console.log('✅ OTP envoyé via Twilio:', result.sid);
+    if (process.env.NODE_ENV !== 'production') console.log('✅ OTP envoyé via Twilio:', result.sid);
     return true;
   }
 
@@ -104,7 +104,7 @@ class OtpService {
 
     if (!apiUrl || !secret) {
       console.warn('⚠️ NEXTERANGA_API_URL ou NEXTERANGA_SECRET manquant dans .env');
-      console.log(`[DEV] OTP ${otp} -> ${originalPhone}`);
+      if (process.env.NODE_ENV !== 'production') console.log(`[DEV] OTP ${otp} -> ${originalPhone}`);
       return true;
     }
 
@@ -122,7 +122,7 @@ class OtpService {
     try {
       // Log sécurisé (sans exposer le secret)
       const maskedSecret = secret ? `${String(secret).slice(0,4)}...${String(secret).slice(-4)}` : 'none';
-      console.log('📤 Envoi OTP via Nexteranga:', {
+      if (process.env.NODE_ENV !== 'production') console.log('📤 Envoi OTP via Nexteranga:', {
         url: apiUrl,
         phone: phoneForApi,
         headers: { 'X-WA-SECRET': maskedSecret }
@@ -155,7 +155,7 @@ class OtpService {
     const apiKey = process.env.CALLMEBOT_API_KEY;
     if (!apiKey) {
       console.warn('⚠️ CALLMEBOT_API_KEY manquant, fallback console');
-      console.log(`[DEV] ${body} -> ${to}`);
+      if (process.env.NODE_ENV !== 'production') console.log(`[DEV] ${body} -> ${to}`);
       return true;
     }
 
@@ -165,7 +165,7 @@ class OtpService {
     const res = await axios.get(`${url}?${params.toString()}`);
     const ok = typeof res.data === 'string' ? /success|queued|message queued/i.test(res.data) : true;
     if (!ok) console.warn('⚠️ Réponse CallMeBot non confirmée:', res.data);
-    console.log('✅ OTP envoyé via CallMeBot');
+    if (process.env.NODE_ENV !== 'production') console.log('✅ OTP envoyé via CallMeBot');
     return true;
   }
 }

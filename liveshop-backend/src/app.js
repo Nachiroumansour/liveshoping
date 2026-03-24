@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const path = require('path');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -30,32 +31,34 @@ Object.keys(defaultConfig).forEach(key => {
 });
 
 // Diagnostic des fichiers .env présents et des variables OTP
-try {
-  const fs = require('fs');
-  const envCandidates = [
-    path.join(process.cwd(), '.env'),
-    path.join(process.cwd(), '.env.local'),
-    path.join(process.cwd(), '.env.development'),
-    path.join(process.cwd(), '.env.production'),
-    path.join(process.cwd(), '.env.sqlite.dev'),
-  ];
-  const existingEnvFiles = envCandidates.filter(p => {
-    try { return fs.existsSync(p); } catch { return false; }
-  });
-  console.log('🗃️  Fichiers .env détectés dans le répertoire courant:', existingEnvFiles.map(f => path.basename(f)));
-  console.log('🔐 OTP_PROVIDER:', process.env.OTP_PROVIDER || '(non défini)');
-  console.log('🔐 NEXTERANGA_API_URL:', process.env.NEXTERANGA_API_URL ? '✅ Défini' : '❌ Manquant');
-  console.log('🔐 NEXTERANGA_BUSINESS_NAME:', process.env.NEXTERANGA_BUSINESS_NAME ? '✅ Défini' : '❌ Manquant');
-  console.log('🔐 NEXTERANGA_SECRET:', process.env.NEXTERANGA_SECRET ? '✅ Présent' : '❌ Manquant');
-} catch (e) {
-  console.log('⚠️  Impossible de lister les fichiers .env:', e.message);
-}
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    const fs = require('fs');
+    const envCandidates = [
+      path.join(process.cwd(), '.env'),
+      path.join(process.cwd(), '.env.local'),
+      path.join(process.cwd(), '.env.development'),
+      path.join(process.cwd(), '.env.production'),
+      path.join(process.cwd(), '.env.sqlite.dev'),
+    ];
+    const existingEnvFiles = envCandidates.filter(p => {
+      try { return fs.existsSync(p); } catch { return false; }
+    });
+    console.log('🗃️  Fichiers .env détectés dans le répertoire courant:', existingEnvFiles.map(f => path.basename(f)));
+    console.log('🔐 OTP_PROVIDER:', process.env.OTP_PROVIDER || '(non défini)');
+    console.log('🔐 NEXTERANGA_API_URL:', process.env.NEXTERANGA_API_URL ? '✅ Défini' : '❌ Manquant');
+    console.log('🔐 NEXTERANGA_BUSINESS_NAME:', process.env.NEXTERANGA_BUSINESS_NAME ? '✅ Défini' : '❌ Manquant');
+    console.log('🔐 NEXTERANGA_SECRET:', process.env.NEXTERANGA_SECRET ? '✅ Présent' : '❌ Manquant');
+  } catch (e) {
+    console.log('⚠️  Impossible de lister les fichiers .env:', e.message);
+  }
 
-console.log('🔧 Configuration appliquée:');
-console.log('🔧 NODE_ENV:', process.env.NODE_ENV);
-console.log('🔧 DATABASE_URL:', process.env.DATABASE_URL ? '✅ Configurée' : '❌ Manquante');
-console.log('🔧 FRONTEND_URL:', process.env.FRONTEND_URL ? '✅ Configurée' : '❌ Manquante');
-console.log('🔧 VENDOR_URL:', process.env.VENDOR_URL ? '✅ Configurée' : '❌ Manquante');
+  console.log('🔧 Configuration appliquée:');
+  console.log('🔧 NODE_ENV:', process.env.NODE_ENV);
+  console.log('🔧 DATABASE_URL:', process.env.DATABASE_URL ? '✅ Configurée' : '❌ Manquante');
+  console.log('🔧 FRONTEND_URL:', process.env.FRONTEND_URL ? '✅ Configurée' : '❌ Manquante');
+  console.log('🔧 VENDOR_URL:', process.env.VENDOR_URL ? '✅ Configurée' : '❌ Manquante');
+}
 
 const { sequelize, testConnection } = require('./config/database');
 const { Seller, Product, Order } = require('./models');
@@ -80,17 +83,23 @@ const pushRoutes = require('./routes/push');
 
 const notificationService = require('./services/notificationService');
 
-console.log('🚀 Démarrage de LiveShop Link API...');
-console.log('=====================================');
-console.log('📋 Informations système :');
-console.log('- Node.js version:', process.version);
-console.log('- Plateforme:', process.platform);
-console.log('- Architecture:', process.arch);
-console.log('- Répertoire de travail:', process.cwd());
-console.log('- Variables d\'environnement chargées:', Object.keys(process.env).filter(key => key.includes('DB') || key.includes('NODE_ENV')).length);
-console.log('');
+if (process.env.NODE_ENV !== 'production') {
+  console.log('🚀 Démarrage de LiveShop Link API...');
+  console.log('=====================================');
+  console.log('📋 Informations système :');
+  console.log('- Node.js version:', process.version);
+  console.log('- Plateforme:', process.platform);
+  console.log('- Architecture:', process.arch);
+  console.log('- Répertoire de travail:', process.cwd());
+  console.log('- Variables d\'environnement chargées:', Object.keys(process.env).filter(key => key.includes('DB') || key.includes('NODE_ENV')).length);
+  console.log('');
+}
 
 const app = express();
+
+// Security headers (helmet)
+app.use(helmet());
+
 const server = http.createServer(app);
 
 // Configuration Socket.IO avec origines sécurisées
@@ -132,7 +141,7 @@ const corsOptions = {
     } else if (process.env.NODE_ENV === 'development' && origin.startsWith('http://localhost')) {
       callback(null, true);
     } else {
-      console.log('🚫 CORS - Origine refusée:', origin);
+      if (process.env.NODE_ENV !== 'production') console.log('🚫 CORS - Origine refusée:', origin);
       callback(new Error('CORS non autorisé'));
     }
   },
@@ -179,25 +188,21 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Servir les fichiers statiques (uploads)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Route de test simple
-app.get('/api/test', (req, res) => {
-  console.log('🧪 Test route appelée');
-  res.json({ 
-    message: 'API fonctionne !', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'unknown'
-  });
+// Health check (seul endpoint public sans info sensible)
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-app.get('/api/health', (req, res) => {
-  console.log('🏥 Health check appelé');
-  res.json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'unknown',
-    cors: 'enabled'
+// Route de test (dev uniquement)
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/api/test', (req, res) => {
+    res.json({
+      message: 'API fonctionne !',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'unknown'
+    });
   });
-});
+}
 
 // Stockage des connexions WebSocket par vendeur (Set de socket IDs)
 // Permet de gérer plusieurs connexions simultanées par vendeur (plusieurs onglets)
@@ -205,33 +210,33 @@ const sellerConnections = new Map();
 
 // Gestion des connexions WebSocket
 io.on('connection', (socket) => {
-  console.log('Nouvelle connexion WebSocket:', socket.id);
+  if (process.env.NODE_ENV !== 'production') console.log('Nouvelle connexion WebSocket:', socket.id);
 
   // Authentification du vendeur
   socket.on('authenticate', async (data) => {
     try {
-      console.log('🔐 Tentative d\'authentification WebSocket...');
+      if (process.env.NODE_ENV !== 'production') console.log('🔐 Tentative d\'authentification WebSocket...');
       const { token } = data;
       if (!token) {
-        console.log('❌ Token manquant');
+        if (process.env.NODE_ENV !== 'production') console.log('❌ Token manquant');
         socket.emit('error', { message: 'Token requis' });
         return;
       }
 
-      console.log('🔑 Token reçu, vérification...');
+      if (process.env.NODE_ENV !== 'production') console.log('🔑 Token reçu, vérification...');
       const jwt = require('jsonwebtoken');
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'liveshop_secret_key');
-      console.log('✅ Token décodé:', decoded);
-      
+      if (process.env.NODE_ENV !== 'production') console.log('✅ Token décodé:', decoded);
+
       // Le token contient 'id', pas 'sellerId'
       const sellerId = decoded.id || decoded.sellerId;
-      console.log('🔍 SellerId extrait:', sellerId);
-      
+      if (process.env.NODE_ENV !== 'production') console.log('🔍 SellerId extrait:', sellerId);
+
       const seller = await Seller.findByPk(sellerId);
-      console.log('🔍 Recherche vendeur:', seller ? 'Trouvé' : 'Non trouvé');
+      if (process.env.NODE_ENV !== 'production') console.log('🔍 Recherche vendeur:', seller ? 'Trouvé' : 'Non trouvé');
 
       if (!seller) {
-        console.log('❌ Vendeur non trouvé pour ID:', decoded.sellerId);
+        if (process.env.NODE_ENV !== 'production') console.log('❌ Vendeur non trouvé pour ID:', decoded.sellerId);
         socket.emit('error', { message: 'Vendeur non trouvé' });
         return;
       }
@@ -239,13 +244,13 @@ io.on('connection', (socket) => {
       // Associer le socket au vendeur
       socket.sellerId = seller.id;
       socket.join(`seller_${seller.id}`);
-      
+
       if (!sellerConnections.has(seller.id)) {
         sellerConnections.set(seller.id, new Set());
       }
       sellerConnections.get(seller.id).add(socket.id);
 
-      console.log(`✅ Vendeur ${seller.name} (ID: ${seller.id}) connecté via WebSocket (Total connexions: ${sellerConnections.get(seller.id).size})`);
+      if (process.env.NODE_ENV !== 'production') console.log(`✅ Vendeur ${seller.name} (ID: ${seller.id}) connecté via WebSocket (Total connexions: ${sellerConnections.get(seller.id).size})`);
       socket.emit('authenticated', { 
         message: 'Authentification réussie',
         seller: {
@@ -275,10 +280,10 @@ io.on('connection', (socket) => {
       const { notificationId } = data;
       if (!notificationId) return;
 
-      console.log(`✅ ACK reçu pour notification ${notificationId} du vendeur ${socket.sellerId}`);
-      
+      if (process.env.NODE_ENV !== 'production') console.log(`✅ ACK reçu pour notification ${notificationId} du vendeur ${socket.sellerId}`);
+
       // Pour l'instant, on log juste l'ACK (à implémenter plus tard avec colonnes DB)
-      console.log(`📝 ACK traité pour notification ${notificationId} du vendeur ${socket.sellerId}`);
+      if (process.env.NODE_ENV !== 'production') console.log(`📝 ACK traité pour notification ${notificationId} du vendeur ${socket.sellerId}`);
     } catch (error) {
       console.error('❌ Erreur traitement ACK notification:', error);
     }
@@ -288,7 +293,7 @@ io.on('connection', (socket) => {
   socket.on('request_missed_notifications', async (data, callback) => {
     try {
       const { lastNotificationId } = data;
-      console.log(`🔄 [MISSED-REQ] Demande notifications manquées depuis ID ${lastNotificationId} pour vendeur ${socket.sellerId}`);
+      if (process.env.NODE_ENV !== 'production') console.log(`🔄 [MISSED-REQ] Demande notifications manquées depuis ID ${lastNotificationId} pour vendeur ${socket.sellerId}`);
       
       if (!socket.sellerId) {
         console.error('❌ [MISSED-AUTH] Pas de sellerId sur la socket');
@@ -305,7 +310,7 @@ io.on('connection', (socket) => {
       }
       
       const { Op } = require('sequelize');
-      console.log(`🔍 [MISSED-QUERY] Recherche notifications pour vendeur ${socket.sellerId} avec ID > ${lastId}`);
+      if (process.env.NODE_ENV !== 'production') console.log(`🔍 [MISSED-QUERY] Recherche notifications pour vendeur ${socket.sellerId} avec ID > ${lastId}`);
       
       const missedNotifications = await Notification.findAll({
         where: {
@@ -316,7 +321,7 @@ io.on('connection', (socket) => {
         limit: 50
       });
 
-      console.log(`📤 [MISSED-FOUND] ${missedNotifications.length} notifications trouvées:`, 
+      if (process.env.NODE_ENV !== 'production') console.log(`📤 [MISSED-FOUND] ${missedNotifications.length} notifications trouvées:`,
         missedNotifications.map(n => ({ id: n.id, type: n.type, title: n.title, sent: n.sent })));
       
       callback({ 
@@ -340,9 +345,9 @@ io.on('connection', (socket) => {
         const remainingConnections = connections.size;
         if (remainingConnections === 0) {
           sellerConnections.delete(socket.sellerId);
-          console.log(`🔌 Vendeur ${socket.sellerId} complètement déconnecté (${reason})`);
+          if (process.env.NODE_ENV !== 'production') console.log(`🔌 Vendeur ${socket.sellerId} complètement déconnecté (${reason})`);
         } else {
-          console.log(`🔌 Socket déconnectée pour vendeur ${socket.sellerId} (${reason}) - ${remainingConnections} connexion(s) restante(s)`);
+          if (process.env.NODE_ENV !== 'production') console.log(`🔌 Socket déconnectée pour vendeur ${socket.sellerId} (${reason}) - ${remainingConnections} connexion(s) restante(s)`);
         }
       }
     }
@@ -362,7 +367,7 @@ setInterval(() => {
     }
   });
 
-  console.log(`📊 WebSocket Stats: ${activeSellers} vendeurs actifs, ${totalConnections} connexions totales`);
+  if (process.env.NODE_ENV !== 'production') console.log(`📊 WebSocket Stats: ${activeSellers} vendeurs actifs, ${totalConnections} connexions totales`);
 }, 60000); // Toutes les minutes
 
     // Fonction pour notifier un vendeur spécifique avec ACK
@@ -371,13 +376,13 @@ setInterval(() => {
         const connections = sellerConnections.get(sellerId);
         
         if (!connections || connections.size === 0) {
-          console.log(`❌ [NOTIF-EMIT] Vendeur ${sellerId} non connecté (aucune socket active)`);
+          if (process.env.NODE_ENV !== 'production') console.log(`❌ [NOTIF-EMIT] Vendeur ${sellerId} non connecté (aucune socket active)`);
           resolve(false);
           return;
         }
         
         const notificationId = data.notification?.id;
-        console.log(`📤 [NOTIF-EMIT] Envoi notification ${type} (ID: ${notificationId}) au vendeur ${sellerId} (${connections.size} connexion(s))`);
+        if (process.env.NODE_ENV !== 'production') console.log(`📤 [NOTIF-EMIT] Envoi notification ${type} (ID: ${notificationId}) au vendeur ${sellerId} (${connections.size} connexion(s))`);
         
         // Envoyer à TOUTES les sockets du vendeur via Room
         // Cela garantit que tous les onglets/connexions reçoivent la notification
@@ -390,7 +395,7 @@ setInterval(() => {
         const timeout = setTimeout(() => {
           if (!ackReceived) {
             // Considérer comme succès car envoyé via Room (fiable)
-            console.log(`✅ [NOTIF-FALLBACK] Notification ${type} (ID: ${notificationId}) envoyée au vendeur ${sellerId} via Room`);
+            if (process.env.NODE_ENV !== 'production') console.log(`✅ [NOTIF-FALLBACK] Notification ${type} (ID: ${notificationId}) envoyée au vendeur ${sellerId} via Room`);
             resolve(true);
           }
         }, 1000);
@@ -405,7 +410,7 @@ setInterval(() => {
                 if (ackData.notificationId === notificationId && !ackReceived) {
                   ackReceived = true;
                   clearTimeout(timeout);
-                  console.log(`✅ [NOTIF-ACK] ACK reçu pour notification ${notificationId} de vendeur ${sellerId}`);
+                  if (process.env.NODE_ENV !== 'production') console.log(`✅ [NOTIF-ACK] ACK reçu pour notification ${notificationId} de vendeur ${sellerId}`);
                   resolve(true);
                   // Nettoyer les listeners
                   connections.forEach(sid => {
@@ -429,7 +434,7 @@ setInterval(() => {
     // Fonction pour envoyer des notifications à tous les vendeurs connectés
     global.notifyAllSellers = (event, data) => {
       io.emit(event, data);
-      console.log('Notification envoyée à tous les vendeurs:', event);
+      if (process.env.NODE_ENV !== 'production') console.log('Notification envoyée à tous les vendeurs:', event);
     };
 
 // Middleware pour détecter les scrapers (WhatsApp, Facebook, Twitter, etc.)
@@ -525,7 +530,7 @@ const startServer = async () => {
     }
     
     // Initialiser le service de notifications avec BullMQ
-    console.log('🔔 Initialisation du service de notifications...');
+    if (process.env.NODE_ENV !== 'production') console.log('🔔 Initialisation du service de notifications...');
     await notificationService.initializeQueue();
     
     // Démarrer le processeur de retry
@@ -557,25 +562,27 @@ const startServer = async () => {
       }
     }, 24 * 60 * 60 * 1000); // 24 heures
     
-    // Endpoint de test pour notifications hors ligne
-    app.post('/api/test/create-notification', async (req, res) => {
-      try {
-        const notification = await Notification.create(req.body);
-        console.log('🧪 Notification de test créée:', notification.id);
-        res.json({ success: true, notification });
-      } catch (error) {
-        console.error('❌ Erreur création notification test:', error);
-        res.status(500).json({ success: false, error: error.message });
-      }
-    });
+    // Endpoint de test pour notifications (dev uniquement)
+    if (process.env.NODE_ENV !== 'production') {
+      app.post('/api/test/create-notification', async (req, res) => {
+        try {
+          const notification = await Notification.create(req.body);
+          res.json({ success: true, notification });
+        } catch (error) {
+          res.status(500).json({ success: false, error: error.message });
+        }
+      });
+    }
     
     // Démarrer le serveur
     const PORT = process.env.PORT || 3001;
     server.listen(PORT, () => {
       console.log(`🚀 Serveur démarré sur le port ${PORT}`);
-      console.log(`📱 URL locale: http://localhost:${PORT}`);
-      console.log(`🌐 CORS autorisé pour: ${process.env.CORS_ORIGIN || 'http://localhost:5173'}`);
-      console.log(`🔍 Health check: http://localhost:${PORT}/api/health`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`📱 URL locale: http://localhost:${PORT}`);
+        console.log(`🌐 CORS autorisé pour: ${process.env.CORS_ORIGIN || 'http://localhost:5173'}`);
+        console.log(`🔍 Health check: http://localhost:${PORT}/api/health`);
+      }
     });
     
   } catch (error) {

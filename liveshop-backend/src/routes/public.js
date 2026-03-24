@@ -1,6 +1,7 @@
 const express = require('express');
 const { Parser } = require('json2csv');
 const { Seller, Product, Order, Comment } = require('../models');
+const { sequelize } = require('../config/database');
 const PDFDocument = require('pdfkit');
 const QRCode = require('qrcode');
 const notificationService = require('../services/notificationService');
@@ -243,36 +244,39 @@ router.post('/:linkId/orders', validatePublicLink, async (req, res) => {
       });
     }
 
-    // Vérifier le stock
-    if (product.stock_quantity > 0 && orderQuantity > product.stock_quantity) {
-      return res.status(400).json({
-        error: 'Stock insuffisant'
-      });
-    }
-
     // Calculer le prix total
     const totalPrice = product.price * orderQuantity;
 
-    // Créer la commande
-    const order = await Order.create({
-      product_id: product.id,
-      seller_id: seller.id,
-      customer_name: customer_name.trim(),
-      customer_phone: customer_phone.trim(),
-      customer_address: customer_address.trim(),
-      quantity: orderQuantity,
-      total_price: totalPrice,
-      payment_method,
-      payment_proof_url: payment_proof_url || '',
-      comment: comment ? comment.trim() : ''
-    });
+    // Transaction atomique : vérifier stock + créer commande + décrémenter stock
+    const order = await sequelize.transaction(async (t) => {
+      // Verrouiller le produit pour éviter les ventes simultanées
+      const lockedProduct = await Product.findByPk(product.id, { lock: true, transaction: t });
 
-    // Mettre à jour le stock si nécessaire
-    if (product.stock_quantity > 0) {
-      await product.update({
-        stock_quantity: product.stock_quantity - orderQuantity
-      });
-    }
+      if (lockedProduct.stock_quantity > 0 && orderQuantity > lockedProduct.stock_quantity) {
+        throw new Error('Stock insuffisant');
+      }
+
+      const newOrder = await Order.create({
+        product_id: lockedProduct.id,
+        seller_id: seller.id,
+        customer_name: customer_name.trim(),
+        customer_phone: customer_phone.trim(),
+        customer_address: customer_address.trim(),
+        quantity: orderQuantity,
+        total_price: totalPrice,
+        payment_method,
+        payment_proof_url: payment_proof_url || '',
+        comment: comment ? comment.trim() : ''
+      }, { transaction: t });
+
+      if (lockedProduct.stock_quantity > 0) {
+        await lockedProduct.update({
+          stock_quantity: lockedProduct.stock_quantity - orderQuantity
+        }, { transaction: t });
+      }
+
+      return newOrder;
+    });
 
     // Envoyer une notification en temps réel au vendeur
     let notificationSent = false;
@@ -799,46 +803,25 @@ router.get('/orders/:orderId/delivery-ticket', async (req, res) => {
   }
 });
 
-// Endpoint pour vérifier la configuration de la base de données
-router.get('/database-info', async (req, res) => {
-  try {
-    const { sequelize } = require('../config/database');
-    
-    // Vérifier la connexion
-    await sequelize.authenticate();
-    
-    // Obtenir les informations de la base
-    const [results] = await sequelize.query('SELECT current_database() as db_name, current_user as user, version() as version');
-    
-    // Compter les produits
-    const [productCount] = await sequelize.query('SELECT COUNT(*) as count FROM products');
-    
-    // Compter les vendeurs
-    const [sellerCount] = await sequelize.query('SELECT COUNT(*) as count FROM sellers');
-    
-    res.json({
-      status: 'OK',
-      database: {
-        name: results[0].db_name,
-        user: results[0].user,
-        version: results[0].version.split(' ')[0],
-        isProduction: process.env.NODE_ENV === 'production',
-        isSupabase: results[0].db_name === 'postgres' && process.env.NODE_ENV === 'production'
-      },
-      data: {
-        products: productCount[0].count,
-        sellers: sellerCount[0].count
-      },
-      environment: process.env.NODE_ENV || 'development'
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'ERROR',
-      message: error.message,
-      environment: process.env.NODE_ENV || 'development'
-    });
-  }
-});
+// Endpoint database-info (dev uniquement - expose des infos sensibles)
+if (process.env.NODE_ENV !== 'production') {
+  router.get('/database-info', async (req, res) => {
+    try {
+      const { sequelize: db } = require('../config/database');
+      await db.authenticate();
+      const [results] = await db.query('SELECT current_database() as db_name, version() as version');
+      const [productCount] = await db.query('SELECT COUNT(*) as count FROM products');
+      const [sellerCount] = await db.query('SELECT COUNT(*) as count FROM sellers');
+      res.json({
+        status: 'OK',
+        database: { name: results[0].db_name, version: results[0].version.split(' ')[0] },
+        data: { products: productCount[0].count, sellers: sellerCount[0].count }
+      });
+    } catch (error) {
+      res.status(500).json({ status: 'ERROR', message: error.message });
+    }
+  });
+}
 
 // Endpoint pour vérifier le statut d'une commande (retour PayDunya)
 router.get('/orders/:orderId/status', async (req, res) => {

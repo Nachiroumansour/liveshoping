@@ -3,11 +3,13 @@ const router = express.Router();
 const { Live, LiveProduct, Product } = require('../models');
 const { Op } = require('sequelize');
 const { Parser } = require('json2csv');
+const { authenticateToken } = require('../middleware/auth');
 
 // Créer un live
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   try {
-    const { title, date, sellerId } = req.body;
+    const { title, date } = req.body;
+    const sellerId = req.seller.id;
     
     // Générer un slug unique
     const baseSlug = title.toLowerCase()
@@ -47,19 +49,27 @@ router.post('/', async (req, res) => {
 });
 
 // Lister les lives d'un vendeur
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
-    const { sellerId } = req.query;
-    if (!sellerId) return res.status(400).json({ error: 'sellerId requis' });
-    const lives = await Live.findAll({ where: { sellerId }, order: [['date', 'DESC']] });
-    res.json(lives);
+    const sellerId = req.seller.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await Live.findAndCountAll({
+      where: { sellerId },
+      order: [['date', 'DESC']],
+      limit,
+      offset
+    });
+    res.json({ lives: rows, total: count, page, limit });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
 // Associer des produits à un live
-router.post('/:liveId/products', async (req, res) => {
+router.post('/:liveId/products', authenticateToken, async (req, res) => {
   try {
     const { productIds } = req.body; // tableau d'IDs
     const { liveId } = req.params;
@@ -76,7 +86,7 @@ router.post('/:liveId/products', async (req, res) => {
 });
 
 // Retirer un produit d'un live
-router.delete('/:liveId/products/:productId', async (req, res) => {
+router.delete('/:liveId/products/:productId', authenticateToken, async (req, res) => {
   try {
     const { liveId, productId } = req.params;
     await LiveProduct.destroy({ where: { liveId, productId } });
@@ -87,7 +97,7 @@ router.delete('/:liveId/products/:productId', async (req, res) => {
 });
 
 // Lister les produits d'un live
-router.get('/:liveId/products', async (req, res) => {
+router.get('/:liveId/products', authenticateToken, async (req, res) => {
   try {
     const { liveId } = req.params;
     const live = await Live.findByPk(liveId, {
@@ -101,7 +111,7 @@ router.get('/:liveId/products', async (req, res) => {
 });
 
 // Lister les commandes d'un live
-router.get('/:liveId/orders', async (req, res) => {
+router.get('/:liveId/orders', authenticateToken, async (req, res) => {
   try {
     const { liveId } = req.params;
     // Récupérer les produits associés à ce live
@@ -109,18 +119,24 @@ router.get('/:liveId/orders', async (req, res) => {
     if (!live) return res.status(404).json({ error: 'Live non trouvé' });
     const productIds = live.Products.map(p => p.id);
     // Récupérer les commandes pour ces produits
-    const orders = await require('../models').Order.findAll({
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await require('../models').Order.findAndCountAll({
       where: { product_id: productIds.length > 0 ? productIds : [-1] },
-      order: [['created_at', 'DESC']]
+      order: [['created_at', 'DESC']],
+      limit,
+      offset
     });
-    res.json(orders);
+    res.json({ orders: rows, total: count, page, limit });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
 // Supprimer un live
-router.delete('/:liveId', async (req, res) => {
+router.delete('/:liveId', authenticateToken, async (req, res) => {
   try {
     const { liveId } = req.params;
     
@@ -144,7 +160,7 @@ router.delete('/:liveId', async (req, res) => {
 });
 
 // Rapport PDF des ventes d'un live
-router.get('/:liveId/report', async (req, res) => {
+router.get('/:liveId/report', authenticateToken, async (req, res) => {
   try {
     const { liveId } = req.params;
     const live = await Live.findByPk(liveId, { include: [{ model: Product }] });

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Star, MessageCircle, Heart, Share2, Eye, Package, Clock, X, Zap } from 'lucide-react';
-import { getPublicLink } from '../config/domains';
+import { getPublicLink, getApiUrl } from '../config/domains';
 import realtimeService from '../services/realtimeService';
 import CartModal from '../components/CartModal';
 import MobileHeader from '../components/MobileHeader';
@@ -130,9 +130,7 @@ const ProductsPageContent = () => {
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const apiUrl = window.location.hostname.includes('livelink.store') 
-        ? `https://api.livelink.store/api/public/${linkId}/products`
-        : `http://localhost:3001/api/public/${linkId}/products`;
+      const apiUrl = getApiUrl(`/public/${linkId}/products`);
       
       const response = await fetch(apiUrl);
       

@@ -16,7 +16,8 @@ const QRCodeModal = ({ isOpen, onClose, orderId }) => {
   const generateQRCode = async () => {
     try {
       setLoading(true);
-      const deliveryUrl = `http://localhost:5173/delivery/${orderId}`;
+      const isProd = window.location.hostname.includes('livelink.store');
+      const deliveryUrl = isProd ? `https://livelink.store/delivery/${orderId}` : `http://localhost:5174/delivery/${orderId}`;
       
       // Utiliser une API en ligne pour générer le QR code
       const qrCodeApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(deliveryUrl)}`;
