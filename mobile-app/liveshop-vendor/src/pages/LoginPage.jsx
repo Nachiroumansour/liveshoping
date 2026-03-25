@@ -3,11 +3,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import RegisterSteps from '@/components/RegisterSteps';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Store, Lock, ArrowRight, Phone, Lightbulb, User } from 'lucide-react';
+import { Store, ArrowRight } from 'lucide-react';
 import PinInput from '@/components/ui/PinInput';
 import Checkbox from '@/components/ui/checkbox';
+import { motion } from 'framer-motion';
 
 const LoginPage = () => {
   const { login, register, isAuthenticated } = useAuth();
@@ -31,7 +31,7 @@ const LoginPage = () => {
   const formatPhoneNumber = (value) => {
     // Supprimer tous les caractères non numériques sauf le +
     let cleaned = value.replace(/[^\d+]/g, '');
-    
+
     // Si ça ne commence pas par +221, l'ajouter automatiquement
     if (!cleaned.startsWith('+221')) {
       // Si ça commence par 221, ajouter le +
@@ -42,12 +42,12 @@ const LoginPage = () => {
         cleaned = '+221' + cleaned.replace(/^\+/, '');
       }
     }
-    
+
     // Limiter à 13 caractères (+221 + 9 chiffres)
     if (cleaned.length > 13) {
       cleaned = cleaned.substring(0, 13);
     }
-    
+
     return cleaned;
   };
 
@@ -77,11 +77,11 @@ const LoginPage = () => {
     if (isAuthenticated) {
       navigate('/dashboard');
     }
-    
+
     // Charger les données sauvegardées si "Se souvenir" était activé
     const savedPhone = localStorage.getItem('remembered_phone');
     const savedRememberMe = localStorage.getItem('remember_me') === 'true';
-    
+
     if (savedRememberMe && savedPhone) {
       setPhone(savedPhone);
       setRememberMe(true);
@@ -96,9 +96,9 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
+
     const fullPhone = getFullPhone();
-    
+
     if (!fullPhone.trim() || !/^\+\d{8,15}$/.test(fullPhone.trim())) {
       setError('Veuillez saisir votre numéro au format international (ex: +221771234567)');
       return;
@@ -109,7 +109,7 @@ const LoginPage = () => {
     }
     setLoading(true);
     setError('');
-    
+
     // Sauvegarder les données si "Se souvenir" est activé
     if (rememberMe) {
       localStorage.setItem('remembered_phone', fullPhone.trim());
@@ -118,7 +118,7 @@ const LoginPage = () => {
       localStorage.removeItem('remembered_phone');
       localStorage.removeItem('remember_me');
     }
-    
+
     const result = await login(fullPhone.trim(), pin, rememberMe);
     if (!result.success) {
       setError(result.error || 'Numéro ou code PIN incorrect');
@@ -149,183 +149,172 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-500 to-blue-600 flex items-center justify-center p-4 ">
-      <div className="w-full max-w-md ">
-        {/* Header avec logo */}
-        <div className="text-center mb-8 ">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-4  ">
-            <Store className="w-8 h-8 text-purple-600 " />
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-5 py-10">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="w-full max-w-sm"
+      >
+        {/* Header */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-black rounded-2xl mb-5">
+            <Store className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2 ">LiveShop Link</h1>
-          <p className="text-purple-100 ">Espace Vendeur</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">LiveLink</h1>
+          <p className="text-sm text-gray-400 mt-1">Espace Vendeur</p>
         </div>
 
-        {/* Carte principale */}
-        <Card className="shadow-2xl border-0 ">
-          <CardHeader className="text-center pb-4 ">
-            <CardTitle className="text-2xl font-bold text-gray-900 ">Bienvenue</CardTitle>
-            <CardDescription className="text-gray-600 ">
-              Connectez-vous ou créez votre compte vendeur
-            </CardDescription>
-          </CardHeader>
+        {/* Onglets */}
+        <div className="flex bg-gray-100 rounded-xl p-1 mb-8">
+          <button
+            onClick={() => handleTabChange('login')}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              activeTab === 'login'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500'
+            }`}
+          >
+            Connexion
+          </button>
+          <button
+            onClick={() => handleTabChange('register')}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              activeTab === 'register'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500'
+            }`}
+          >
+            Inscription
+          </button>
+        </div>
 
-          {/* Onglets */}
-          <div className="px-6 pb-4 ">
-            <div className="flex bg-gray-100 rounded-lg p-1 ">
+        {activeTab === 'login' ? (
+          <motion.div
+            key="login"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {error && (
+              <div className="mb-5 p-3.5 bg-red-50 rounded-xl text-red-600 text-sm">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Numéro de téléphone
+                </Label>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                    <span className="text-sm text-gray-400 font-medium">🇸🇳 +221</span>
+                  </div>
+                  <input
+                    id="phone"
+                    type="tel"
+                    placeholder="77 123 45 67"
+                    value={getDisplayPhone()}
+                    onChange={handlePhoneChange}
+                    className="w-full pl-24 pr-4 py-3.5 bg-gray-50 border-0 rounded-xl text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900/10 transition-all"
+                    autoComplete="off"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pin" className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Code PIN
+                </Label>
+                <div className="flex justify-center py-2">
+                  <PinInput value={pin} onChange={setPin} length={4} />
+                </div>
+              </div>
+
+              {/* Option "Se souvenir" */}
+              <Checkbox
+                id="remember-me"
+                checked={rememberMe}
+                onChange={setRememberMe}
+                label="Se souvenir de moi"
+              />
+
+              <motion.div whileTap={{ scale: 0.98 }}>
+                <Button
+                  type="submit"
+                  className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium text-sm h-auto"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Connexion...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      Se connecter
+                      <ArrowRight className="w-4 h-4" />
+                    </div>
+                  )}
+                </Button>
+              </motion.div>
+            </form>
+
+            <div className="mt-6 flex justify-between items-center">
               <button
-                onClick={() => handleTabChange('login')}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-                  activeTab === 'login'
-                    ? 'bg-white text-purple-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
+                type="button"
+                onClick={handleForgot}
+                className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
               >
-                Connexion
+                PIN oublié ?
               </button>
               <button
-                onClick={() => handleTabChange('register')}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-                  activeTab === 'register'
-                    ? 'bg-white text-purple-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
+                type="button"
+                onClick={() => navigate('/register')}
+                className="text-sm text-gray-900 font-medium hover:text-gray-600 transition-colors"
               >
-                Inscription
+                Créer un compte →
               </button>
             </div>
-          </div>
-
-          <CardContent className="px-6 pb-6 ">
-            {activeTab === 'login' ? (
-              // Formulaire de connexion
-              <>
-                {error && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm ">
-                    {error}
-                  </div>
-                )}
-                
-                <form onSubmit={handleLogin} className="space-y-4 ">
-                  <div className="space-y-2 ">
-                    <Label htmlFor="phone" className="text-sm font-medium text-gray-700 ">
-                      Numéro de téléphone
-                    </Label>
-                    <div className="relative ">
-                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 flex items-center">
-                        <Phone className="w-4 h-4 text-gray-400 mr-2" />
-                        <span className="text-gray-500 text-sm font-medium">+221</span>
-                      </div>
-                      <input
-                        id="phone"
-                        type="tel"
-                        placeholder="XX XXX XX XX"
-                        value={getDisplayPhone()}
-                        onChange={handlePhoneChange}
-                        className="w-full pl-20 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white "
-                        autoComplete="off"
-                        required
-                      />
-                    </div>
-                    
-                  </div>
-
-                  <div className="space-y-2 ">
-                    <Label htmlFor="pin" className="text-sm font-medium text-gray-700">
-                      Code PIN
-                    </Label>
-                    <div className="flex justify-center ">
-                      <PinInput value={pin} onChange={setPin} length={4} />
-                    </div>
-                  </div>
-                  
-                  {/* Option "Se souvenir" */}
-                  <Checkbox
-                    id="remember-me"
-                    checked={rememberMe}
-                    onChange={setRememberMe}
-                    label="Se souvenir de moi"
-                  />
-                  
-                  <Button
-                    type="submit"
-                    className="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-medium "
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2 "></div>
-                        Connexion...
-                      </>
-                    ) : (
-                      <>
-                        Se connecter
-                        <ArrowRight className="ml-2 h-4 w-4 " />
-                      </>
-                    )}
-                  </Button>
-                </form>
-
-                <div className="mt-4   flex  justify-between items-center ">
-                  <button
-                    type="button"
-                    onClick={handleForgot}
-                    className="text-sm text-blue-600 hover:underline block "
-                  >
-                    Mot de passe oublié ?
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => navigate('/register')}
-                    className="text-sm text-purple-600 hover:underline block "
-                  >
-                    Créer un compte
-                  </button>
-                </div>
-              </>
-            ) : (
-              // Formulaire d'inscription
-              <>
-                {error && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm ">
-                    {error}
-                  </div>
-                )}
-
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 ">
-                  <div className="flex items-center justify-center mb-2 ">
-                    <Lightbulb className="w-5 h-5 text-yellow-500 mr-2 " />
-                  </div>
-                  <p className="text-sm text-blue-800 ">
-                    Nouveau sur LiveShop Link ? Suivez les 3 étapes ci-dessous pour créer votre compte.
-                  </p>
-                </div>
-
-                {/* Composant des 3 étapes d'inscription */}
-                <RegisterSteps onDone={(createdPhone) => { try { if (createdPhone) localStorage.setItem('prefill_phone', createdPhone); } catch {} setActiveTab('login'); const prefill = localStorage.getItem('prefill_phone'); if (prefill) setPhone(prefill); }} />
-
-                <div className="mt-4 text-center ">
-                  <button
-                    type="button"
-                    onClick={handleBackToLogin}
-                    className="text-sm text-purple-600 hover:underline "
-                  >
-                    Retour à la connexion
-                  </button>
-                </div>
-              </>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="register"
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {error && (
+              <div className="mb-5 p-3.5 bg-red-50 rounded-xl text-red-600 text-sm">
+                {error}
+              </div>
             )}
-          </CardContent>
-        </Card>
 
-        <div className="text-center mt-6 ">
-          <p className="text-purple-100 text-sm ">
-            © 2025 LiveShop Link - Votre solution de live commerce
+            {/* Composant des 3 étapes d'inscription */}
+            <RegisterSteps onDone={(createdPhone) => { try { if (createdPhone) localStorage.setItem('prefill_phone', createdPhone); } catch {} setActiveTab('login'); const prefill = localStorage.getItem('prefill_phone'); if (prefill) setPhone(prefill); }} />
+
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={handleBackToLogin}
+                className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                ← Retour à la connexion
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        <div className="text-center mt-10">
+          <p className="text-gray-300 text-xs">
+            © 2025 LiveLink
           </p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
 
 export default LoginPage;
-

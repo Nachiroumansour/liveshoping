@@ -414,6 +414,36 @@ class ApiService {
     });
   }
 
+  // Shop Profile
+  async getShopProfile() {
+    return this.request('/sellers/profile');
+  }
+
+  async updateShopProfile(data) {
+    return this.request('/sellers/profile', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async uploadLogo(formData) {
+    const url = `${this.baseURL}/sellers/upload-logo`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': this.getAuthHeaders().Authorization
+      },
+      body: formData
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Erreur upload');
+    return data;
+  }
+
+  async deleteLogo() {
+    return this.request('/sellers/logo', { method: 'DELETE' });
+  }
+
   // Admin Credits Settings
   async getCreditsModuleStatus() {
     return this.request('/admin/settings/credits/status');

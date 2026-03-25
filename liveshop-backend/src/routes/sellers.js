@@ -1,7 +1,7 @@
 const express = require('express');
 const { Seller } = require('../models');
 const { authenticateToken } = require('../middleware/auth');
-const { uploadQRCode, handleUploadError } = require('../middleware/upload');
+const { uploadQRCode, uploadLogo, handleUploadError } = require('../middleware/upload');
 const path = require('path');
 
 const router = express.Router();
@@ -206,6 +206,106 @@ router.delete('/qr-code/:method', authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error('Erreur suppression QR code:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// GET /api/sellers/profile - Récupérer le profil boutique
+router.get('/profile', authenticateToken, async (req, res) => {
+  try {
+    const seller = await Seller.findByPk(req.seller.id);
+    if (!seller) return res.status(404).json({ error: 'Vendeur non trouvé' });
+
+    res.json({
+      success: true,
+      data: {
+        name: seller.name,
+        description: seller.description || '',
+        logo_url: seller.logo_url || null,
+        public_link_id: seller.public_link_id
+      }
+    });
+  } catch (error) {
+    console.error('Erreur récupération profil:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// POST /api/sellers/profile - Mettre à jour le profil boutique
+router.post('/profile', authenticateToken, async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    const seller = await Seller.findByPk(req.seller.id);
+    if (!seller) return res.status(404).json({ error: 'Vendeur non trouvé' });
+
+    const updateData = {};
+    if (typeof name === 'string' && name.trim()) updateData.name = name.trim();
+    if (typeof description === 'string') updateData.description = description.trim();
+
+    await seller.update(updateData);
+
+    res.json({
+      success: true,
+      message: 'Profil mis à jour',
+      data: {
+        name: seller.name,
+        description: seller.description || '',
+        logo_url: seller.logo_url || null
+      }
+    });
+  } catch (error) {
+    console.error('Erreur mise à jour profil:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// POST /api/sellers/upload-logo - Upload du logo boutique
+router.post('/upload-logo', authenticateToken, uploadLogo, handleUploadError, async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
+
+    const seller = await Seller.findByPk(req.seller.id);
+    if (!seller) return res.status(404).json({ error: 'Vendeur non trouvé' });
+
+    // Supprimer l'ancien logo s'il existe
+    if (seller.logo_url) {
+      const oldPath = path.join(__dirname, '../../', seller.logo_url);
+      if (require('fs').existsSync(oldPath)) {
+        require('fs').unlinkSync(oldPath);
+      }
+    }
+
+    const logoUrl = `/uploads/logos/${req.file.filename}`;
+    await seller.update({ logo_url: logoUrl });
+
+    res.json({
+      success: true,
+      message: 'Logo mis à jour',
+      data: { logo_url: logoUrl }
+    });
+  } catch (error) {
+    console.error('Erreur upload logo:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// DELETE /api/sellers/logo - Supprimer le logo
+router.delete('/logo', authenticateToken, async (req, res) => {
+  try {
+    const seller = await Seller.findByPk(req.seller.id);
+    if (!seller) return res.status(404).json({ error: 'Vendeur non trouvé' });
+
+    if (seller.logo_url) {
+      const filePath = path.join(__dirname, '../../', seller.logo_url);
+      if (require('fs').existsSync(filePath)) {
+        require('fs').unlinkSync(filePath);
+      }
+      await seller.update({ logo_url: null });
+    }
+
+    res.json({ success: true, message: 'Logo supprimé' });
+  } catch (error) {
+    console.error('Erreur suppression logo:', error);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });

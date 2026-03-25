@@ -9,6 +9,7 @@ import RegisterPage from './pages/RegisterPage';
 import ResetPinPage from './pages/ResetPinPage';
 import LogoutPage from './pages/LogoutPage';
 import DashboardPage from './pages/DashboardPage';
+import OnboardingPage from './pages/OnboardingPage';
 import ProductsPage from './pages/ProductsPage';
 import OrdersPage from './pages/OrdersPage';
 import StatsPage from './pages/StatsPage';
@@ -28,6 +29,7 @@ import AdminSellerDetailPage from './pages/AdminSellerDetailPage';
 import AdminSecurityPage from './pages/AdminSecurityPage';
 import PaymentSettingsPage from './pages/PaymentSettingsPage';
 import WalletPage from './pages/WalletPage';
+import SettingsPage from './pages/SettingsPage';
 import TestImageUpload from './components/TestImageUpload';
 import { AdminRoute, SellerRoute, AuthRoute } from './components/ProtectedRoute';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
@@ -81,7 +83,8 @@ const AppContent = () => {
         <Route path="/reset-pin" element={<ResetPinPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/logout" element={<LogoutPage />} />
-        
+        <Route path="/onboarding" element={isAuthenticated ? <OnboardingPage /> : <Navigate to="/login" />} />
+
         {/* Routes protégées */}
         <Route
           path="/*"
@@ -182,6 +185,11 @@ const AppContent = () => {
                       <PaymentSettingsPage />
                     </SellerRoute>
                   } />
+                  <Route path="settings" element={
+                    <SellerRoute>
+                      <SettingsPage />
+                    </SellerRoute>
+                  } />
                   <Route path="test-image-upload" element={
                     <SellerRoute>
                       <TestImageUpload />
@@ -192,8 +200,10 @@ const AppContent = () => {
                   <Route path="*" element={
                     isAdmin ? (
                       <Navigate to="/admin" replace />
-                    ) : (
+                    ) : localStorage.getItem('onboarding_completed') ? (
                       <Navigate to="/dashboard" replace />
+                    ) : (
+                      <Navigate to="/onboarding" replace />
                     )
                   } />
                 </Routes>

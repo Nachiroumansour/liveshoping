@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { ArrowLeft, MessageCircle, Star } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Star, Phone } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { getBackendUrl } from '../config/domains';
 
@@ -83,6 +83,28 @@ const OrderDetailPage = () => {
             <span className="font-semibold ">Téléphone :</span> {order.customer_phone}<br/>
             <span className="font-semibold ">Adresse :</span> {order.customer_address}
           </div>
+
+          {/* Contact client */}
+          {order.customer_phone && (
+            <div className="mb-4 flex gap-2">
+              <a
+                href={`https://wa.me/${order.customer_phone.replace(/[^0-9]/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+                WhatsApp
+              </a>
+              <a
+                href={`tel:${order.customer_phone}`}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium bg-gray-100 text-gray-900 hover:bg-gray-200 transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+              >
+                <Phone className="w-4 h-4" />
+                Appeler
+              </a>
+            </div>
+          )}
           <div className="mb-4 ">
             <span className="font-semibold ">Produit :</span> {order.product?.name}<br/>
             <span className="font-semibold ">Quantité :</span> {order.quantity}<br/>

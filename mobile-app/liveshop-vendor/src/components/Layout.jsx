@@ -5,11 +5,11 @@ import useCreditsModuleStatus from '../hooks/useCreditsModuleStatus';
 import { Menu, Sun, Moon } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  Home, 
-  Package, 
-  ShoppingBag, 
-  BarChart3, 
+import {
+  Home,
+  Package,
+  ShoppingBag,
+  BarChart3,
   Store,
   Coins,
   Shield,
@@ -17,7 +17,8 @@ import {
   Lock,
   Wallet,
   MessageCircle,
-  LogOut
+  LogOut,
+  Settings
 } from 'lucide-react';
 import NotificationToast from './NotificationToast';
 import ThemeToggle from './ThemeToggle';
@@ -32,7 +33,7 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { seller, credits, refreshCredits, isAdmin } = useAuth();
+  const { seller, credits, refreshCredits, isAdmin, logout } = useAuth();
   const { isEnabled: creditsEnabled } = useCreditsModuleStatus();
   
   // Debug logging
@@ -54,14 +55,16 @@ const Layout = ({ children }) => {
     { id: 'credits', name: 'Gestion Crédits', icon: Coins, path: '/admin/credits' },
     { id: 'security', name: 'Sécurité', icon: Lock, path: '/admin/security' },
   ] : [
-    // Navigation pour vendeurs normaux (sans crédits - accessible via header)
+    // Navigation pour vendeurs normaux
+    // Les 5 premiers sont dans la bottom nav mobile, le reste dans le menu hamburger
     { id: 'dashboard', name: 'Accueil', icon: Home, path: '/dashboard' },
     { id: 'products', name: 'Produits', icon: Package, path: '/products' },
     { id: 'orders', name: 'Commandes', icon: ShoppingBag, path: '/orders' },
-    { id: 'stats', name: 'Stats', icon: BarChart3, path: '/stats' },
+    { id: 'wallet', name: 'Paiement', icon: Wallet, path: '/wallet' },
     { id: 'lives', name: 'Sessions', icon: Store, path: '/lives' },
-    { id: 'wallet', name: 'Wallet', icon: Wallet, path: '/wallet' },
-    // Paiements retiré de la barre de navigation; accessible via menu
+    // Stats et paramètres accessibles via menu hamburger
+    { id: 'stats', name: 'Statistiques', icon: BarChart3, path: '/stats' },
+    { id: 'settings', name: 'Paramètres', icon: Settings, path: '/settings' },
   ];
 
   // Rafraîchir les crédits périodiquement (seulement pour les vendeurs)
@@ -98,6 +101,7 @@ const Layout = ({ children }) => {
       'stats': 'Stats',
       'lives': 'Sessions',
       'wallet': 'Wallet',
+      'settings': 'Paramètres',
       // Admin
       'admin': 'Accueil',
       'sellers': 'Vendeurs',
@@ -223,7 +227,7 @@ const Layout = ({ children }) => {
                   {/* Separator if needed */}
                   {hiddenNavItems.length > 0 && <div className="border-t border-gray-100 dark:border-gray-700 my-1"></div>}
 
-                  {!isAdmin && (
+                  {!isAdmin && creditsEnabled && (
                     <button
                       onClick={() => {
                         navigate('/credits');
@@ -238,8 +242,9 @@ const Layout = ({ children }) => {
                   
                   <button
                     onClick={() => {
-                      navigate('/logout');
                       setShowMobileMenu(false);
+                      logout();
+                      navigate('/login');
                     }}
                     className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center"
                   >
@@ -351,7 +356,10 @@ const Layout = ({ children }) => {
           <Button
             variant="ghost"
             className="w-full justify-start h-12 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
-            onClick={() => navigate('/logout')}
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
           >
             <LogOut className="w-5 h-5 mr-3" />
             <span className="font-medium">Se déconnecter</span>

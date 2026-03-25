@@ -78,6 +78,16 @@ const Seller = sequelize.define('Seller', {
     allowNull: true,
     defaultValue: ['manual'],
     comment: 'Méthodes de paiement activées par le vendeur'
+  },
+  logo_url: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+    comment: 'URL du logo de la boutique'
+  },
+  description: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+    comment: 'Description courte de la boutique'
   }
 }, {
   tableName: 'sellers',

@@ -801,7 +801,7 @@ const ProductsPage = () => {
         </div>
         <Button
           onClick={openCreateDialog}
-          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-md shadow-purple-600/20 px-5 h-11 rounded-xl text-sm font-medium"
+          className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 px-5 h-11 rounded-xl text-sm font-medium"
         >
           <Plus className="w-4 h-4 mr-2" />
           Nouveau produit
@@ -852,43 +852,16 @@ const ProductsPage = () => {
 
       {/* ─── KPI STRIP ─── */}
       <motion.div variants={fadeUp} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
-        {/* Mobile: Compact horizontal strip */}
-        <div className="sm:hidden">
-          <div className="grid grid-cols-3 gap-2">
-            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-3 text-white">
-              <Package className="w-5 h-5 mb-2 opacity-80" />
-              <p className="text-xl font-bold leading-none">{totalProducts}</p>
-              <p className="text-[10px] mt-1 opacity-70 font-medium">Produits</p>
-            </div>
-            <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl p-3 text-white">
-              <Star className="w-5 h-5 mb-2 opacity-80" />
-              <p className="text-xl font-bold leading-none">{products.filter(p => p.is_pinned).length}</p>
-              <p className="text-[10px] mt-1 opacity-70 font-medium">Épinglés</p>
-            </div>
-            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-3 text-white">
-              <Tag className="w-5 h-5 mb-2 opacity-80" />
-              <p className="text-xl font-bold leading-none">{new Set(products.map(p => p.category)).size}</p>
-              <p className="text-[10px] mt-1 opacity-70 font-medium">Catégories</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Desktop: 4-column stat cards */}
-        <div className="hidden sm:grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-px bg-gray-200 dark:bg-gray-700 rounded-2xl overflow-hidden">
           {[
-            { label: 'Total', value: totalProducts, icon: Package, gradient: 'from-purple-500 to-purple-600' },
-            { label: 'Épinglés', value: products.filter(p => p.is_pinned).length, icon: Star, gradient: 'from-amber-400 to-orange-500' },
-            { label: 'Avec photos', value: productsWithImages, icon: Camera, gradient: 'from-emerald-500 to-teal-600' },
-            { label: 'Catégories', value: new Set(products.map(p => p.category)).size, icon: Tag, gradient: 'from-blue-500 to-indigo-600' },
+            { label: 'Produits', value: totalProducts },
+            { label: 'Épinglés', value: products.filter(p => p.is_pinned).length },
+            { label: 'Catégories', value: new Set(products.map(p => p.category)).size },
+            { label: 'Photos', value: productsWithImages, hideOnMobile: true },
           ].map((stat) => (
-            <div key={stat.label} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 flex items-center gap-4">
-              <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
-                <stat.icon className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{stat.value}</p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 font-medium">{stat.label}</p>
-              </div>
+            <div key={stat.label} className={`bg-white dark:bg-gray-900 p-4 ${stat.hideOnMobile ? 'hidden sm:block' : ''}`}>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{stat.value}</p>
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -903,8 +876,8 @@ const ProductsPage = () => {
           transition={{ delay: 0.2 }}
           className="text-center py-16 px-6"
         >
-          <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-950/30 dark:to-blue-950/30 rounded-3xl flex items-center justify-center mx-auto mb-6 rotate-6">
-            <Package className="w-9 h-9 text-purple-500 dark:text-purple-400 -rotate-6" />
+          <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-3xl flex items-center justify-center mx-auto mb-6 rotate-6">
+            <Package className="w-9 h-9 text-gray-400 dark:text-gray-500 -rotate-6" />
           </div>
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Aucun produit</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-xs mx-auto leading-relaxed">
@@ -912,7 +885,7 @@ const ProductsPage = () => {
           </p>
           <Button
             onClick={openCreateDialog}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-md shadow-purple-600/20 h-12 px-8 rounded-xl text-sm font-medium"
+            className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 h-12 px-8 rounded-xl text-sm font-medium"
           >
             <Plus className="w-4 h-4 mr-2" />
             Ajouter un produit
@@ -991,7 +964,7 @@ const ProductsPage = () => {
                       onClick={() => handlePageChange(page)}
                       className={`h-10 min-w-[40px] px-3 rounded-xl text-sm font-medium transition-all ${
                         currentPage === page
-                          ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
+                          ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
                           : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                       }`}
                     >
@@ -1025,7 +998,7 @@ const ProductsPage = () => {
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={openCreateDialog}
-          className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white pl-4 pr-5 h-12 rounded-full shadow-lg shadow-purple-600/30 active:shadow-md transition-shadow"
+          className="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 pl-4 pr-5 h-12 rounded-full shadow-lg shadow-gray-900/20 dark:shadow-white/20 active:shadow-md transition-shadow"
         >
           <Plus className="w-5 h-5" />
           <span className="text-sm font-semibold">Ajouter</span>

@@ -30,7 +30,7 @@ export default function PinInput({ value, onChange, length = 4, disabled = false
           type="password"
           inputMode="numeric"
           maxLength={1}
-          className="w-12 h-12 text-center text-2xl border rounded-lg bg-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-sm "
+          className="w-12 h-12 text-center text-2xl bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/10 transition-all"
           value={value[i] || ''}
           onChange={e => handleChange(e, i)}
           onKeyDown={e => handleKeyDown(e, i)}

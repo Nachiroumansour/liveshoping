@@ -52,7 +52,9 @@ router.get('/:linkId/products', validatePublicLink, async (req, res) => {
     res.json({
       seller: {
         name: seller.name,
-        link_id: seller.public_link_id
+        link_id: seller.public_link_id,
+        logo_url: seller.logo_url || null,
+        description: seller.description || null
       },
       products: products.map(product => ({
         id: product.id,
@@ -164,7 +166,9 @@ router.get('/:linkId/products/:productId', validatePublicLink, async (req, res) 
     res.json({
       seller: {
         name: seller.name,
-        link_id: seller.public_link_id
+        link_id: seller.public_link_id,
+        logo_url: seller.logo_url || null,
+        description: seller.description || null
       },
       product: {
         id: product.id,
@@ -537,7 +541,9 @@ router.get('/:linkId/live/:liveSlug', validatePublicLink, async (req, res) => {
       },
       seller: {
         name: seller.name,
-        link_id: seller.public_link_id
+        link_id: seller.public_link_id,
+        logo_url: seller.logo_url || null,
+        description: seller.description || null
       },
       products: products
     });
@@ -577,7 +583,9 @@ router.get('/:linkId/lives', validatePublicLink, async (req, res) => {
     res.json({
       seller: {
         name: seller.name,
-        link_id: seller.public_link_id
+        link_id: seller.public_link_id,
+        logo_url: seller.logo_url || null,
+        description: seller.description || null
       },
       lives: lives
     });

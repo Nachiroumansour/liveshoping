@@ -512,8 +512,8 @@ const startServer = async () => {
     await testConnection();
     
     // Synchronisation des modèles avec la base de données
-    await sequelize.sync({ force: false });
-    console.log('✅ Base de données synchronisée');
+    await sequelize.sync({ alter: true });
+    console.log('✅ Base de données synchronisée (alter mode)');
     
     // Initialiser Redis adapter pour Socket.IO (mode scalable)
     try {

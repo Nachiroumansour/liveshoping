@@ -5,12 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import useCreditsModuleStatus from '../hooks/useCreditsModuleStatus';
-import { 
-  ShoppingBag, 
-  Package, 
-  TrendingUp, 
-  Clock, 
-  CheckCircle, 
+import {
+  ShoppingBag,
+  Package,
+  TrendingUp,
+  Clock,
+  CheckCircle,
   Truck,
   Copy,
   ExternalLink,
@@ -26,6 +26,9 @@ import {
   Mic,
   TestTube,
   Coins,
+  Share2,
+  MessageCircle,
+  X,
   // Coins // Désactivé temporairement
 } from 'lucide-react';
 import VoiceControls from '../components/VoiceControls';
@@ -52,6 +55,7 @@ export default function DashboardPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [autoUpdating, setAutoUpdating] = useState(false);
+  const [showShareSheet, setShowShareSheet] = useState(false);
 
   useEffect(() => {
     async function fetchStats() {
@@ -207,6 +211,17 @@ export default function DashboardPage() {
     window.open(link, '_blank');
   };
 
+  const handleShareWhatsApp = () => {
+    const link = getPublicLink(seller.public_link_id);
+    const text = `Découvrez ma boutique en ligne ! 🛍️\n${link}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const handleShareFacebook = () => {
+    const link = getPublicLink(seller.public_link_id);
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`, '_blank');
+  };
+
   const handleDownloadGlobalReport = () => {
     window.open(`${getBackendUrl()}/api/public/sellers/${seller.id}/report`, '_blank');
   };
@@ -260,50 +275,48 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Lien public - Design amélioré */}
+          {/* Lien public + Partage */}
           <div className="bg-white/10 rounded-xl p-2 lg:p-4 mb-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="flex-1">
-                <h3 className="font-semibold mb-2 lg:mb-3 flex items-center text-sm lg:text-base">
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Votre lien de boutique
-                </h3>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-                  <div className="bg-white/20 px-3 py-2 rounded-lg text-xs lg:text-sm flex-1 truncate font-mono text-center sm:text-left flex items-center justify-center sm:justify-start">
-                    <span className="text-purple-200">{getPublicLink(seller.public_link_id).replace(`/${seller.public_link_id}`, '/')}</span>
-                    <span className="text-white font-bold">{seller.public_link_id}</span>
-                  </div>
-                  <div className="flex justify-center sm:justify-start space-x-2">
-                    <Button 
-                      onClick={copyPublicLink} 
-                      size="sm" 
-                      variant="secondary" 
-                      className={`transition-all duration-300 ${
-                        copied 
-                          ? 'bg-green-500/80 hover:bg-green-600/80 text-white scale-110' 
-                          : 'bg-white/20 hover:bg-white/30 hover:scale-105'
-                      }`}
-                      title={copied ? "Lien copié !" : "Copier le lien"}
-                    >
-                      {copied ? (
-                        <CheckCircle className="w-4 h-4" />
-                      ) : (
-                        <Copy className="w-4 h-4" />
-                      )}
-                    </Button>
-                    <Button 
-                      onClick={openPublicLink} 
-                      size="sm" 
-                      variant="secondary" 
-                      className="bg-white/20 hover:bg-white/30 transition-all duration-200 hover:scale-105"
-                      title="Ouvrir la boutique"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </Button>
-                  </div>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="bg-white/20 px-3 py-2 rounded-lg text-xs lg:text-sm truncate font-mono flex items-center">
+                  <span className="text-purple-200">{getPublicLink(seller.public_link_id).replace(`/${seller.public_link_id}`, '/')}</span>
+                  <span className="text-white font-bold">{seller.public_link_id}</span>
                 </div>
               </div>
-              
+              <div className="flex space-x-2 shrink-0">
+                <Button
+                  onClick={copyPublicLink}
+                  size="sm"
+                  variant="secondary"
+                  className={`transition-all duration-300 ${
+                    copied
+                      ? 'bg-green-500/80 hover:bg-green-600/80 text-white scale-110'
+                      : 'bg-white/20 hover:bg-white/30 hover:scale-105'
+                  }`}
+                  title={copied ? "Lien copié !" : "Copier le lien"}
+                >
+                  {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </Button>
+                <Button
+                  onClick={openPublicLink}
+                  size="sm"
+                  variant="secondary"
+                  className="bg-white/20 hover:bg-white/30 transition-all duration-200 hover:scale-105"
+                  title="Ouvrir la boutique"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={() => setShowShareSheet(true)}
+                  size="sm"
+                  variant="secondary"
+                  className="bg-white/20 hover:bg-white/30 transition-all duration-200 hover:scale-105"
+                  title="Partager"
+                >
+                  <Share2 className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -586,6 +599,60 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Share Sheet Modal */}
+      {showShareSheet && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowShareSheet(false)} />
+          <div className="relative bg-white dark:bg-gray-800 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm p-6 space-y-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Partager ma boutique</h3>
+              <button onClick={() => setShowShareSheet(false)} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-xl px-4 py-3">
+              <p className="text-sm font-mono text-gray-600 dark:text-gray-300 truncate">
+                {getPublicLink(seller.public_link_id)}
+              </p>
+            </div>
+
+            <button
+              onClick={() => { copyPublicLink(); }}
+              className={`w-full py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all ${
+                copied ? 'bg-gray-900 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200'
+              }`}
+            >
+              {copied ? <><CheckCircle className="w-4 h-4" /> Copié !</> : <><Copy className="w-4 h-4" /> Copier le lien</>}
+            </button>
+
+            <button
+              onClick={handleShareWhatsApp}
+              className="w-full py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-all"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Partager sur WhatsApp
+            </button>
+
+            <button
+              onClick={handleShareFacebook}
+              className="w-full py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 bg-[#1877F2]/10 text-[#1877F2] hover:bg-[#1877F2]/20 transition-all"
+            >
+              <Share2 className="w-4 h-4" />
+              Partager sur Facebook
+            </button>
+
+            <button
+              onClick={openPublicLink}
+              className="w-full py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-100 transition-all"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Voir ma boutique
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,9 +1,6 @@
   import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Star, MessageCircle, Heart, Share2, Eye, Package, Clock, X, Zap } from 'lucide-react';
+import { ShoppingCart, Star, MessageCircle, Share2, Eye, Package, X } from 'lucide-react';
 import { getPublicLink, getApiUrl } from '../config/domains';
 import realtimeService from '../services/realtimeService';
 import CartModal from '../components/CartModal';
@@ -239,18 +236,10 @@ const ProductsPageContent = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
-        <div className="text-center space-y-6">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin mx-auto"></div>
-            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-blue-300 rounded-full animate-ping opacity-20"></div>
-          </div>
-          <div className="space-y-2">
-            <p className="text-slate-600 font-medium">Chargement de la boutique...</p>
-            <div className="w-32 h-1 bg-slate-200 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full animate-pulse"></div>
-            </div>
-          </div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-10 h-10 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin mx-auto"></div>
+          <p className="text-sm text-gray-400">Chargement...</p>
         </div>
       </div>
     );
@@ -258,31 +247,29 @@ const ProductsPageContent = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center px-4">
-        <div className="text-center max-w-md space-y-6">
-          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto">
-            <Package className="w-10 h-10 text-slate-400" />
+      <div className="min-h-screen bg-white flex items-center justify-center px-4">
+        <div className="text-center max-w-sm space-y-4">
+          <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto">
+            <Package className="w-8 h-8 text-gray-300" />
           </div>
-          <div className="space-y-3">
-            <h1 className="text-2xl font-semibold text-slate-800">Boutique non trouvée</h1>
-            <p className="text-slate-600 leading-relaxed">{error}</p>
-          </div>
-          <Button 
+          <h1 className="text-lg font-semibold text-gray-900">Boutique non trouvée</h1>
+          <p className="text-sm text-gray-400">{error}</p>
+          <button
             onClick={() => window.location.reload()}
-            className="bg-gray-800 hover:bg-gray-900 text-white px-6 py-3 rounded-xl transition-all duration-300"
+            className="bg-gray-900 text-white text-sm font-medium px-6 py-2.5 rounded-xl"
           >
             Réessayer
-          </Button>
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50/50">
       {/* Espace pour le header fixe sur desktop */}
-      <div className="hidden md:block h-24"></div>
-      {/* Header mobile - visible seulement sur mobile */}
+      <div className="hidden md:block h-20"></div>
+      {/* Header mobile */}
       <div className="md:hidden">
         <MobileHeader
           seller={seller}
@@ -294,138 +281,127 @@ const ProductsPageContent = () => {
         />
       </div>
 
-      {/* Header desktop - visible seulement sur desktop */}
-      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-white/20 shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+      {/* Header desktop */}
+      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            {/* Logo et nom de la boutique */}
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <ShoppingCart className="w-6 h-6 text-white" />
-              </div>
+            <div className="flex items-center space-x-3">
+              {seller?.logo_url ? (
+                <img
+                  src={seller.logo_url.startsWith('http') ? seller.logo_url : `${import.meta.env.VITE_BACKEND_URL || 'https://api.livelink.store'}${seller.logo_url}`}
+                  alt={seller.name}
+                  className="w-10 h-10 rounded-xl object-cover bg-gray-100"
+                />
+              ) : (
+                <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center">
+                  <ShoppingCart className="w-5 h-5 text-white" />
+                </div>
+              )}
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  <span role="img" aria-label="shopping">🛍️</span>
-                  {seller?.name}
-                </h1>
-                <p className="text-sm text-gray-600">
-                  Découvrez nos produits et commandez en toute simplicité
-                </p>
+                <h1 className="text-lg font-bold text-gray-900">{seller?.name}</h1>
+                <p className="text-xs text-gray-400">{seller?.description || 'Commande en direct'}</p>
               </div>
             </div>
-            
-            {/* Actions à droite */}
-            <div className="flex items-center space-x-4">
-              {/* Bouton panier */}
-              <Button 
+            <div className="flex items-center space-x-3">
+              <button
                 onClick={handleToggleCart}
-                variant="outline" 
-                size="sm"
-                className="relative bg-blue-50/80 hover:bg-blue-100/80 border-blue-200/50 text-blue-700 hover:text-blue-800 px-4 py-2.5 backdrop-blur-sm"
+                className="relative flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
               >
-                <ShoppingCart className="w-4 h-4 mr-2" />
+                <ShoppingCart className="w-4 h-4" />
                 Panier
                 {items.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium shadow-lg">
+                  <span className="absolute -top-1.5 -right-1.5 bg-gray-900 text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center font-bold">
                     {items.length}
                   </span>
                 )}
-              </Button>
-              
-              {/* Bouton partager */}
-              <Button 
+              </button>
+              <button
                 onClick={shareShop}
-                variant="outline" 
-                size="sm"
-                className="bg-purple-50/80 hover:bg-purple-100/80 border-purple-200/50 text-purple-700 hover:text-purple-800 px-4 py-2.5 backdrop-blur-sm"
+                className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
               >
-                <Share2 className="w-4 h-4 mr-2" />
+                <Share2 className="w-4 h-4" />
                 Partager
-              </Button>
+              </button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Filtres mobile - visible seulement sur mobile */}
-      <div className="md:hidden px-4 py-3 bg-white border-b border-gray-100">
-        <div className="flex gap-2">
-          <Button
+      {/* Filtres mobile */}
+      <div className="md:hidden px-4 py-2.5 bg-white border-b border-gray-100">
+        <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
+          <button
             onClick={() => setSelectedCategory('all')}
-            variant={selectedCategory === 'all' ? 'default' : 'outline'}
-            size="sm"
-            className={`flex-1 ${
-              selectedCategory === 'all' 
-                ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                : 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700'
+            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
+              selectedCategory === 'all'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500'
             }`}
           >
             Tous ({products.length})
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={() => setSelectedCategory('live')}
-            variant={selectedCategory === 'live' ? 'default' : 'outline'}
-            size="sm"
-            className={`flex-1 ${
-              selectedCategory === 'live' 
-                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
-                : 'bg-white hover:bg-orange-50 border-orange-200 text-gray-700'
+            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1 ${
+              selectedCategory === 'live'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500'
             }`}
           >
-            <Star className="w-3 h-3 mr-1" />
+            <Star className="w-3 h-3" />
             Épinglés ({products.filter(p => p.is_pinned).length})
-          </Button>
+          </button>
         </div>
       </div>
 
-      {/* Filtres desktop - visible seulement sur desktop */}
-      <div className="hidden md:block max-w-7xl mx-auto px-6 py-8">
-        <div className="flex justify-center space-x-3">
-          <Button
-            onClick={() => setSelectedCategory('all')}
-            variant={selectedCategory === 'all' ? 'default' : 'outline'}
-            size="lg"
-            className={selectedCategory === 'all' 
-              ? 'bg-gray-800 hover:bg-gray-900 text-white rounded-xl px-8 py-3 font-medium' 
-              : 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700 hover:text-gray-900 rounded-xl px-8 py-3 font-medium'
-            }
-          >
-            Tous les produits ({products.length})
-          </Button>
-          <Button
-            onClick={() => setSelectedCategory('live')}
-            variant={selectedCategory === 'live' ? 'default' : 'outline'}
-            size="lg"
-            className={selectedCategory === 'live' 
-              ? 'bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-8 py-3 font-medium' 
-              : 'bg-white hover:bg-orange-50 border-orange-200 text-gray-700 hover:text-gray-900 rounded-xl px-8 py-3 font-medium'
-            }
-          >
-            <Star className="w-4 h-4 mr-2" />
-            ⭐ Épinglés ({products.filter(p => p.is_pinned).length})
-          </Button>
+      {/* Filtres desktop */}
+      <div className="hidden md:block max-w-6xl mx-auto px-6 py-6">
+        <div className="flex justify-center">
+          <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
+            <button
+              onClick={() => setSelectedCategory('all')}
+              className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                selectedCategory === 'all'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Tous les produits ({products.length})
+            </button>
+            <button
+              onClick={() => setSelectedCategory('live')}
+              className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                selectedCategory === 'live'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Star className="w-3.5 h-3.5" />
+              Épinglés ({products.filter(p => p.is_pinned).length})
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Liste de produits mobile - visible seulement sur mobile */}
-      <div className="md:hidden px-4 py-4 pb-24">
+      {/* Liste de produits mobile */}
+      <div className="md:hidden px-3 py-3 pb-24">
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Package className="w-10 h-10 text-gray-400" />
+          <div className="text-center py-16">
+            <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <Package className="w-7 h-7 text-gray-300" />
             </div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">
+            <h2 className="text-sm font-semibold text-gray-900 mb-1">
               {selectedCategory === 'live' ? 'Aucun produit épinglé' : 'Aucun produit disponible'}
             </h2>
-            <p className="text-gray-600 text-sm">
-              {selectedCategory === 'live' 
+            <p className="text-xs text-gray-400">
+              {selectedCategory === 'live'
                 ? 'Aucun produit n\'est actuellement mis en avant.'
                 : 'Le vendeur n\'a pas encore ajouté de produits.'
               }
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             {filteredProducts.map((product) => (
               <MobileProductCard
                 key={product.id}
@@ -437,141 +413,126 @@ const ProductsPageContent = () => {
         )}
       </div>
 
-      {/* Grille de produits desktop - visible seulement sur desktop */}
-      <div className="hidden md:block max-w-7xl mx-auto px-6 pb-24">
+      {/* Grille de produits desktop */}
+      <div className="hidden md:block max-w-6xl mx-auto px-6 pb-24">
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="w-24 h-24 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
-              <Package className="w-12 h-12 text-slate-400" />
+          <div className="text-center py-16">
+            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Package className="w-8 h-8 text-gray-300" />
             </div>
-            <h2 className="text-2xl font-semibold text-slate-800 mb-3">
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
               {selectedCategory === 'live' ? 'Aucun produit épinglé' : 'Aucun produit disponible'}
             </h2>
-            <p className="text-slate-600 max-w-md mx-auto leading-relaxed">
-              {selectedCategory === 'live' 
+            <p className="text-sm text-gray-400 max-w-md mx-auto">
+              {selectedCategory === 'live'
                 ? 'Aucun produit n\'est actuellement mis en avant.'
                 : 'Le vendeur n\'a pas encore ajouté de produits.'
               }
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product, index) => (
-              <Card 
-                key={product.id} 
-                className="card group overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white border-0 shadow-lg rounded-2xl"
-                style={{ animationDelay: `${index * 100}ms` }}
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredProducts.map((product) => (
+              <div
+                key={product.id}
+                className="group bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300"
               >
-                {/* Badge Épinglé */}
-                {product.is_pinned && (
-                  <div className="absolute top-4 right-4 z-10">
-                    <Badge className="badge-pinned bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 shadow-lg">
-                      <Star className="w-3 h-3 mr-1" />
-                      ⭐ Épinglé
-                    </Badge>
-                  </div>
-                )}
-                
-                <CardHeader className="pb-4">
-                  {/* Image du produit */}
+                {/* Image */}
+                <div className="relative">
                   {product.image_url ? (
-                    <div className="aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-slate-100 to-blue-100 mb-4 relative">
-                      <img 
-                        src={product.image_url} 
+                    <div className="aspect-square bg-gray-100 overflow-hidden cursor-pointer" onClick={() => handleViewProduct(product)}>
+                      <img
+                        src={product.image_url}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
                   ) : (
-                    <div className="aspect-square rounded-2xl bg-gradient-to-br from-slate-100 to-blue-100 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300">
-                      <Package className="w-16 h-16 text-slate-400" />
+                    <div className="aspect-square bg-gray-50 flex items-center justify-center">
+                      <Package className="w-12 h-12 text-gray-300" />
                     </div>
                   )}
-                  
-                  {/* Titre et prix */}
-                  <CardTitle className="card-title line-clamp-2 group-hover:text-blue-600 transition-colors duration-200 leading-tight">
-                    {product.name}
-                  </CardTitle>
-                  
-                  <div className="flex items-center justify-between mt-4">
-                    <span className="text-2xl font-bold text-blue-600">
-                      {product.price.toLocaleString()} FCFA
-                    </span>
+
+                  {product.is_pinned && (
+                    <div className="absolute top-3 right-3">
+                      <span className="bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-medium px-2.5 py-1 rounded-lg flex items-center gap-1">
+                        <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                        Épinglé
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="absolute top-3 left-3">
                     {product.stock_quantity > 0 ? (
-                      <Badge className="bg-green-100 text-green-700 border-green-200 px-3 py-1 rounded-full text-sm font-medium">
-                        <span role="img" aria-label="stock">✅</span> Stock: {product.stock_quantity}
-                      </Badge>
+                      <span className="bg-white/90 backdrop-blur-sm text-gray-600 text-xs font-medium px-2.5 py-1 rounded-lg">
+                        Stock: {product.stock_quantity}
+                      </span>
                     ) : (
-                      <Badge className="bg-red-100 text-red-700 border-red-200 px-3 py-1 rounded-full text-sm font-medium">
-                        <span role="img" aria-label="rupture">❌</span> Rupture
-                      </Badge>
+                      <span className="bg-gray-900/80 text-white text-xs font-medium px-2.5 py-1 rounded-lg">
+                        Rupture
+                      </span>
                     )}
                   </div>
-                </CardHeader>
-                
-                {/* Description */}
-                {product.description && (
-                  <CardContent className="pt-0">
-                    <CardDescription className="line-clamp-3 text-gray-600 leading-relaxed">
-                      {product.description}
-                    </CardDescription>
-                  </CardContent>
-                )}
-                
-                {/* Actions */}
-                <CardFooter className="pt-4 space-x-2">
-                  <Button 
-                    onClick={() => handleOrderProduct(product.id)}
-                    className={`flex-1 h-11 text-sm font-semibold rounded-xl transition-all duration-300 ${
-                      product.stock_quantity === 0 
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
-                        : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg'
-                    }`}
-                    disabled={product.stock_quantity === 0}
-                  >
-                    <Zap className="w-4 h-4 mr-2" />
-                    {product.stock_quantity === 0 ? 'Rupture' : 'Commander'}
-                  </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleAddToCart(product)}
-                    disabled={product.stock_quantity === 0}
-                    className={`${
-                      product.stock_quantity === 0 
-                        ? 'border-gray-300 text-gray-300 cursor-not-allowed' 
-                        : 'border-blue-500 text-blue-600 hover:bg-blue-50 hover:border-blue-600 hover:shadow-md'
-                    } rounded-xl p-3 transition-all duration-300`}
-                    aria-label="Ajouter au panier"
-                  >
-                    <ShoppingCart className="w-4 h-4" />
-                  </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleViewProduct(product)}
-                    className="border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 hover:shadow-md rounded-xl p-3 transition-all duration-300"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                </CardFooter>
-              </Card>
+                </div>
+
+                {/* Content */}
+                <div className="p-4">
+                  <h3 className="font-medium text-gray-900 text-sm line-clamp-2 mb-1.5 group-hover:text-gray-600 transition-colors">
+                    {product.name}
+                  </h3>
+                  <p className="text-lg font-bold text-gray-900 mb-3">
+                    {product.price.toLocaleString()} <span className="text-xs font-medium text-gray-400">FCFA</span>
+                  </p>
+
+                  {product.description && (
+                    <p className="text-xs text-gray-400 line-clamp-2 mb-3">{product.description}</p>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleOrderProduct(product.id)}
+                      disabled={product.stock_quantity === 0}
+                      className={`flex-1 h-10 rounded-xl text-sm font-medium transition-colors ${
+                        product.stock_quantity === 0
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-gray-900 text-white hover:bg-gray-800'
+                      }`}
+                    >
+                      {product.stock_quantity === 0 ? 'Rupture' : 'Commander'}
+                    </button>
+                    <button
+                      onClick={() => handleAddToCart(product)}
+                      disabled={product.stock_quantity === 0}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                        product.stock_quantity === 0
+                          ? 'bg-gray-50 text-gray-300 cursor-not-allowed'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      <ShoppingCart className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleViewProduct(product)}
+                      className="w-10 h-10 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         )}
       </div>
-      
-      {/* Widget de commentaires flottant - visible seulement sur desktop */}
+
+      {/* Widget commentaires desktop */}
       <div className="hidden md:block fixed bottom-8 right-8 z-20">
-        <Button 
+        <button
           onClick={() => navigate(`/${linkId}/comments`)}
-          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl p-4 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105"
+          className="bg-gray-900 text-white rounded-2xl w-12 h-12 flex items-center justify-center shadow-lg hover:bg-gray-800 transition-colors"
         >
-          <MessageCircle className="w-6 h-6" />
-        </Button>
+          <MessageCircle className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Modal panier */}
@@ -581,101 +542,65 @@ const ProductsPageContent = () => {
         onCheckout={handleCheckout}
       />
 
-      {/* Modal de visualisation des photos */}
+      {/* Modal de visualisation */}
       {showImageModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-            {/* Header de la modal */}
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-xl font-semibold text-gray-900">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={closeImageModal}>
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <h3 className="text-sm font-semibold text-gray-900 truncate pr-4">
                 {selectedProduct.name}
               </h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={closeImageModal}
-                className="text-gray-500 hover:text-gray-700"
-              >
+              <button onClick={closeImageModal} className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
-              </Button>
+              </button>
             </div>
-            
-            {/* Contenu de la modal */}
-            <div className="p-6">
-              {/* Image principale */}
+
+            <div className="p-5">
               {selectedProduct.image_url ? (
-                <div className="mb-6">
-                  <img
-                    src={selectedProduct.image_url}
-                    alt={selectedProduct.name}
-                    className="w-full h-96 object-cover rounded-xl"
-                  />
-                </div>
+                <img
+                  src={selectedProduct.image_url}
+                  alt={selectedProduct.name}
+                  className="w-full aspect-square object-cover rounded-xl mb-4"
+                />
               ) : (
-                <div className="w-full h-96 bg-gray-100 rounded-xl flex items-center justify-center mb-6">
-                  <Package className="w-24 h-24 text-gray-400" />
+                <div className="w-full aspect-square bg-gray-50 rounded-xl flex items-center justify-center mb-4">
+                  <Package className="w-16 h-16 text-gray-200" />
                 </div>
               )}
-              
-              {/* Informations du produit */}
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                    {selectedProduct.name}
-                  </h4>
-                  <p className="text-gray-600">
-                    {selectedProduct.description || 'Aucune description disponible'}
-                  </p>
-                </div>
-                
+
+              <div className="space-y-2">
+                <p className="text-sm text-gray-500">{selectedProduct.description || 'Aucune description'}</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-blue-600">
-                    {selectedProduct.price?.toLocaleString()} FCFA
+                  <span className="text-xl font-bold text-gray-900">
+                    {selectedProduct.price?.toLocaleString()} <span className="text-xs font-medium text-gray-400">FCFA</span>
                   </span>
-                  <span className="text-sm text-gray-500">
-                    Stock: {selectedProduct.stock_quantity}
-                  </span>
+                  <span className="text-xs text-gray-400">Stock: {selectedProduct.stock_quantity}</span>
                 </div>
-                
-                {selectedProduct.is_pinned && (
-                  <Badge className="bg-orange-500 text-white">
-                    <Star className="w-3 h-3 mr-1" />
-                    ⭐ Épinglé
-                  </Badge>
-                )}
               </div>
             </div>
-            
-            {/* Footer de la modal */}
-            <div className="flex space-x-3 p-6 border-t bg-gray-50">
-              <Button
-                onClick={() => {
-                  closeImageModal();
-                  handleOrderProduct(selectedProduct.id);
-                }}
-                className="flex-1 bg-blue-600 hover:bg-blue-700"
+
+            <div className="flex gap-2 px-5 pb-5">
+              <button
+                onClick={() => { closeImageModal(); handleOrderProduct(selectedProduct.id); }}
                 disabled={selectedProduct.stock_quantity === 0}
+                className={`flex-1 h-11 rounded-xl text-sm font-medium ${
+                  selectedProduct.stock_quantity === 0
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-900 text-white hover:bg-gray-800'
+                }`}
               >
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                Commander maintenant
-              </Button>
-              <Button
-                variant="outline"
+                Commander
+              </button>
+              <button
                 onClick={closeImageModal}
+                className="px-5 h-11 rounded-xl text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200"
               >
                 Fermer
-              </Button>
+              </button>
             </div>
           </div>
         </div>
       )}
-      
-      {/* Effet de particules subtiles */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-1 h-1 bg-blue-300 rounded-full animate-pulse opacity-20"></div>
-        <div className="absolute top-1/3 right-1/4 w-0.5 h-0.5 bg-indigo-300 rounded-full animate-ping opacity-30"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-1 h-1 bg-slate-300 rounded-full animate-bounce opacity-20"></div>
-      </div>
     </div>
   );
 };

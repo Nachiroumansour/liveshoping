@@ -46,6 +46,31 @@ const upload = multer({
 // Middleware pour upload de QR code
 const uploadQRCode = upload.single('qr_code');
 
+// Configuration du stockage pour les logos
+const logoStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, '../../uploads/logos');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const extension = path.extname(file.originalname);
+    cb(null, `logo-${req.seller.id}-${uniqueSuffix}${extension}`);
+  }
+});
+
+const logoUpload = multer({
+  storage: logoStorage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 }
+});
+
+// Middleware pour upload de logo
+const uploadLogo = logoUpload.single('logo');
+
 // Middleware pour gérer les erreurs d'upload
 const handleUploadError = (error, req, res, next) => {
   if (error instanceof multer.MulterError) {
@@ -72,5 +97,6 @@ const handleUploadError = (error, req, res, next) => {
 
 module.exports = {
   uploadQRCode,
+  uploadLogo,
   handleUploadError
 }; 

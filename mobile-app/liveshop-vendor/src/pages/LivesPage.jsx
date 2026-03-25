@@ -262,7 +262,7 @@ export default function LivesPage() {
           </div>
           <Button
             onClick={() => setShowCreate(!showCreate)}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-md shadow-purple-600/20 px-5 h-11 rounded-xl text-sm font-medium"
+            className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 px-5 h-11 rounded-xl text-sm font-medium"
           >
             {showCreate ? (
               <><X className="w-4 h-4 mr-2" /> Annuler</>
@@ -301,23 +301,20 @@ export default function LivesPage() {
 
       {/* ─── KPI STRIP ─── */}
       <motion.div variants={fadeUp} initial="hidden" animate="visible" transition={{ delay: 0.05 }}>
-        <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-3">
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-3 sm:p-4 text-white">
-            <Radio className="w-5 h-5 mb-2 opacity-80" />
-            <p className="text-xl sm:text-2xl font-bold leading-none">{totalLives}</p>
-            <p className="text-[10px] sm:text-xs mt-1 opacity-70 font-medium">Sessions</p>
+        <div className="grid grid-cols-3 gap-px bg-gray-200 dark:bg-gray-700 rounded-2xl overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 p-4">
+            <p className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{totalLives}</p>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">Sessions</p>
           </div>
-          <div className="bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl p-3 sm:p-4 text-white">
-            <Zap className="w-5 h-5 mb-2 opacity-80" />
-            <p className="text-xl sm:text-2xl font-bold leading-none">{activeLives}</p>
-            <p className="text-[10px] sm:text-xs mt-1 opacity-70 font-medium">En cours</p>
+          <div className="bg-white dark:bg-gray-900 p-4">
+            <p className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{activeLives}</p>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">En cours</p>
           </div>
-          <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-3 sm:p-4 text-white">
-            <Package className="w-5 h-5 mb-2 opacity-80" />
-            <p className="text-xl sm:text-2xl font-bold leading-none">
+          <div className="bg-white dark:bg-gray-900 p-4">
+            <p className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
               {lives.reduce((sum, l) => sum + (l.products ? l.products.length : 0), 0)}
             </p>
-            <p className="text-[10px] sm:text-xs mt-1 opacity-70 font-medium">Produits</p>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">Produits</p>
           </div>
         </div>
       </motion.div>
@@ -328,8 +325,8 @@ export default function LivesPage() {
         {seller?.public_link_id && (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 mb-3">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shrink-0">
-                <Globe className="w-4 h-4 text-white" />
+              <div className="w-9 h-9 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center shrink-0">
+                <Globe className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold text-gray-900 dark:text-white">Lien de la boutique</p>
@@ -365,8 +362,8 @@ export default function LivesPage() {
         {lastLive && (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shrink-0">
-                <Radio className="w-4 h-4 text-white" />
+              <div className="w-9 h-9 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center shrink-0">
+                <Radio className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold text-gray-900 dark:text-white line-clamp-1">{lastLive.title}</p>
@@ -413,8 +410,8 @@ export default function LivesPage() {
           >
             <form onSubmit={handleCreateLive} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-4">
               <div className="flex items-center gap-3 mb-1">
-                <div className="w-9 h-9 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-white" />
+                <div className="w-9 h-9 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center">
+                  <Zap className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 </div>
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white">Nouvelle session de vente</h3>
               </div>
@@ -497,7 +494,7 @@ export default function LivesPage() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 h-11 rounded-xl text-sm bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-md shadow-purple-600/20"
+                  className="flex-1 h-11 rounded-xl text-sm bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100"
                 >
                   {loading ? (
                     <><div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" /> Création...</>
@@ -528,8 +525,8 @@ export default function LivesPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center py-16 px-6"
           >
-            <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-950/30 dark:to-pink-950/30 rounded-3xl flex items-center justify-center mx-auto mb-6 rotate-6">
-              <Radio className="w-9 h-9 text-purple-500 dark:text-purple-400 -rotate-6" />
+            <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-3xl flex items-center justify-center mx-auto mb-6 rotate-6">
+              <Radio className="w-9 h-9 text-gray-400 dark:text-gray-500 -rotate-6" />
             </div>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Aucune session</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-xs mx-auto leading-relaxed">
@@ -537,7 +534,7 @@ export default function LivesPage() {
             </p>
             <Button
               onClick={() => setShowCreate(true)}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-md shadow-purple-600/20 h-12 px-8 rounded-xl text-sm font-medium"
+              className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 h-12 px-8 rounded-xl text-sm font-medium"
             >
               <Zap className="w-4 h-4 mr-2" /> Créer une session
             </Button>
@@ -562,13 +559,9 @@ export default function LivesPage() {
                       {/* Top row: title + status + menu */}
                       <div className="flex items-start gap-3">
                         {/* Status indicator */}
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
-                          isActive
-                            ? 'bg-red-50 dark:bg-red-950/30'
-                            : 'bg-gray-50 dark:bg-gray-800'
-                        }`}>
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 bg-gray-100 dark:bg-gray-800">
                           {isActive ? (
-                            <Radio className="w-5 h-5 text-red-500 animate-pulse" />
+                            <Radio className="w-5 h-5 text-gray-900 dark:text-white" />
                           ) : (
                             <Clock className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                           )}
@@ -770,7 +763,7 @@ export default function LivesPage() {
                   onClick={() => setPage(pageNum)}
                   className={`h-10 min-w-[40px] px-3 rounded-xl text-sm font-medium transition-all ${
                     page === pageNum
-                      ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
+                      ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
                       : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
@@ -803,7 +796,7 @@ export default function LivesPage() {
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white pl-4 pr-5 h-12 rounded-full shadow-lg shadow-amber-500/30 active:shadow-md transition-shadow"
+            className="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 pl-4 pr-5 h-12 rounded-full shadow-lg shadow-gray-900/20 dark:shadow-white/20 active:shadow-md transition-shadow"
           >
             <Zap className="w-5 h-5" />
             <span className="text-sm font-semibold">Nouvelle</span>

@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Smartphone, Lock, Key } from 'lucide-react';
+import { Smartphone, Lock, Key, User, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 import api from '../services/api';
 
 const RegisterSteps = ({ onDone }) => {
@@ -21,7 +19,7 @@ const RegisterSteps = ({ onDone }) => {
   // Fonction pour formater le numéro de téléphone
   const formatPhoneNumber = (value) => {
     let cleaned = value.replace(/[^\d+]/g, '');
-    
+
     // Si ça ne commence pas par +221, l'ajouter automatiquement
     if (!cleaned.startsWith('+221')) {
       if (cleaned.startsWith('221')) {
@@ -30,12 +28,12 @@ const RegisterSteps = ({ onDone }) => {
         cleaned = '+221' + cleaned.replace(/^\+/, '');
       }
     }
-    
+
     // Limiter à 13 caractères (+221 + 9 chiffres)
     if (cleaned.length > 13) {
       cleaned = cleaned.substring(0, 13);
     }
-    
+
     return cleaned;
   };
 
@@ -45,11 +43,18 @@ const RegisterSteps = ({ onDone }) => {
     setPhone(formatted);
   };
 
+  const getDisplayPhone = () => {
+    if (phone.startsWith('+221')) {
+      return phone.substring(4);
+    }
+    return phone;
+  };
+
   const handleSendOtp = async (e) => {
     e?.preventDefault?.();
     setError('');
     if (!name.trim() || !phone.trim()) {
-      setError('Nom et numéro requis');
+      setError('Nom de boutique et numéro requis');
       return;
     }
     setLoading(true);
@@ -110,96 +115,237 @@ const RegisterSteps = ({ onDone }) => {
     setLoading(false);
   };
 
+  const stepLabels = ['Infos', 'OTP', 'PIN'];
+
   return (
-    <CardContent>
+    <div>
+      {/* Step indicator */}
+      <div className="flex items-center justify-center gap-3 mb-8">
+        {[1, 2, 3].map((s) => (
+          <div key={s} className="flex items-center gap-2">
+            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
+              s === step ? 'bg-gray-900 text-white' : s < step ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-400'
+            }`}>
+              {s}
+            </div>
+            <span className={`text-xs font-medium ${s === step ? 'text-gray-900' : 'text-gray-400'}`}>
+              {stepLabels[s - 1]}
+            </span>
+            {s < 3 && <div className={`w-6 h-px ${s < step ? 'bg-gray-900' : 'bg-gray-200'}`} />}
+          </div>
+        ))}
+      </div>
+
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm ">{error}</div>
+        <div className="mb-5 p-3.5 bg-red-50 rounded-xl text-red-600 text-sm">{error}</div>
       )}
 
       {step === 1 && (
-        <form onSubmit={handleSendOtp} className="space-y-6 ">
-          <div className="space-y-2 ">
-            <Label htmlFor="name">Nom</Label>
-            <Input id="name" type="text" placeholder="Votre nom" value={name} onChange={e => setName(e.target.value)} required />
-          </div>
-                      <div className="space-y-2 ">
-              <Label htmlFor="phone">Numéro de téléphone</Label>
-              <div className="relative ">
-                <Smartphone className="absolute left-3 top-3 h-4 w-4 text-gray-400 " />
-                <Input 
-                  id="phone" 
-                  type="tel" 
-                  placeholder="771234567" 
-                  value={phone} 
-                  onChange={handlePhoneChange} 
-                  className="pl-10 " 
-                  required 
-                />
-              </div>
-              <p className="text-xs text-gray-500">Le préfixe +221 est ajouté automatiquement</p>
+        <motion.form
+          key="step1"
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          onSubmit={handleSendOtp}
+          className="space-y-5"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="reg-name" className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Nom de la boutique
+            </Label>
+            <div className="relative">
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                id="reg-name"
+                type="text"
+                placeholder="Ex: Boutique Awa"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-0 rounded-xl text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900/10 transition-all"
+                required
+              />
             </div>
-          <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 " disabled={loading}>
-            {loading ? 'Envoi...' : 'Recevoir le code'}
-          </Button>
-        </form>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="reg-phone" className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Numéro de téléphone
+            </Label>
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                <span className="text-sm text-gray-400 font-medium">🇸🇳 +221</span>
+              </div>
+              <input
+                id="reg-phone"
+                type="tel"
+                placeholder="77 123 45 67"
+                value={getDisplayPhone()}
+                onChange={handlePhoneChange}
+                className="w-full pl-24 pr-4 py-3.5 bg-gray-50 border-0 rounded-xl text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900/10 transition-all"
+                required
+              />
+            </div>
+          </div>
+          <motion.div whileTap={{ scale: 0.98 }}>
+            <button
+              type="submit"
+              className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Envoi...
+                </>
+              ) : (
+                <>
+                  Recevoir le code
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </motion.div>
+        </motion.form>
       )}
 
       {step === 2 && (
-        <form onSubmit={handleVerifyOtp} className="space-y-6 ">
-          <div className="space-y-2 ">
-            <Label htmlFor="otp">Code reçu par WhatsApp</Label>
-            <div className="relative ">
-              <Key className="absolute left-3 top-3 h-4 w-4 text-gray-400 " />
-              <Input id="otp" type="text" inputMode="numeric" maxLength={6} placeholder="Code OTP" value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))} className="pl-10 text-center tracking-widest text-lg " required />
+        <motion.form
+          key="step2"
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          onSubmit={handleVerifyOtp}
+          className="space-y-5"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="reg-otp" className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Code reçu par WhatsApp
+            </Label>
+            <div className="relative">
+              <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                id="reg-otp"
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="000000"
+                value={otp}
+                onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-0 rounded-xl text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-center tracking-widest text-lg transition-all"
+                required
+              />
             </div>
             {debugOtp && (
               <div className="mt-2 text-center">
-                <span className="inline-block bg-blue-100 text-blue-700 rounded px-3 py-1 text-xs font-mono">Code debug : {debugOtp}</span>
+                <span className="inline-block bg-gray-100 text-gray-700 rounded-lg px-3 py-1 text-xs font-mono">Code debug : {debugOtp}</span>
               </div>
             )}
           </div>
-          <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 " disabled={loading}>
-            {loading ? 'Vérification...' : 'Valider'}
-          </Button>
-        </form>
+          <motion.div whileTap={{ scale: 0.98 }}>
+            <button
+              type="submit"
+              className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Vérification...
+                </>
+              ) : (
+                <>
+                  Valider
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </motion.div>
+        </motion.form>
       )}
 
       {step === 3 && (
-        <form onSubmit={handleSetPin} className="space-y-6 ">
-          <div className="space-y-2 ">
-            <Label htmlFor="pin">Code PIN</Label>
-            <div className="relative ">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400 " />
-              <Input id="pin" type="password" inputMode="numeric" maxLength={4} placeholder="••••" value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))} className="pl-10 text-center tracking-widest text-lg " required />
+        <motion.form
+          key="step3"
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          onSubmit={handleSetPin}
+          className="space-y-5"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="reg-pin" className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Code PIN
+            </Label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                id="reg-pin"
+                type="password"
+                inputMode="numeric"
+                maxLength={4}
+                placeholder="••••"
+                value={pin}
+                onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-0 rounded-xl text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-center tracking-widest text-lg transition-all"
+                required
+              />
             </div>
           </div>
-          <div className="space-y-2 ">
-            <Label htmlFor="pin-confirm">Confirmer le code PIN</Label>
-            <div className="relative ">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400 " />
-              <Input id="pin-confirm" type="password" inputMode="numeric" maxLength={4} placeholder="••••" value={pinConfirm} onChange={e => setPinConfirm(e.target.value.replace(/\D/g, '').slice(0, 4))} className="pl-10 text-center tracking-widest text-lg " required />
+          <div className="space-y-2">
+            <Label htmlFor="reg-pin-confirm" className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Confirmer le code PIN
+            </Label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                id="reg-pin-confirm"
+                type="password"
+                inputMode="numeric"
+                maxLength={4}
+                placeholder="••••"
+                value={pinConfirm}
+                onChange={e => setPinConfirm(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-0 rounded-xl text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-center tracking-widest text-lg transition-all"
+                required
+              />
             </div>
           </div>
-          <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 " disabled={loading}>
-            {loading ? 'Création...' : 'Créer mon compte'}
-          </Button>
-        </form>
+          <motion.div whileTap={{ scale: 0.98 }}>
+            <button
+              type="submit"
+              className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Création...
+                </>
+              ) : (
+                <>
+                  Créer mon compte
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </motion.div>
+        </motion.form>
       )}
-      {/* Toast OTP debug façon message reçu */}
+
+      {/* Toast OTP debug */}
       {showOtpMsg && debugOtp && (
         <div
-          className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-white shadow-xl rounded-2xl px-6 py-4 flex flex-col items-center w-[90vw] max-w-xs animate-fade-in-up border border-blue-100"
+          className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-white shadow-xl rounded-2xl px-6 py-4 flex flex-col items-center w-[90vw] max-w-xs border border-gray-100"
           style={{ minWidth: 220 }}
         >
           <div className="flex items-center mb-1">
-            <span className="text-blue-500 text-xl mr-2">📩</span>
-            <span className="font-medium text-gray-800 text-sm">Votre code LiveShop Link :</span>
+            <span className="text-gray-500 text-xl mr-2">📩</span>
+            <span className="font-medium text-gray-800 text-sm">Votre code LiveLink :</span>
           </div>
-          <span className="font-mono text-2xl text-blue-700 tracking-widest">{debugOtp}</span>
+          <span className="font-mono text-2xl text-gray-900 tracking-widest">{debugOtp}</span>
         </div>
       )}
-    </CardContent>
+    </div>
   );
 };
 
-export default RegisterSteps; 
+export default RegisterSteps;
