@@ -200,10 +200,10 @@ const AppContent = () => {
                   <Route path="*" element={
                     isAdmin ? (
                       <Navigate to="/admin" replace />
-                    ) : localStorage.getItem('onboarding_completed') ? (
-                      <Navigate to="/dashboard" replace />
-                    ) : (
+                    ) : localStorage.getItem('just_registered') ? (
                       <Navigate to="/onboarding" replace />
+                    ) : (
+                      <Navigate to="/dashboard" replace />
                     )
                   } />
                 </Routes>

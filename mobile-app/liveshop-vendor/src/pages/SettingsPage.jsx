@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 const SettingsPage = () => {
-  const { seller } = useAuth();
+  const { seller, refreshSeller } = useAuth();
   const fileInputRef = useRef(null);
 
   const [name, setName] = useState('');
@@ -59,6 +59,7 @@ const SettingsPage = () => {
     setSaving(true);
     try {
       await ApiService.updateShopProfile({ name: name.trim(), description: description.trim() });
+      await refreshSeller();
       toast.success('Profil mis à jour');
     } catch (err) {
       toast.error(err.message || 'Erreur lors de la sauvegarde');
@@ -84,6 +85,7 @@ const SettingsPage = () => {
       const res = await ApiService.uploadLogo(formData);
       setLogoUrl(res.data.logo_url);
       setLogoPreview(null);
+      await refreshSeller();
       toast.success('Logo mis à jour');
     } catch (err) {
       toast.error(err.message || 'Erreur upload');
@@ -99,6 +101,7 @@ const SettingsPage = () => {
       await ApiService.deleteLogo();
       setLogoUrl(null);
       setLogoPreview(null);
+      await refreshSeller();
       toast.success('Logo supprimé');
     } catch (err) {
       toast.error(err.message || 'Erreur');

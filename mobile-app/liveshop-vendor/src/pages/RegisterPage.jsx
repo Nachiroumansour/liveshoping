@@ -77,7 +77,10 @@ const RegisterPage = () => {
         body: JSON.stringify({ phone_number: phone.trim(), name: name.trim(), pin })
       });
       console.log('Compte créé avec succès:', data);
-      try { localStorage.setItem('prefill_phone', phone.trim()); } catch {}
+      try {
+        localStorage.setItem('prefill_phone', phone.trim());
+        localStorage.setItem('just_registered', 'true');
+      } catch {}
       window.location.href = '/login';
     } catch (err) {
       console.error('Erreur création compte:', err);

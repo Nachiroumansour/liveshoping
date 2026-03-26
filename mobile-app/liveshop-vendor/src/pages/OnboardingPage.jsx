@@ -186,13 +186,13 @@ const OnboardingPage = () => {
     if (current < slides.length - 1) {
       setCurrent(current + 1);
     } else {
-      localStorage.setItem('onboarding_completed', 'true');
+      localStorage.removeItem('just_registered');
       navigate('/dashboard');
     }
   };
 
   const handleSkip = () => {
-    localStorage.setItem('onboarding_completed', 'true');
+    localStorage.removeItem('just_registered');
     navigate('/dashboard');
   };
 

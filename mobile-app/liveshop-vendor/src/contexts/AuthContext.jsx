@@ -208,6 +208,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshSeller = async () => {
+    try {
+      const response = await apiService.getProfile();
+      setSeller(response.data);
+    } catch (err) {
+      console.error('refreshSeller error:', err);
+    }
+  };
+
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem('liveshop_token');
@@ -407,6 +416,7 @@ export const AuthProvider = ({ children }) => {
       login,
       logout,
       refreshCredits,
+      refreshSeller,
       requestMissedNotifications, // Exposer pour debug
       isAuthenticated: !!seller // AJOUTER isAuthenticated
     }}>
