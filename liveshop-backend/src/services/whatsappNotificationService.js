@@ -97,30 +97,22 @@ class WhatsAppNotificationService {
    * 🆕 Nouvelle commande - Message au CLIENT
    */
   getOrderCreatedClientMessage(order, product, seller) {
-    return `✅ Commande #${order.id} reçue
+    return `✅ Commande #${order.id} confirmée
+${product?.name || 'Produit'} × ${order.quantity} — ${order.total_price?.toLocaleString()} FCFA
+${this.formatPaymentMethod(order.payment_method)}
 
-${product?.name || 'Produit'} (${order.quantity}x)
-Total: ${order.total_price?.toLocaleString()} FCFA
-Paiement: ${this.formatPaymentMethod(order.payment_method)}
-
-Livraison: ${order.customer_address || 'À confirmer'}
-
-Le vendeur confirmera sous peu.
-Merci ! 🙏`;
+${seller?.name || 'Le vendeur'} vous contactera pour la livraison.`;
   }
 
   /**
    * 🆕 Nouvelle commande - Message au VENDEUR
    */
   getOrderCreatedSellerMessage(order, product, customer) {
-    // Deep link direct vers le détail de commande dans l'app
-    const orderUrl = `${this.appUrl}/orders/${order.id}`;
-    
-    return `🔔 Commande #${order.id} - ${order.customer_name} | ${order.customer_phone}
+    const orderUrl = `${this.appUrl}/orders?status=pending`;
 
-${product?.name || 'Produit'} (${order.quantity}x) - ${order.total_price?.toLocaleString()} FCFA
-Paiement: ${this.formatPaymentMethod(order.payment_method)}
-Adresse: ${order.customer_address || 'À confirmer'}${order.comment ? `\nNote: ${order.comment}` : ''}
+    return `🔔 Nouvelle commande #${order.id}
+${order.customer_name} — ${order.customer_phone}
+${product?.name || 'Produit'} × ${order.quantity} — ${order.total_price?.toLocaleString()} FCFA${order.comment ? `\n"${order.comment}"` : ''}
 
 👉 ${orderUrl}`;
   }
@@ -129,49 +121,20 @@ Adresse: ${order.customer_address || 'À confirmer'}${order.comment ? `\nNote: $
    * ✅ Commande validée - Message au CLIENT
    */
   getOrderValidatedClientMessage(order, product, seller) {
-    return `✅ Commande #${order.id} validée
+    return `✅ Commande #${order.id} validée par ${seller?.name || 'le vendeur'}
+${product?.name || 'Produit'} × ${order.quantity} — ${order.total_price?.toLocaleString()} FCFA
 
-${product?.name || 'Produit'} (${order.quantity}x)
-Total: ${order.total_price?.toLocaleString()} FCFA
-
-Vendeur: ${seller?.name || 'LiveShop'}
-
-Votre commande est en préparation.
-Livraison à: ${order.customer_address || 'Adresse confirmée'}
-
-Vous serez notifié lors de la livraison.
-Merci ! 🙏`;
+En préparation. Vous serez notifié à la livraison.`;
   }
 
   /**
    * 🚚 Commande livrée - Message au CLIENT
    */
   getOrderDeliveredClientMessage(order, product, seller) {
-    return `🛍️ *${this.appName}*
+    return `🚚 Commande #${order.id} livrée
+${product?.name || 'Produit'} — ${order.total_price?.toLocaleString()} FCFA
 
-━━━━━━━━━━━━━━━━━━━━
-🚚 *COMMANDE LIVRÉE*
-━━━━━━━━━━━━━━━━━━━━
-
-Bonjour *${order.customer_name}* 👋
-
-Votre commande a été livrée avec succès ! 🎉
-
-📋 *Commande #${order.id}*
-┌─────────────────────
-│ 📦 ${product?.name || 'Produit'}
-│ 💰 ${order.total_price?.toLocaleString()} FCFA
-│ 🚚 Statut : *LIVRÉE*
-└─────────────────────
-
-━━━━━━━━━━━━━━━━━━━━
-
-Nous espérons que vous êtes satisfait(e) de votre achat ! 😊
-
-⭐ N'hésitez pas à recommander *${seller?.name || 'notre boutique'}* à vos proches.
-
-Merci pour votre confiance ! 🙏
-_${this.appName}_`;
+Merci pour votre achat chez ${seller?.name || 'notre boutique'} !`;
   }
 
   // ═══════════════════════════════════════════════════════════════

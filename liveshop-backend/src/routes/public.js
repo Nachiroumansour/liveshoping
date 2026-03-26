@@ -13,16 +13,16 @@ const router = express.Router();
 // Middleware de validation des liens publics
 const validatePublicLink = (req, res, next) => {
   const { linkId } = req.params;
-  
-  // Validation du format : 8-12 caractères alphanumériques
-  const linkIdRegex = /^[a-z0-9]{8,12}$/;
-  
+
+  // Accepter les slugs (lettres, chiffres, tirets) et les anciens IDs aléatoires
+  const linkIdRegex = /^[a-z0-9][a-z0-9-]{1,98}[a-z0-9]$/;
+
   if (!linkIdRegex.test(linkId)) {
     return res.status(400).json({
       error: 'Format de lien invalide'
     });
   }
-  
+
   next();
 };
 

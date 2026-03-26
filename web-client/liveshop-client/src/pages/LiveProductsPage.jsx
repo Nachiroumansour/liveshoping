@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Star, MessageCircle, Heart, Share2, Eye, Package, Clock, X, Zap } from 'lucide-react';
-import { getApiUrl, getPublicLink } from '../config/domains';
+import { getApiUrl, getPublicLink, getImageUrl } from '../config/domains';
 import realtimeService from '../services/realtimeService';
 import CartModal from '../components/CartModal';
 import MobileHeader from '../components/MobileHeader';
@@ -266,11 +266,11 @@ const LiveProductsPageContent = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50/50">
       {/* Espace pour le header fixe sur desktop */}
-      <div className="hidden md:block h-24"></div>
-      
-      {/* Header mobile - visible seulement sur mobile */}
+      <div className="hidden md:block h-20"></div>
+
+      {/* Header mobile */}
       <div className="md:hidden">
         <MobileHeader
           seller={seller}
@@ -283,300 +283,307 @@ const LiveProductsPageContent = () => {
         />
       </div>
 
-      {/* Header desktop - visible seulement sur desktop */}
-      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-white/20 shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+      {/* Header desktop */}
+      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            {/* Logo et nom de la boutique */}
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <ShoppingCart className="w-6 h-6 text-white" />
-              </div>
+            <div className="flex items-center space-x-3">
+              {seller?.logo_url ? (
+                <img
+                  src={getImageUrl(seller.logo_url)}
+                  alt={seller.name}
+                  className="w-10 h-10 rounded-xl object-cover bg-gray-100"
+                />
+              ) : (
+                <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center">
+                  <ShoppingCart className="w-5 h-5 text-white" />
+                </div>
+              )}
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  <span role="img" aria-label="shopping">🛍️</span>
-                  {seller?.name}
-                </h1>
-                <p className="text-sm text-gray-600 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                  {live?.title || 'Produits en direct'}
+                <h1 className="text-lg font-bold text-gray-900">{seller?.name}</h1>
+                <p className="text-xs text-gray-400 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+                  {live?.title || 'En direct'}
                 </p>
               </div>
             </div>
-            
-            {/* Actions à droite */}
-            <div className="flex items-center space-x-4">
-              {/* Bouton panier */}
-              <Button 
+            <div className="flex items-center space-x-3">
+              <button
                 onClick={handleToggleCart}
-                variant="outline" 
-                size="sm"
-                className="relative bg-blue-50/80 hover:bg-blue-100/80 border-blue-200/50 text-blue-700 hover:text-blue-800 px-4 py-2.5 backdrop-blur-sm"
+                className="relative flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
               >
-                <ShoppingCart className="w-4 h-4 mr-2" />
+                <ShoppingCart className="w-4 h-4" />
                 Panier
                 {items.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium shadow-lg">
+                  <span className="absolute -top-1.5 -right-1.5 bg-gray-900 text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center font-bold">
                     {items.length}
                   </span>
                 )}
-              </Button>
-              
-              {/* Bouton partager */}
-              <Button 
+              </button>
+              <button
                 onClick={shareLive}
-                variant="outline" 
-                size="sm"
-                className="bg-purple-50/80 hover:bg-purple-100/80 border-purple-200/50 text-purple-700 hover:text-purple-800 px-4 py-2.5 backdrop-blur-sm"
+                className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
               >
-                <Share2 className="w-4 h-4 mr-2" />
+                <Share2 className="w-4 h-4" />
                 Partager
-              </Button>
+              </button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Filtres mobile - visible seulement sur mobile */}
-      <div className="md:hidden px-4 py-3 bg-white border-b border-gray-100">
-        <div className="flex gap-2">
-          <Button
+      {/* Filtres mobile */}
+      <div className="md:hidden px-4 py-2.5 bg-white border-b border-gray-100">
+        <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
+          <button
             onClick={() => setSelectedCategory('all')}
-            variant={selectedCategory === 'all' ? 'default' : 'outline'}
-            size="sm"
-            className={`flex-1 ${
-              selectedCategory === 'all' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-white text-gray-700 border-gray-300'
+            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
+              selectedCategory === 'all'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500'
             }`}
           >
             Tous ({products.length})
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={() => setSelectedCategory('live')}
-            variant={selectedCategory === 'live' ? 'default' : 'outline'}
-            size="sm"
-            className={`flex-1 ${
-              selectedCategory === 'live' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-white text-gray-700 border-gray-300'
+            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1 ${
+              selectedCategory === 'live'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500'
             }`}
           >
-            <Star className="w-4 h-4 mr-1" />
+            <Star className="w-3 h-3" />
             Épinglés ({products.filter(p => p.is_pinned).length})
-          </Button>
+          </button>
         </div>
       </div>
 
-      {/* Filtres desktop - visible seulement sur desktop */}
-      <div className="hidden md:block bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex gap-2">
-              <Button
-                onClick={() => setSelectedCategory('all')}
-                variant={selectedCategory === 'all' ? 'default' : 'outline'}
-                size="sm"
-                className={selectedCategory === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border-gray-300'}
-              >
-                Tous les produits ({products.length})
-              </Button>
-              <Button
-                onClick={() => setSelectedCategory('live')}
-                variant={selectedCategory === 'live' ? 'default' : 'outline'}
-                size="sm"
-                className={selectedCategory === 'live' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border-gray-300'}
-              >
-                <Star className="w-4 h-4 mr-2" />
-                Épinglés ({products.filter(p => p.is_pinned).length})
-              </Button>
-            </div>
+      {/* Filtres desktop */}
+      <div className="hidden md:block max-w-6xl mx-auto px-6 py-6">
+        <div className="flex justify-center">
+          <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
+            <button
+              onClick={() => setSelectedCategory('all')}
+              className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                selectedCategory === 'all'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Tous les produits ({products.length})
+            </button>
+            <button
+              onClick={() => setSelectedCategory('live')}
+              className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                selectedCategory === 'live'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Star className="w-3.5 h-3.5" />
+              Épinglés ({products.filter(p => p.is_pinned).length})
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Contenu principal */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Liste de produits mobile */}
+      <div className="md:hidden px-3 py-3 pb-24">
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Package className="w-10 h-10 text-gray-400" />
-          </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Aucun produit trouvé</h3>
-            <p className="text-gray-600">
-              {selectedCategory === 'live' 
-                ? 'Aucun produit épinglé pour le moment.' 
-                : 'Aucun produit disponible pour ce live.'}
+          <div className="text-center py-16">
+            <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <Package className="w-7 h-7 text-gray-300" />
+            </div>
+            <h2 className="text-sm font-semibold text-gray-900 mb-1">
+              {selectedCategory === 'live' ? 'Aucun produit épinglé' : 'Aucun produit disponible'}
+            </h2>
+            <p className="text-xs text-gray-400">
+              {selectedCategory === 'live'
+                ? 'Aucun produit n\'est actuellement mis en avant.'
+                : 'Aucun produit disponible pour ce live.'
+              }
             </p>
           </div>
         ) : (
-          <>
-            {/* Version mobile - Grille 2 colonnes comme ProductsPage */}
-            <div className="md:hidden grid grid-cols-2 gap-3">
-              {filteredProducts.map((product) => (
-                <MobileProductCard
-                  key={product.id} 
-                  product={product}
-                  onOrder={() => handleOrderProduct(product.id)}
-                />
-              ))}
-            </div>
+          <div className="grid grid-cols-2 gap-2.5">
+            {filteredProducts.map((product) => (
+              <MobileProductCard
+                key={product.id}
+                product={product}
+                onOrder={() => handleOrderProduct(product.id)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
-            {/* Version desktop */}
-            <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProducts.map((product) => (
-                <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white border-0 shadow-lg rounded-2xl overflow-hidden">
-                  <div className="relative">
-                    <div className="aspect-square bg-gray-100 overflow-hidden">
-                      {product.image_url ? (
-                  <img 
-                    src={product.image_url} 
-                    alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Package className="w-16 h-16 text-gray-400" />
-                        </div>
-                      )}
+      {/* Grille de produits desktop */}
+      <div className="hidden md:block max-w-6xl mx-auto px-6 pb-24">
+        {filteredProducts.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Package className="w-8 h-8 text-gray-300" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
+              {selectedCategory === 'live' ? 'Aucun produit épinglé' : 'Aucun produit disponible'}
+            </h2>
+            <p className="text-sm text-gray-400 max-w-md mx-auto">
+              {selectedCategory === 'live'
+                ? 'Aucun produit n\'est actuellement mis en avant.'
+                : 'Aucun produit disponible pour ce live.'
+              }
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredProducts.map((product) => (
+              <div
+                key={product.id}
+                className="group bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300"
+              >
+                {/* Image */}
+                <div className="relative">
+                  {product.image_url ? (
+                    <div className="aspect-square bg-gray-100 overflow-hidden cursor-pointer" onClick={() => handleViewProduct(product)}>
+                      <img
+                        src={product.image_url}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
                     </div>
-                  
-                  {/* Badge Live */}
-                    <div className="absolute top-3 right-3">
-                      <Badge className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                      LIVE
-                      </Badge>
-                  </div>
-                  
-                  {/* Badge de stock */}
-                    <div className="absolute bottom-3 left-3">
-                  {product.stock_quantity > 0 ? (
-                        <Badge className="bg-green-100 text-green-700 border-green-200 px-3 py-1 rounded-full text-sm font-medium">
-                        Stock: {product.stock_quantity}
-                        </Badge>
                   ) : (
-                        <Badge className="bg-red-100 text-red-700 border-red-200 px-3 py-1 rounded-full text-sm font-medium">
-                        Rupture
-                        </Badge>
-                      )}
+                    <div className="aspect-square bg-gray-50 flex items-center justify-center">
+                      <Package className="w-12 h-12 text-gray-300" />
                     </div>
-                </div>
-                
-                  <CardContent className="p-6">
-                    <CardTitle className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
-                    {product.name}
-                    </CardTitle>
-                  
-                  {product.description && (
-                      <CardDescription className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {product.description}
-                      </CardDescription>
                   )}
-                  
-                  <div className="flex items-center justify-between mb-4">
-                      <span className="text-2xl font-bold text-blue-600">
-                      {product.price.toLocaleString()} FCFA
+
+                  {/* Badge LIVE */}
+                  <div className="absolute top-3 right-3">
+                    <span className="bg-red-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+                      LIVE
                     </span>
                   </div>
-                  </CardContent>
-                  
-                  <CardFooter className="pt-4 space-x-2">
-                                      <Button 
-                      onClick={() => handleOrderProduct(product.id)}
-                      className={`flex-1 h-11 text-sm font-semibold rounded-xl transition-all duration-300 ${
-                        product.stock_quantity === 0
-                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                          : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg'
-                      }`}
-                      disabled={product.stock_quantity === 0}
-                    >
-                      <Zap className="w-4 h-4 mr-2" />
-                      {product.stock_quantity === 0 ? 'Rupture' : 'Commander'}
-                    </Button>
 
-                    <Button
-                      variant="outline"
-                      size="sm"
+                  {product.is_pinned && (
+                    <div className="absolute top-3 left-3">
+                      <span className="bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-medium px-2.5 py-1 rounded-lg flex items-center gap-1">
+                        <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                        Épinglé
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="absolute bottom-3 left-3">
+                    {product.stock_quantity > 0 ? (
+                      <span className="bg-white/90 backdrop-blur-sm text-gray-600 text-xs font-medium px-2.5 py-1 rounded-lg">
+                        Stock: {product.stock_quantity}
+                      </span>
+                    ) : (
+                      <span className="bg-gray-900/80 text-white text-xs font-medium px-2.5 py-1 rounded-lg">
+                        Rupture
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-4">
+                  <h3 className="font-medium text-gray-900 text-sm line-clamp-2 mb-1.5 group-hover:text-gray-600 transition-colors">
+                    {product.name}
+                  </h3>
+                  <p className="text-lg font-bold text-gray-900 mb-3">
+                    {product.price.toLocaleString()} <span className="text-xs font-medium text-gray-400">FCFA</span>
+                  </p>
+
+                  {product.description && (
+                    <p className="text-xs text-gray-400 line-clamp-2 mb-3">{product.description}</p>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleOrderProduct(product.id)}
+                      disabled={product.stock_quantity === 0}
+                      className={`flex-1 h-10 rounded-xl text-sm font-medium transition-colors ${
+                        product.stock_quantity === 0
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-gray-900 text-white hover:bg-gray-800'
+                      }`}
+                    >
+                      {product.stock_quantity === 0 ? 'Rupture' : 'Commander'}
+                    </button>
+                    <button
                       onClick={() => handleAddToCart(product)}
                       disabled={product.stock_quantity === 0}
-                      className={`${
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
                         product.stock_quantity === 0
-                          ? 'border-gray-300 text-gray-300 cursor-not-allowed'
-                          : 'border-blue-500 text-blue-600 hover:bg-blue-50 hover:border-blue-600 hover:shadow-md'
-                      } rounded-xl p-3 transition-all duration-300`}
-                      aria-label="Ajouter au panier"
+                          ? 'bg-gray-50 text-gray-300 cursor-not-allowed'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
                     >
                       <ShoppingCart className="w-4 h-4" />
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    </button>
+                    <button
                       onClick={() => handleViewProduct(product)}
-                      className="border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 hover:shadow-md rounded-xl p-3 transition-all duration-300"
+                      className="w-10 h-10 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center transition-colors"
                     >
                       <Eye className="w-4 h-4" />
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
       {/* Modal d'image */}
       {showImageModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={closeImageModal}>
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
             <div className="relative">
               <img
                 src={selectedProduct.image_url}
                 alt={selectedProduct.name}
                 className="w-full h-auto max-h-[60vh] object-cover"
               />
-              <Button
+              <button
                 onClick={closeImageModal}
-                className="absolute top-4 right-4 bg-black bg-opacity-50 hover:bg-opacity-75 text-white"
-                size="sm"
+                className="absolute top-3 right-3 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors"
               >
                 <X className="w-4 h-4" />
-              </Button>
+              </button>
             </div>
-            <div className="p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">{selectedProduct.name}</h3>
+            <div className="p-5">
+              <h3 className="text-lg font-bold text-gray-900 mb-1">{selectedProduct.name}</h3>
               {selectedProduct.description && (
-                <p className="text-gray-600 mb-4">{selectedProduct.description}</p>
+                <p className="text-sm text-gray-500 mb-4">{selectedProduct.description}</p>
               )}
               <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold text-blue-600">
-                  {selectedProduct.price.toLocaleString()} FCFA
+                <span className="text-xl font-bold text-gray-900">
+                  {selectedProduct.price.toLocaleString()} <span className="text-sm font-medium text-gray-400">FCFA</span>
                 </span>
                 <div className="flex gap-2">
-                  <Button
+                  <button
                     onClick={() => handleAddToCart(selectedProduct)}
-                    variant="outline"
-                    className="border-blue-500 text-blue-600 hover:bg-blue-50"
-                    >
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    Ajouter au panier
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      closeImageModal();
-                      handleOrderProduct(selectedProduct.id);
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-xl text-sm font-medium flex items-center gap-2 transition-colors"
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    Panier
+                  </button>
+                  <button
+                    onClick={() => { closeImageModal(); handleOrderProduct(selectedProduct.id); }}
+                    className="px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 rounded-xl text-sm font-medium transition-colors"
                   >
                     Commander
-                  </Button>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-          </div>
-        )}
+        </div>
+      )}
 
       {/* Modal du panier */}
       <CartModal

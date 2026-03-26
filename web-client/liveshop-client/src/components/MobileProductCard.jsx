@@ -7,7 +7,9 @@ import {
   Minus,
   Maximize2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  X,
+  Eye
 } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import ImageLightbox from './ImageLightbox';
@@ -17,6 +19,7 @@ const MobileProductCard = ({ product, onOrder }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [showAttributes, setShowAttributes] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
 
   const cartItem = items.find(item => item.id === product.id);
   const isInCart = !!cartItem;
@@ -169,27 +172,26 @@ const MobileProductCard = ({ product, onOrder }) => {
             {product.price.toLocaleString()} <span className="text-xs font-medium text-gray-400">FCFA</span>
           </p>
 
-          {/* Attributs */}
-          {hasAttributes && (
-            <div className="flex items-center gap-1 flex-wrap mb-2.5">
-              {attributes.slice(0, showAttributes ? attributes.length : 3).map(([key, value]) => (
-                <span
-                  key={key}
-                  className="bg-gray-100 text-gray-600 text-[10px] font-medium px-2 py-0.5 rounded-md"
-                >
-                  {String(value)}
-                </span>
-              ))}
-              {attributes.length > 3 && !showAttributes && (
-                <button
-                  onClick={() => setShowAttributes(true)}
-                  className="text-[10px] text-gray-400 px-1"
-                >
-                  +{attributes.length - 3}
-                </button>
-              )}
-            </div>
-          )}
+          {/* Attributs + Voir plus */}
+          <div className="flex items-center gap-1 flex-wrap mb-2.5">
+            {hasAttributes && attributes.slice(0, 2).map(([key, value]) => (
+              <span
+                key={key}
+                className="bg-gray-100 text-gray-600 text-[10px] font-medium px-2 py-0.5 rounded-md"
+              >
+                {String(value)}
+              </span>
+            ))}
+            {(product.description || attributes.length > 2 || productImages.length > 1) && (
+              <button
+                onClick={() => setShowDetail(true)}
+                className="text-[10px] font-medium text-gray-400 hover:text-gray-600 px-1 flex items-center gap-0.5"
+              >
+                <Eye className="w-3 h-3" />
+                Voir plus
+              </button>
+            )}
+          </div>
 
           {/* Actions */}
           {isInCart ? (
@@ -238,6 +240,89 @@ const MobileProductCard = ({ product, onOrder }) => {
           )}
         </div>
       </div>
+
+      {/* Detail modal */}
+      {showDetail && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center" onClick={() => setShowDetail(false)}>
+          <div
+            className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md max-h-[85vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="sticky top-0 bg-white px-4 py-3 border-b border-gray-100 flex items-center justify-between z-10">
+              <h3 className="text-sm font-semibold text-gray-900 truncate pr-4">{product.name}</h3>
+              <button onClick={() => setShowDetail(false)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Images carousel */}
+            {productImages.length > 0 && (
+              <div className="relative">
+                <img
+                  src={productImages[currentImageIndex]}
+                  alt={product.name}
+                  className="w-full aspect-square object-cover"
+                />
+                {productImages.length > 1 && (
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                    {productImages.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentImageIndex(i)}
+                        className={`w-2 h-2 rounded-full transition-all ${i === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="p-4 space-y-4">
+              {/* Prix */}
+              <div className="flex items-center justify-between">
+                <span className="text-xl font-bold text-gray-900">
+                  {product.price?.toLocaleString()} <span className="text-xs font-medium text-gray-400">FCFA</span>
+                </span>
+                <span className="text-xs text-gray-400">Stock: {product.stock_quantity}</span>
+              </div>
+
+              {/* Description */}
+              {product.description && (
+                <p className="text-sm text-gray-500 leading-relaxed">{product.description}</p>
+              )}
+
+              {/* Attributs */}
+              {hasAttributes && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider">Détails</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {attributes.map(([key, value]) => (
+                      <div key={key} className="bg-gray-50 rounded-lg px-3 py-2">
+                        <span className="text-[10px] text-gray-400 capitalize block">{key}</span>
+                        <span className="text-sm font-medium text-gray-900">{String(value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* CTA */}
+              <button
+                onClick={() => { setShowDetail(false); onOrder(product.id); }}
+                disabled={isOutOfStock}
+                className={`w-full h-11 rounded-xl text-sm font-medium transition-colors ${
+                  isOutOfStock
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-900 text-white active:bg-gray-800'
+                }`}
+              >
+                {isOutOfStock ? 'Rupture de stock' : 'Commander'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ImageLightbox
         imageUrl={product.image_url}

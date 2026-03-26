@@ -24,6 +24,7 @@ import NotificationToast from './NotificationToast';
 import ThemeToggle from './ThemeToggle';
 import NotificationIndicator from './NotificationIndicator';
 import NotificationButton from './NotificationButton';
+import { getImageUrl } from '../config/domains';
 
 const Layout = ({ children }) => {
 
@@ -62,9 +63,8 @@ const Layout = ({ children }) => {
     { id: 'orders', name: 'Commandes', icon: ShoppingBag, path: '/orders' },
     { id: 'wallet', name: 'Paiement', icon: Wallet, path: '/wallet' },
     { id: 'lives', name: 'Sessions', icon: Store, path: '/lives' },
-    // Stats et paramètres accessibles via menu hamburger
+    // Stats accessible via menu hamburger
     { id: 'stats', name: 'Statistiques', icon: BarChart3, path: '/stats' },
-    { id: 'settings', name: 'Paramètres', icon: Settings, path: '/settings' },
   ];
 
   // Rafraîchir les crédits périodiquement (seulement pour les vendeurs)
@@ -164,7 +164,7 @@ const Layout = ({ children }) => {
         <div className="flex items-center space-x-3">
           {seller?.logo_url ? (
             <img
-              src={seller.logo_url.startsWith('http') ? seller.logo_url : `${(window.location.hostname === 'localhost' ? 'http://localhost:3001' : 'https://api.livelink.store')}${seller.logo_url}`}
+              src={getImageUrl(seller.logo_url)}
               alt={seller.name}
               className="w-8 h-8 rounded-lg object-cover bg-gray-100"
             />
@@ -180,26 +180,33 @@ const Layout = ({ children }) => {
             </p>
           </div>
         </div>
-        <div className="flex items-center space-x-2 ml-2">
+        <div className="flex items-center space-x-1.5 ml-2">
           {/* Indicateur de crédits - Optimisé pour mobile - Visible seulement si module activé */}
           {credits && !isAdmin && creditsEnabled && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/credits')}
-              className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white border-0 shadow-lg font-bold px-2 py-1"
+              className="bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900 border-0 font-bold px-2 py-1 rounded-full"
             >
-              <Coins className="w-4 h-4 mr-1" />
-              <span className="text-xs font-medium hidden sm:inline">{credits.balance} crédits</span>
-              <span className="text-xs font-medium sm:hidden">{credits.balance}</span>
+              <Coins className="w-3.5 h-3.5 mr-1" />
+              <span className="text-xs font-medium">{credits.balance}</span>
             </Button>
           )}
           {/* Bouton notifications */}
           <NotificationButton onClick={() => setShowNotifications(!showNotifications)} />
           {/* Bouton thème */}
           <ThemeToggle />
-          
-          {/* Menu mobile avec déconnexion */}
+          {/* Bouton paramètres */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/settings')}
+          >
+            <Settings className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          </Button>
+
+          {/* Menu mobile */}
           <div className="relative mobile-menu">
             <Button
               variant="ghost"
@@ -209,12 +216,11 @@ const Layout = ({ children }) => {
             >
               <Menu className="w-5 h-5" />
             </Button>
-            
-            {/* Menu déroulant mobile */}
+
+            {/* Menu déroulant — uniquement Statistiques + Déconnexion */}
             {showMobileMenu && (
-              <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
-                <div className="py-2">
-                  {/* Items hidden from bottom nav */}
+              <div className="absolute top-full right-0 mt-2 w-52 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 z-50 overflow-hidden">
+                <div className="py-1.5">
                   {hiddenNavItems.map((item) => {
                     const Icon = item.icon;
                     return (
@@ -224,16 +230,13 @@ const Layout = ({ children }) => {
                           handleNavigation(item.path);
                           setShowMobileMenu(false);
                         }}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                        className="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center"
                       >
-                        <Icon className="w-4 h-4 mr-2" />
+                        <Icon className="w-4 h-4 mr-3 text-gray-400" />
                         {item.name}
                       </button>
                     );
                   })}
-                  
-                  {/* Separator if needed */}
-                  {hiddenNavItems.length > 0 && <div className="border-t border-gray-100 dark:border-gray-700 my-1"></div>}
 
                   {!isAdmin && creditsEnabled && (
                     <button
@@ -241,22 +244,24 @@ const Layout = ({ children }) => {
                         navigate('/credits');
                         setShowMobileMenu(false);
                       }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                      className="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center"
                     >
-                      <Coins className="w-4 h-4 mr-2" />
+                      <Coins className="w-4 h-4 mr-3 text-gray-400" />
                       Gérer les crédits
                     </button>
                   )}
-                  
+
+                  <div className="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+
                   <button
                     onClick={() => {
                       setShowMobileMenu(false);
                       logout();
                       navigate('/login');
                     }}
-                    className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center"
+                    className="w-full px-4 py-2.5 text-left text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center"
                   >
-                    <LogOut className="w-4 h-4 mr-2" />
+                    <LogOut className="w-4 h-4 mr-3" />
                     Se déconnecter
                   </button>
                 </div>
@@ -273,7 +278,7 @@ const Layout = ({ children }) => {
           <div className="flex items-center space-x-3">
             {seller?.logo_url ? (
               <img
-                src={seller.logo_url.startsWith('http') ? seller.logo_url : `${(window.location.hostname === 'localhost' ? 'http://localhost:3001' : 'https://api.livelink.store')}${seller.logo_url}`}
+                src={getImageUrl(seller.logo_url)}
                 alt={seller.name}
                 className="w-12 h-12 rounded-xl object-cover bg-gray-100 shadow-lg"
               />
@@ -344,6 +349,24 @@ const Layout = ({ children }) => {
             })}
           </ul>
           
+          {/* Paramètres dans la sidebar desktop */}
+          {!isAdmin && (
+            <div className="mt-2">
+              <Button
+                variant={location.pathname === '/settings' ? "default" : "ghost"}
+                className={`w-full justify-start h-12 rounded-xl transition-all duration-200 ${
+                  location.pathname === '/settings'
+                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg hover:from-purple-700 hover:to-blue-700'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-purple-600 dark:hover:text-purple-400'
+                }`}
+                onClick={() => handleNavigation('/settings')}
+              >
+                <Settings className={`w-5 h-5 mr-3 ${location.pathname === '/settings' ? 'text-white' : ''}`} />
+                <span className="font-medium">Paramètres</span>
+              </Button>
+            </div>
+          )}
+
           {/* Bouton thème dans la sidebar */}
           <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between px-2">

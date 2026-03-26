@@ -123,14 +123,17 @@ const ProductForm = ({ onSubmit, initialData = null, onCancel }) => {
       }
 
       setFormData({
-        ...initialData,
+        name: initialData.name || '',
+        description: initialData.description || '',
         price: initialData.price?.toString() || '',
         stock_quantity: initialData.stock_quantity?.toString() || '',
+        category: initialData.category || 'general',
         weight: initialData.weight?.toString() || '',
         dimensions: initialData.dimensions || { length: '', width: '', height: '' },
         images: images,
         tags: tags,
-        attributes: attributes
+        attributes: attributes,
+        has_variants: initialData.has_variants || false
       });
     }
   }, [initialData]);
@@ -295,9 +298,66 @@ const ProductForm = ({ onSubmit, initialData = null, onCancel }) => {
     }
   };
 
+  // Color map for visual swatches
+  const colorMap = {
+    'Rouge': '#EF4444',
+    'Bleu': '#3B82F6',
+    'Vert': '#22C55E',
+    'Noir': '#111827',
+    'Blanc': '#F9FAFB',
+    'Jaune': '#EAB308',
+    'Orange': '#F97316',
+    'Violet': '#8B5CF6',
+    'Rose': '#EC4899',
+    'Gris': '#9CA3AF',
+    'Marron': '#92400E',
+    'Beige': '#D2B48C',
+    'Bordeaux': '#7F1D1D',
+    'Turquoise': '#06B6D4',
+    'Doré': '#D4A017',
+  };
+
   const renderAttributeField = (attr) => {
     const value = formData.attributes[attr.name] || '';
     const error = errors[`attr_${attr.name}`];
+
+    // Color swatch picker for color attributes
+    if (attr.name === 'color' && attr.type === 'select') {
+      return (
+        <div key={attr.name} className="space-y-2">
+          <Label className="text-sm font-medium">{attr.label}</Label>
+          <div className="flex flex-wrap gap-2">
+            {attr.options.map(colorName => {
+              const hex = colorMap[colorName] || '#9CA3AF';
+              const isSelected = value === colorName;
+              const isWhite = colorName === 'Blanc';
+              return (
+                <button
+                  key={colorName}
+                  type="button"
+                  onClick={() => handleAttributeChange('color', colorName)}
+                  className={`w-9 h-9 rounded-full transition-all duration-150 flex items-center justify-center ${
+                    isSelected
+                      ? 'ring-2 ring-offset-2 ring-gray-900 dark:ring-white scale-110'
+                      : 'hover:scale-105'
+                  } ${isWhite ? 'border border-gray-200' : ''}`}
+                  style={{ backgroundColor: hex }}
+                  title={colorName}
+                >
+                  {isSelected && (
+                    <svg className={`w-4 h-4 ${isWhite || colorName === 'Jaune' ? 'text-gray-900' : 'text-white'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          {value && <p className="text-xs text-gray-500 mt-1">{value}</p>}
+          {error && <p className="text-sm text-red-500">{error}</p>}
+        </div>
+      );
+    }
 
     switch (attr.type) {
       case 'select':
@@ -556,66 +616,6 @@ const ProductForm = ({ onSubmit, initialData = null, onCancel }) => {
             >
               <Plus className="w-4 h-4" />
             </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Informations de livraison */}
-      <Card className="dark:bg-[#0f1a2a] dark:border-[#1c2638]">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base sm:text-lg">Informations de livraison</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="weight" className="text-sm font-medium">Poids (grammes)</Label>
-            <Input
-              id="weight"
-              type="number"
-              value={formData.weight}
-              onChange={(e) => handleInputChange('weight', e.target.value)}
-              placeholder="Ex: 500"
-              step="1"
-              className="w-full"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="length" className="text-sm font-medium">Longueur (cm)</Label>
-              <Input
-                id="length"
-                type="number"
-                value={formData.dimensions.length}
-                onChange={(e) => handleDimensionChange('length', e.target.value)}
-                placeholder="Ex: 30"
-                step="0.1"
-                className="w-full"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="width" className="text-sm font-medium">Largeur (cm)</Label>
-              <Input
-                id="width"
-                type="number"
-                value={formData.dimensions.width}
-                onChange={(e) => handleDimensionChange('width', e.target.value)}
-                placeholder="Ex: 20"
-                step="0.1"
-                className="w-full"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="height" className="text-sm font-medium">Hauteur (cm)</Label>
-              <Input
-                id="height"
-                type="number"
-                value={formData.dimensions.height}
-                onChange={(e) => handleDimensionChange('height', e.target.value)}
-                placeholder="Ex: 10"
-                step="0.1"
-                className="w-full"
-              />
-            </div>
           </div>
         </CardContent>
       </Card>

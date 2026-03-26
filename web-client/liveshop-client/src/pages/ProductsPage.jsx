@@ -555,28 +555,51 @@ const ProductsPageContent = () => {
               </button>
             </div>
 
-            <div className="p-5">
+            <div className="p-5 space-y-4">
               {selectedProduct.image_url ? (
                 <img
                   src={selectedProduct.image_url}
                   alt={selectedProduct.name}
-                  className="w-full aspect-square object-cover rounded-xl mb-4"
+                  className="w-full aspect-square object-cover rounded-xl"
                 />
               ) : (
-                <div className="w-full aspect-square bg-gray-50 rounded-xl flex items-center justify-center mb-4">
+                <div className="w-full aspect-square bg-gray-50 rounded-xl flex items-center justify-center">
                   <Package className="w-16 h-16 text-gray-200" />
                 </div>
               )}
 
-              <div className="space-y-2">
-                <p className="text-sm text-gray-500">{selectedProduct.description || 'Aucune description'}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xl font-bold text-gray-900">
-                    {selectedProduct.price?.toLocaleString()} <span className="text-xs font-medium text-gray-400">FCFA</span>
-                  </span>
-                  <span className="text-xs text-gray-400">Stock: {selectedProduct.stock_quantity}</span>
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xl font-bold text-gray-900">
+                  {selectedProduct.price?.toLocaleString()} <span className="text-xs font-medium text-gray-400">FCFA</span>
+                </span>
+                <span className="text-xs text-gray-400">Stock: {selectedProduct.stock_quantity}</span>
               </div>
+
+              {selectedProduct.description && (
+                <p className="text-sm text-gray-500 leading-relaxed">{selectedProduct.description}</p>
+              )}
+
+              {/* Attributs */}
+              {(() => {
+                try {
+                  const attrs = typeof selectedProduct.attributes === 'string'
+                    ? JSON.parse(selectedProduct.attributes)
+                    : selectedProduct.attributes;
+                  if (!attrs || typeof attrs !== 'object') return null;
+                  const entries = Object.entries(attrs).filter(([, v]) => v && typeof v !== 'object');
+                  if (entries.length === 0) return null;
+                  return (
+                    <div className="grid grid-cols-2 gap-2">
+                      {entries.map(([key, value]) => (
+                        <div key={key} className="bg-gray-50 rounded-lg px-3 py-2">
+                          <span className="text-[10px] text-gray-400 capitalize block">{key}</span>
+                          <span className="text-sm font-medium text-gray-900">{String(value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                } catch { return null; }
+              })()}
             </div>
 
             <div className="flex gap-2 px-5 pb-5">

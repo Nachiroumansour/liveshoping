@@ -138,36 +138,18 @@ router.post('/set-pin', async (req, res) => {
       
       console.log('📝 Création d\'un nouveau compte pour:', name);
       
-    // Générer un public_link_id unique avec retry sur collision
-    const generateId = () => {
-      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-      return Array.from({length:8},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
-    };
+    // Générer un slug unique à partir du nom de la boutique
+    const { generateUniqueSlug } = require('../models/Seller');
+    const slug = await generateUniqueSlug(name);
 
-    const MAX_RETRIES = 5;
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      const public_link_id = generateId();
-      try {
-        seller = await Seller.create({
-          phone_number,
-          name,
-          pin_hash,
-          public_link_id,
-          is_active: true,
-          credit_balance: 0
-        });
-        break; // Success, exit retry loop
-      } catch (createError) {
-        // Retry on unique constraint violation (public_link_id collision)
-        const isUniqueViolation = createError.name === 'SequelizeUniqueConstraintError'
-          && createError.fields && createError.fields.public_link_id;
-        if (isUniqueViolation && attempt < MAX_RETRIES - 1) {
-          console.warn(`⚠️ public_link_id collision (${public_link_id}), retrying (${attempt + 1}/${MAX_RETRIES})`);
-          continue;
-        }
-        throw createError; // Re-throw if not a collision or max retries reached
-      }
-    }
+    seller = await Seller.create({
+      phone_number,
+      name,
+      pin_hash,
+      public_link_id: slug,
+      is_active: true,
+      credit_balance: 0
+    });
       
       console.log('✅ Nouveau compte créé:', seller.id);
       

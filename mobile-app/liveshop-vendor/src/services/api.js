@@ -444,6 +444,13 @@ class ApiService {
     return this.request('/sellers/logo', { method: 'DELETE' });
   }
 
+  async updateSlug(slug) {
+    return this.request('/sellers/slug', {
+      method: 'PUT',
+      body: JSON.stringify({ slug })
+    });
+  }
+
   // Admin Credits Settings
   async getCreditsModuleStatus() {
     return this.request('/admin/settings/credits/status');

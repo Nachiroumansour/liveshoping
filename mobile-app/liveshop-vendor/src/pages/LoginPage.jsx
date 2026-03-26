@@ -75,7 +75,8 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      // Laisser le catch-all de App.jsx décider : onboarding si just_registered, sinon dashboard
+      navigate('/');
     }
 
     // Charger les données sauvegardées si "Se souvenir" était activé
@@ -123,7 +124,8 @@ const LoginPage = () => {
     if (!result.success) {
       setError(result.error || 'Numéro ou code PIN incorrect');
     } else {
-      navigate('/dashboard');
+      // Laisser le catch-all de App.jsx décider : onboarding si just_registered, sinon dashboard
+      navigate('/');
     }
     setLoading(false);
   };

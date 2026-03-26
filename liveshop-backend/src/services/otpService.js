@@ -111,8 +111,7 @@ class OtpService {
     // Nexteranga attend un numéro sans +, avec indicatif (ex: 221771234567)
     const phoneForApi = String(originalPhone).replace(/^\+/, '');
 
-    // Message professionnel personnalisé
-    const message = `🔐 *LiveShop Link*\n\nVotre code de vérification est : *${otp}*\n\nCe code expire dans 5 minutes.\nNe partagez jamais ce code avec personne.`;
+    const message = `*${otp}* — Code LiveLink. Expire dans 5 min.`;
 
     const payload = {
       phone: phoneForApi,

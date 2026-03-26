@@ -2,10 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Bell, X, Check, AlertCircle } from 'lucide-react';
 import { useNotificationStore } from '../hooks/useNotificationStore';
 import audioService from '../services/audioService';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { ScrollArea } from './ui/scroll-area';
 import NotificationToast from './NotificationToast';
 
 const NotificationIndicator = ({ 
@@ -199,68 +195,49 @@ const NotificationIndicator = ({
       {/* Overlay pour fermer le panneau */}
       {showNotifications && (
         <div
-          className="fixed inset-0 z-40"
+          className="fixed inset-0 z-40 bg-black/10 backdrop-blur-[1px]"
           onClick={() => setShowNotifications(false)}
         />
       )}
 
-      {/* Panneau de notifications - Position fixe depuis le header */}
+      {/* Panneau de notifications — minimal & moderne */}
       {showNotifications && (
-        <div className="fixed top-16 right-4 w-80 sm:w-80 md:w-96 max-w-80 sm:max-w-sm z-50 animate-in slide-in-from-top-2 duration-200">
-          <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-md rounded-2xl overflow-hidden">
-            {/* Header avec gradient - Compact */}
-            <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-3 text-white">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 md:gap-3">
-                  <div className="p-1.5 bg-white/20 rounded-full">
-                    <Bell className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-sm">Notifications</h3>
-                    {isConnected && (
-                      <div className="flex items-center gap-1.5 text-white/80 text-xs">
-                        <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
-                        <span className="hidden sm:inline">Connecté</span>
-                        <span className="sm:hidden">En ligne</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 md:gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowNotifications(false)}
-                    className="text-white/90 hover:text-white hover:bg-white/20 p-1.5 md:p-2"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
+        <div className="fixed top-14 right-3 left-3 sm:left-auto sm:w-80 md:w-96 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+            {/* Header simple */}
+            <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100 dark:border-gray-700">
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Notifications</h3>
+                {unreadCount > 0 && (
+                  <span className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                    {unreadCount}
+                  </span>
+                )}
               </div>
+              <button
+                onClick={() => setShowNotifications(false)}
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Contenu des notifications - Compact */}
-            <div className="max-h-64 overflow-y-auto">
+            {/* Contenu */}
+            <div className="max-h-72 overflow-y-auto">
               {notifications.length === 0 ? (
-                <div className="p-4 text-center">
-                  <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center">
-                    <Bell className="w-6 h-6 text-purple-500" />
-                  </div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Aucune notification</h4>
-                  <p className="text-gray-500 text-xs">Vous serez notifié ici des nouvelles commandes</p>
+                <div className="py-10 px-4 text-center">
+                  <Bell className="w-8 h-8 text-gray-200 dark:text-gray-600 mx-auto mb-3" />
+                  <p className="text-sm text-gray-400 dark:text-gray-500">Aucune notification</p>
                 </div>
               ) : (
-                <div className="p-2 space-y-2">
+                <div className="divide-y divide-gray-50 dark:divide-gray-700/50">
                   {notifications.slice(0, 10).map((notification) => (
-                    <div
+                    <button
                       key={notification.id}
-                      className={`group relative p-3 rounded-xl border transition-all duration-300 hover:shadow-md cursor-pointer ${
-                        !notification.read 
-                          ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 shadow-sm' 
-                          : 'bg-white border-gray-100 hover:border-gray-200'
+                      className={`w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
+                        !notification.read ? 'bg-gray-50/50 dark:bg-gray-700/30' : ''
                       }`}
                       onClick={() => {
-                        // Marquer comme lu et rediriger si c'est une commande
                         if (notification.type === 'new_order' && notification.data?.order?.id) {
                           handleMarkAsRead(notification.id);
                           handleViewOrder(notification.data.order.id);
@@ -269,98 +246,62 @@ const NotificationIndicator = ({
                         }
                       }}
                     >
-                      {/* Indicateur de lecture */}
-                      {!notification.read && (
-                        <div className="absolute top-2 md:top-3 right-2 md:right-3 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                      )}
-                      
-                      <div className="flex items-start gap-3 md:gap-4">
-                        {/* Icône avec fond coloré */}
-                        <div className={`p-1.5 md:p-2 rounded-full ${
-                          notification.type === 'new_order' 
-                            ? 'bg-green-100 text-green-600' 
-                            : 'bg-blue-100 text-blue-600'
-                        }`}>
-                          {getNotificationIcon(notification.type)}
-                        </div>
-                        
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">
-                            {notification.title}
-                          </h4>
-                          <p className="text-xs sm:text-sm text-gray-600 mb-2 leading-relaxed line-clamp-2">
-                            {notification.message}
-                          </p>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-400">
-                              {formatTime(notification.created_at)}
-                            </span>
-                            {notification.type === 'new_order' && (
-                              <span className="text-blue-600 font-medium text-xs hidden sm:inline">
-                                Cliquer pour voir
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                      {/* Icône */}
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        notification.type === 'new_order'
+                          ? 'bg-green-50 dark:bg-green-900/30'
+                          : 'bg-gray-100 dark:bg-gray-700'
+                      }`}>
+                        {getNotificationIcon(notification.type)}
                       </div>
-                    </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1">
+                            {notification.title}
+                          </p>
+                          {!notification.read && (
+                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0" />
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">
+                          {notification.message}
+                        </p>
+                        <span className="text-[11px] text-gray-300 dark:text-gray-500 mt-1 block">
+                          {formatTime(notification.created_at)}
+                        </span>
+                      </div>
+                    </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Footer avec statistiques et bouton voir toutes les commandes */}
+            {/* Footer */}
             {notifications.length > 0 && (
-              <div className="border-t border-gray-100 p-3 bg-gray-50/50">
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                  <span>{notifications.length} notification{notifications.length > 1 ? 's' : ''}</span>
-                  <span>{unreadCount} non lue{unreadCount > 1 ? 's' : ''}</span>
-                </div>
-                {notifications.some(n => n.type === 'new_order') && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleViewAllOrders}
-                    className="w-full text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-sm py-2 h-10"
-                  >
-                    <span className="hidden sm:inline">Voir toutes les commandes</span>
-                    <span className="sm:hidden">Voir commandes</span>
-                  </Button>
-                )}
+              <div className="border-t border-gray-100 dark:border-gray-700">
+                <button
+                  onClick={handleViewAllOrders}
+                  className="w-full py-2.5 text-center text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                >
+                  Voir toutes les commandes
+                </button>
               </div>
             )}
-          </Card>
+          </div>
         </div>
       )}
 
-      {/* Overlay pour fermer */}
-      {showNotifications && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setShowNotifications(false)}
-        />
-      )}
-
-      {/* Toasts responsives avec Tailwind */}
+      {/* Toasts */}
       {activeToasts.map((toast, index) => (
-        <div 
-          key={toast.id} 
-          className={`
-            fixed z-50 transition-all duration-300 ease-out
-            /* Mobile: sous le header, pleine largeur */
-            left-3 right-3
-            /* Tablet: coin supérieur droit */
-            md:left-auto md:right-4 md:w-96
-            /* Desktop: optimisé */
-            lg:right-6 lg:w-80
-          `}
-          style={{ 
-            // Position verticale responsive
-            top: isMobile 
-              ? `${5 + (index * 4.5)}rem` // Mobile: empiler vers le bas sous le header
-              : `${1 + (index * 0.5)}rem`, // Desktop/Tablet: léger décalage depuis le top
+        <div
+          key={toast.id}
+          className="fixed z-50 left-3 right-3 sm:left-auto sm:right-4 sm:w-80"
+          style={{
+            top: isMobile
+              ? `${4.5 + (index * 4.5)}rem`
+              : `${1 + (index * 5)}rem`,
             zIndex: 50 + index,
-            animationDelay: `${index * 150}ms`
           }}
         >
           <NotificationToast

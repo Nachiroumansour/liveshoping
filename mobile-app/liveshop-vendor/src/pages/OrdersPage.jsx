@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { useAuth } from '../contexts/AuthContext';
@@ -68,6 +69,7 @@ const fadeUp = {
 };
 
 const OrdersPage = () => {
+  const [searchParams] = useSearchParams();
   const { refreshCredits } = useAuth();
   const {
     useCreditsForAction,
@@ -81,7 +83,10 @@ const OrdersPage = () => {
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedOrderForQR, setSelectedOrderForQR] = useState(null);
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState(() => {
+    const statusParam = searchParams.get('status');
+    return statusParam && ['pending', 'paid', 'delivered'].includes(statusParam) ? statusParam : 'all';
+  });
   const [orderToDelete, setOrderToDelete] = useState(null);
   const [activeMenu, setActiveMenu] = useState(null);
 

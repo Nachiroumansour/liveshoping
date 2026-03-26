@@ -29,7 +29,7 @@ import {
   Share2,
   MessageCircle,
   X,
-  // Coins // Désactivé temporairement
+  Zap,
 } from 'lucide-react';
 import VoiceControls from '../components/VoiceControls';
 import ApiService from '../services/api';
@@ -252,26 +252,33 @@ export default function DashboardPage() {
         {/* Header avec salutation et actions */}
         <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-3 lg:p-6 text-white mb-4 lg:mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-3 lg:mb-6">
-            <div className="mb-3 lg:mb-0">
-              <h1 className="text-xl lg:text-3xl font-bold">Bonjour, {seller.name} 👋</h1>
-              <p className="text-purple-100 text-sm lg:text-lg">Voici un aperçu de votre boutique</p>
-            </div>
-            <div className="flex items-center gap-2">
-              {autoUpdating && (
-                <div className="flex items-center gap-1 text-green-200 text-sm">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  Mise à jour...
-                </div>
-              )}
-              <Button
-                onClick={handleRefresh}
-                variant="secondary"
-                size="sm"
-                disabled={refreshing}
-                className="bg-white/20 hover:bg-white/30"
-              >
-                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              </Button>
+            <div className="flex items-center justify-between w-full mb-3 lg:mb-0">
+              <div>
+                <h1 className="text-xl lg:text-3xl font-bold">{seller.name}</h1>
+                <p className="text-purple-100 text-sm lg:text-lg">Tableau de bord</p>
+              </div>
+              <div className="flex items-center gap-2">
+                {autoUpdating && (
+                  <div className="flex items-center gap-1 text-green-200 text-sm">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  </div>
+                )}
+                <button
+                  onClick={() => navigate('/lives?create=flash')}
+                  className="bg-black text-white text-xs font-semibold px-4 py-2 rounded-full hover:bg-gray-800 transition-colors lg:hidden"
+                >
+                  Vente flash
+                </button>
+                <Button
+                  onClick={handleRefresh}
+                  variant="secondary"
+                  size="sm"
+                  disabled={refreshing}
+                  className="bg-white/20 hover:bg-white/30"
+                >
+                  <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -336,7 +343,10 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+          <Card
+            className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
+            onClick={() => navigate('/orders')}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-300">Commandes totales</CardTitle>
               <ShoppingBag className="h-4 w-4 text-purple-600" />
@@ -349,7 +359,10 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+          <Card
+            className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
+            onClick={() => navigate('/orders?status=pending')}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-300">En attente</CardTitle>
               <Clock className="h-4 w-4 text-yellow-600" />
@@ -362,7 +375,10 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+          <Card
+            className="border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
+            onClick={() => navigate('/orders?status=paid')}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-300">Payées</CardTitle>
               <CheckCircle className="h-4 w-4 text-blue-600" />

@@ -23,7 +23,7 @@ const Seller = sequelize.define('Seller', {
     }
   },
   public_link_id: {
-    type: DataTypes.STRING(20),
+    type: DataTypes.STRING(100),
     allowNull: false,
     unique: true
   },
@@ -99,42 +99,64 @@ const Seller = sequelize.define('Seller', {
   ],
   hooks: {
     beforeCreate: async (seller) => {
-      // Générer un ID de lien public unique
-      seller.public_link_id = await generateUniquePublicLinkId();
+      // Générer un slug à partir du nom de la boutique
+      if (!seller.public_link_id || /^[a-z0-9]{8,12}$/.test(seller.public_link_id)) {
+        seller.public_link_id = await generateUniqueSlug(seller.name || 'boutique');
+      }
       // Attribuer 100 crédits gratuits à l'inscription
       seller.credit_balance = 100;
     }
   }
 });
 
-// Fonction pour générer un ID de lien public unique
-const generateUniquePublicLinkId = async () => {
-  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let linkId;
-  let attempts = 0;
-  const maxAttempts = 10;
-  
-  while (attempts < maxAttempts) {
-    // Générer un ID de 10 caractères pour plus de combinaisons
-    linkId = '';
-    for (let i = 0; i < 10; i++) {
-      linkId += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    
-    // Vérifier l'unicité
-    const existingSeller = await Seller.findOne({ where: { public_link_id: linkId } });
-    if (!existingSeller) {
-      return linkId;
-    }
-    
-    attempts++;
+// Slugify : convertir un nom en slug URL-safe
+const slugify = (text) => {
+  return text
+    .toString()
+    .normalize('NFD')                   // Décomposer accents (é → e + ́)
+    .replace(/[\u0300-\u036f]/g, '')    // Supprimer les diacritiques
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')      // Garder que alphanum, espaces, tirets
+    .replace(/[\s_]+/g, '-')            // Espaces/underscores → tirets
+    .replace(/-+/g, '-')               // Multiples tirets → un seul
+    .replace(/^-|-$/g, '');            // Pas de tiret au début/fin
+};
+
+// Générer un slug unique à partir du nom
+const generateUniqueSlug = async (name) => {
+  const baseSlug = slugify(name);
+
+  // Si le slug est vide (nom avec que des caractères spéciaux), fallback
+  if (!baseSlug) {
+    const timestamp = Date.now().toString(36);
+    return `boutique-${timestamp}`;
   }
-  
-  // Si on n'a pas trouvé après maxAttempts, utiliser un timestamp
+
+  // Vérifier si le slug de base est disponible
+  const existing = await Seller.findOne({ where: { public_link_id: baseSlug } });
+  if (!existing) return baseSlug;
+
+  // Sinon, ajouter un suffixe numérique
+  for (let i = 2; i <= 50; i++) {
+    const candidate = `${baseSlug}-${i}`;
+    const found = await Seller.findOne({ where: { public_link_id: candidate } });
+    if (!found) return candidate;
+  }
+
+  // Dernier recours : slug + random
+  const randomSuffix = Math.random().toString(36).substring(2, 6);
+  return `${baseSlug}-${randomSuffix}`;
+};
+
+// Fonction legacy pour compatibilité
+const generateUniquePublicLinkId = async () => {
   const timestamp = Date.now().toString(36);
   const randomSuffix = Math.random().toString(36).substring(2, 6);
-  return `v${timestamp}${randomSuffix}`;
+  return `boutique-${timestamp}${randomSuffix}`;
 };
 
 module.exports = Seller;
+module.exports.slugify = slugify;
+module.exports.generateUniqueSlug = generateUniqueSlug;
 

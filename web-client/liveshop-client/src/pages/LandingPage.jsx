@@ -207,178 +207,283 @@ export default function LandingPage() {
         </motion.header>
 
         {/* ━━━ Hero ━━━ */}
-        <section className="min-h-screen flex items-center pt-16 pb-20 px-6 md:px-8">
-          <div className="max-w-6xl mx-auto w-full">
-            <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-16 lg:gap-20 items-center">
+        <section className="min-h-screen pt-28 md:pt-36 pb-16 px-6 md:px-8 overflow-hidden">
+          <div className="max-w-5xl mx-auto w-full">
 
-              {/* Left — copy */}
-              <div>
-                {/* Overline */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  className="flex items-center gap-3 mb-8"
-                >
-                  <span className="inline-block w-2 h-2 rounded-full bg-[#C8FF6B] animate-pulse" />
-                  <span className="text-white/30 text-xs tracking-[0.25em] uppercase font-medium">E-commerce en direct</span>
-                </motion.div>
-
-                {/* Headline */}
-                <motion.h1
-                  initial={{ opacity: 0, y: 40 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-                  className="text-white font-black leading-[0.92] tracking-[-0.03em] mb-8"
-                  style={{ fontSize: 'clamp(3rem, 7vw, 5.5rem)' }}
-                >
-                  Vendez<br />
-                  en direct<span className="text-[#C8FF6B]">.</span>
-                </motion.h1>
-
-                {/* Subline */}
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.5 }}
-                  className="text-white/35 text-base md:text-lg leading-relaxed max-w-md mb-10"
-                >
-                  Créez votre boutique en ligne, partagez votre lien, et recevez les commandes en temps réel. Conçu pour les vendeurs en Afrique de l'Ouest.
-                </motion.p>
-
-                {/* CTAs */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.6 }}
-                  className="flex flex-wrap gap-4 mb-14"
-                >
-                  <button
-                    onClick={goStart}
-                    className="group flex items-center gap-2.5 px-7 py-3.5 bg-white text-[#060910] font-bold text-sm rounded-full hover:bg-[#C8FF6B] transition-all duration-300"
-                  >
-                    Créer ma boutique
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                  <a
-                    href="#process"
-                    className="flex items-center gap-2 px-7 py-3.5 border border-white/[0.12] text-white/70 hover:text-white hover:border-white/[0.25] font-medium text-sm rounded-full transition-all duration-300"
-                  >
-                    En savoir plus
-                  </a>
-                </motion.div>
-
-                {/* Stats row */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.8 }}
-                  className="flex gap-10"
-                >
-                  {[
-                    { val: '500+', label: 'vendeurs' },
-                    { val: '48h', label: 'pour démarrer' },
-                    { val: '0 FCFA', label: 'pour commencer' },
-                  ].map((s, i) => (
-                    <div key={i}>
-                      <div className="text-white font-black text-xl md:text-2xl">{s.val}</div>
-                      <div className="text-white/25 text-xs mt-1">{s.label}</div>
-                    </div>
-                  ))}
-                </motion.div>
-              </div>
-
-              {/* Right — abstract composition */}
+            {/* ── Centered text block ── */}
+            <div className="text-center max-w-3xl mx-auto">
+              {/* Badge pill */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.92 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1, delay: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-                className="hidden lg:block relative"
-                style={{ height: 480 }}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.15 }}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] mb-8"
               >
-                {/* Abstract floating panels */}
-                {[
-                  { w: 200, h: 240, top: 0, left: 60, rotate: -3, delay: 0.6, z: 3 },
-                  { w: 180, h: 160, top: 40, left: 220, rotate: 2, delay: 0.75, z: 2 },
-                  { w: 220, h: 140, top: 260, left: 20, rotate: 1, delay: 0.9, z: 2 },
-                  { w: 160, h: 200, top: 200, left: 240, rotate: -2, delay: 1.05, z: 1 },
-                ].map((panel, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 30, rotate: panel.rotate * 2 }}
-                    animate={{ opacity: 1, y: 0, rotate: panel.rotate }}
-                    transition={{ duration: 0.8, delay: panel.delay, ease: [0.25, 0.1, 0.25, 1] }}
-                    className="absolute rounded-2xl border border-white/[0.06] overflow-hidden"
-                    style={{
-                      width: panel.w,
-                      height: panel.h,
-                      top: panel.top,
-                      left: panel.left,
-                      zIndex: panel.z,
-                      background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
-                      backdropFilter: 'blur(20px)',
-                    }}
-                  >
-                    {/* Inner abstract content */}
-                    <div className="p-5 h-full flex flex-col justify-between">
-                      {/* Top — fake label */}
-                      <div>
-                        <div className="w-8 h-1 bg-white/10 rounded-full mb-3" />
-                        <div className="w-16 h-1 bg-white/[0.06] rounded-full" />
-                      </div>
-                      {/* Bottom — fake metric or shape */}
-                      {i === 0 && (
-                        <div className="space-y-2">
-                          {[70, 45, 90, 30].map((w, j) => (
-                            <div key={j} className="h-1.5 rounded-full bg-white/[0.05]" style={{ width: `${w}%` }} />
-                          ))}
-                        </div>
-                      )}
-                      {i === 1 && (
-                        <div className="flex items-end gap-1.5 h-16">
-                          {[40, 65, 35, 80, 55, 70].map((h, j) => (
-                            <div key={j} className="flex-1 rounded-sm bg-white/[0.06]" style={{ height: `${h}%` }} />
-                          ))}
-                        </div>
-                      )}
-                      {i === 2 && (
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full border border-[#C8FF6B]/30 flex items-center justify-center">
-                            <div className="w-3 h-3 rounded-full bg-[#C8FF6B]/40" />
-                          </div>
-                          <div>
-                            <div className="w-14 h-1 bg-white/10 rounded-full mb-2" />
-                            <div className="w-10 h-1 bg-white/[0.06] rounded-full" />
-                          </div>
-                        </div>
-                      )}
-                      {i === 3 && (
-                        <div className="space-y-2.5">
-                          {[1, 2, 3].map(j => (
-                            <div key={j} className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-lg bg-white/[0.04] border border-white/[0.06]" />
-                              <div className="flex-1 h-1 bg-white/[0.06] rounded-full" />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
+                <span className="w-1.5 h-1.5 rounded-full bg-[#C8FF6B] animate-pulse" />
+                <span className="text-white/50 text-[11px] tracking-[0.15em] uppercase font-medium">Plateforme e-commerce live</span>
+              </motion.div>
 
-                {/* Accent glow behind panels */}
-                <div
-                  className="absolute rounded-full blur-3xl"
-                  style={{
-                    width: 200,
-                    height: 200,
-                    top: 120,
-                    left: 140,
-                    background: 'radial-gradient(circle, rgba(200,255,107,0.08) 0%, transparent 70%)',
-                  }}
-                />
+              {/* Headline */}
+              <motion.h1
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+                className="text-white font-black leading-[0.95] tracking-[-0.035em] mb-6"
+                style={{ fontSize: 'clamp(2.8rem, 7vw, 5rem)' }}
+              >
+                Vendez en direct<span className="text-[#C8FF6B]">,</span><br />
+                gérez mieux<span className="text-[#C8FF6B]">,</span><br />
+                gagnez plus<span className="text-[#C8FF6B]">.</span>
+              </motion.h1>
+
+              {/* Description */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.45 }}
+                className="text-white/35 text-base md:text-lg leading-relaxed max-w-lg mx-auto mb-10"
+              >
+                Votre boutique en ligne en 2 minutes. Partagez votre lien, recevez des commandes en temps réel et vendez en live.
+              </motion.p>
+
+              {/* CTA */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.55 }}
+                className="flex justify-center gap-4 mb-8"
+              >
+                <button
+                  onClick={goStart}
+                  className="group inline-flex items-center gap-2.5 px-8 py-3.5 bg-white text-[#060910] font-bold text-sm rounded-full hover:bg-[#C8FF6B] transition-all duration-300 shadow-[0_0_40px_rgba(200,255,107,0.08)]"
+                >
+                  Créer ma boutique
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </motion.div>
+
+              {/* Micro stats */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.7 }}
+                className="flex justify-center gap-8 md:gap-12"
+              >
+                {[
+                  { val: '500+', label: 'vendeurs' },
+                  { val: '48h', label: 'pour démarrer' },
+                  { val: '0 FCFA', label: 'pour commencer' },
+                ].map((s, i) => (
+                  <div key={i} className="text-center">
+                    <div className="text-white font-black text-lg md:text-xl">{s.val}</div>
+                    <div className="text-white/20 text-[11px] mt-0.5">{s.label}</div>
+                  </div>
+                ))}
               </motion.div>
             </div>
+
+            {/* ── Floating composition below ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 60 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+              className="relative mt-16 md:mt-24 mx-auto"
+              style={{ maxWidth: 800, height: 'clamp(340px, 50vw, 480px)' }}
+            >
+              {/* Central glow */}
+              <div
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl pointer-events-none"
+                style={{
+                  width: 400,
+                  height: 400,
+                  background: 'radial-gradient(circle, rgba(200,255,107,0.07) 0%, transparent 70%)',
+                }}
+              />
+
+              {/* Phone mockup — center */}
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: 0.85 }}
+                className="absolute left-1/2 -translate-x-1/2 bottom-0 z-10"
+                style={{ width: 'clamp(180px, 24vw, 240px)' }}
+              >
+                <div className="rounded-[28px] border border-white/[0.1] bg-[#0d1117] overflow-hidden shadow-2xl shadow-black/60">
+                  {/* Phone status bar */}
+                  <div className="flex items-center justify-between px-5 pt-3 pb-2">
+                    <span className="text-white/40 text-[9px] font-medium">9:41</span>
+                    <div className="flex gap-1">
+                      <div className="w-3 h-1.5 rounded-sm bg-white/20" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                    </div>
+                  </div>
+                  {/* Phone screen content */}
+                  <div className="px-4 pb-5">
+                    {/* Mini app header */}
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-7 h-7 rounded-lg bg-[#C8FF6B]/20 flex items-center justify-center">
+                        <Package className="w-3.5 h-3.5 text-[#C8FF6B]" />
+                      </div>
+                      <div>
+                        <div className="text-white text-[10px] font-bold">Ma Boutique</div>
+                        <div className="text-white/30 text-[8px]">3 produits actifs</div>
+                      </div>
+                    </div>
+                    {/* Mini product cards */}
+                    {[
+                      { name: 'Robe Wax', price: '15 000 F' },
+                      { name: 'Sac Cuir', price: '25 000 F' },
+                      { name: 'Bijoux Set', price: '8 000 F' },
+                    ].map((p, i) => (
+                      <div key={i} className="flex items-center gap-2.5 py-2 border-b border-white/[0.04] last:border-0">
+                        <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white text-[9px] font-medium truncate">{p.name}</div>
+                          <div className="text-[#C8FF6B]/60 text-[8px]">{p.price}</div>
+                        </div>
+                      </div>
+                    ))}
+                    {/* Mini CTA */}
+                    <div className="mt-3 py-2 bg-white/[0.06] rounded-lg text-center">
+                      <span className="text-white/50 text-[8px] font-medium">Partager ma boutique</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Floating card — Order notification (top-left) */}
+              <motion.div
+                initial={{ opacity: 0, x: -30, y: 20 }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                transition={{ duration: 0.7, delay: 1.0 }}
+                className="absolute z-20 hidden md:block"
+                style={{ left: '2%', top: '8%' }}
+              >
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                >
+                  <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl p-4 shadow-xl shadow-black/20" style={{ width: 200 }}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-7 h-7 rounded-full bg-green-500/20 flex items-center justify-center">
+                        <ShoppingBag className="w-3.5 h-3.5 text-green-400" />
+                      </div>
+                      <div>
+                        <div className="text-white text-[10px] font-semibold">Nouvelle commande</div>
+                        <div className="text-white/30 text-[8px]">il y a 2 min</div>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between">
+                        <span className="text-white/40 text-[9px]">Fatou D.</span>
+                        <span className="text-[#C8FF6B] text-[9px] font-bold">15 000 F</span>
+                      </div>
+                      <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                        <div className="h-full w-3/4 bg-green-500/40 rounded-full" />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+
+              {/* Floating card — Analytics (top-right) */}
+              <motion.div
+                initial={{ opacity: 0, x: 30, y: 20 }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                transition={{ duration: 0.7, delay: 1.15 }}
+                className="absolute z-20 hidden md:block"
+                style={{ right: '2%', top: '4%' }}
+              >
+                <motion.div
+                  animate={{ y: [0, 6, 0] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+                >
+                  <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl p-4 shadow-xl shadow-black/20" style={{ width: 190 }}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <BarChart3 className="w-3.5 h-3.5 text-white/40" />
+                      <span className="text-white/50 text-[9px] font-medium">Ventes du jour</span>
+                    </div>
+                    <div className="text-white font-black text-xl mb-2">47 500 <span className="text-[10px] font-normal text-white/30">F</span></div>
+                    <div className="flex items-end gap-1 h-10">
+                      {[30, 55, 40, 75, 60, 85, 70].map((h, j) => (
+                        <div key={j} className="flex-1 rounded-sm bg-[#C8FF6B]/20" style={{ height: `${h}%` }} />
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+
+              {/* Floating card — WhatsApp integration (bottom-left) */}
+              <motion.div
+                initial={{ opacity: 0, x: -20, y: -10 }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                transition={{ duration: 0.7, delay: 1.3 }}
+                className="absolute z-20 hidden md:block"
+                style={{ left: '6%', bottom: '12%' }}
+              >
+                <motion.div
+                  animate={{ y: [0, 5, 0] }}
+                  transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+                >
+                  <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl px-4 py-3 shadow-xl shadow-black/20 flex items-center gap-3" style={{ width: 180 }}>
+                    <div className="w-8 h-8 rounded-full bg-green-500/15 flex items-center justify-center flex-shrink-0">
+                      <Zap className="w-3.5 h-3.5 text-green-400" />
+                    </div>
+                    <div>
+                      <div className="text-white text-[9px] font-semibold">WhatsApp</div>
+                      <div className="text-green-400/60 text-[8px]">Connecté</div>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+
+              {/* Floating card — Live badge (bottom-right) */}
+              <motion.div
+                initial={{ opacity: 0, x: 20, y: -10 }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                transition={{ duration: 0.7, delay: 1.4 }}
+                className="absolute z-20 hidden md:block"
+                style={{ right: '8%', bottom: '18%' }}
+              >
+                <motion.div
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+                >
+                  <div className="rounded-xl border border-red-500/20 bg-white/[0.03] backdrop-blur-xl px-4 py-3 shadow-xl shadow-black/20 flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                    <div>
+                      <div className="text-white text-[10px] font-bold">EN DIRECT</div>
+                      <div className="text-white/30 text-[8px]">12 spectateurs</div>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+
+              {/* Sparkle dots decoration */}
+              {[
+                { top: '15%', left: '18%', size: 3, delay: 0 },
+                { top: '70%', right: '15%', size: 2, delay: 1.5 },
+                { top: '25%', right: '25%', size: 2.5, delay: 0.8 },
+                { bottom: '20%', left: '25%', size: 2, delay: 2 },
+                { top: '50%', left: '8%', size: 1.5, delay: 1.2 },
+                { top: '40%', right: '5%', size: 2, delay: 0.5 },
+              ].map((dot, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute rounded-full bg-[#C8FF6B]/30 pointer-events-none hidden md:block"
+                  style={{
+                    width: dot.size,
+                    height: dot.size,
+                    top: dot.top,
+                    left: dot.left,
+                    right: dot.right,
+                    bottom: dot.bottom,
+                  }}
+                  animate={{ opacity: [0.2, 0.8, 0.2], scale: [1, 1.5, 1] }}
+                  transition={{ duration: 3, repeat: Infinity, delay: dot.delay, ease: 'easeInOut' }}
+                />
+              ))}
+            </motion.div>
           </div>
         </section>
 

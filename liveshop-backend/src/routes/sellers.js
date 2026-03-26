@@ -259,6 +259,48 @@ router.post('/profile', authenticateToken, async (req, res) => {
   }
 });
 
+// PUT /api/sellers/slug - Modifier le slug de la boutique
+router.put('/slug', authenticateToken, async (req, res) => {
+  try {
+    const { slug } = req.body;
+    if (!slug || typeof slug !== 'string') {
+      return res.status(400).json({ error: 'Slug requis' });
+    }
+
+    const { slugify } = require('../models/Seller');
+    const cleanSlug = slugify(slug);
+
+    if (!cleanSlug || cleanSlug.length < 3) {
+      return res.status(400).json({ error: 'Le lien doit contenir au moins 3 caractères' });
+    }
+    if (cleanSlug.length > 60) {
+      return res.status(400).json({ error: 'Le lien est trop long (60 caractères max)' });
+    }
+
+    const seller = await Seller.findByPk(req.seller.id);
+    if (!seller) return res.status(404).json({ error: 'Vendeur non trouvé' });
+
+    // Vérifier si le slug est déjà pris par un autre vendeur
+    if (cleanSlug !== seller.public_link_id) {
+      const existing = await Seller.findOne({ where: { public_link_id: cleanSlug } });
+      if (existing) {
+        return res.status(409).json({ error: 'Ce lien est déjà pris. Essayez un autre.' });
+      }
+    }
+
+    await seller.update({ public_link_id: cleanSlug });
+
+    res.json({
+      success: true,
+      message: 'Lien mis à jour',
+      data: { public_link_id: cleanSlug }
+    });
+  } catch (error) {
+    console.error('Erreur mise à jour slug:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // POST /api/sellers/upload-logo - Upload du logo boutique
 router.post('/upload-logo', authenticateToken, uploadLogo, handleUploadError, async (req, res) => {
   try {

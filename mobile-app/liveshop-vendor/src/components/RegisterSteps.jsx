@@ -107,7 +107,10 @@ const RegisterSteps = ({ onDone }) => {
         body: JSON.stringify({ phone_number: phone.trim(), name: name.trim(), pin })
       });
       const normalized = phone.trim();
-      try { localStorage.setItem('prefill_phone', normalized); } catch {}
+      try {
+        localStorage.setItem('prefill_phone', normalized);
+        localStorage.setItem('just_registered', 'true');
+      } catch {}
       if (onDone) onDone(normalized); else window.location.href = '/login';
     } catch (err) {
       setError(err.message);

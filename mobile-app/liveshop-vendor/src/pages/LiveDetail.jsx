@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { getBackendUrl } from '../config/domains';
+import { X, Download, Trash2, Plus, Package, ShoppingBag, TrendingUp, Loader2, FileText } from 'lucide-react';
 
 export default function LiveDetail({ live, onClose }) {
   const [products, setProducts] = useState([]);
@@ -21,7 +22,6 @@ export default function LiveDetail({ live, onClose }) {
         setSelectedProducts((Array.isArray(prods) ? prods : (prods.products || [])).map(p => p.id));
         const ords = await api.getOrdersOfLive(live.id);
         setOrders(Array.isArray(ords) ? ords : (ords.orders || []));
-        // Récupère tous les produits du vendeur
         const allProds = await api.getProducts();
         setAllProducts(Array.isArray(allProds) ? allProds : (allProds.products || []));
       } catch {
@@ -35,72 +35,42 @@ export default function LiveDetail({ live, onClose }) {
     fetchData();
   }, [live.id]);
 
-  // Calcul des statistiques (seulement commandes payées et livrées)
+  // Stats — only paid/delivered orders
   const paidOrders = orders.filter(o => o.status === 'paid' || o.status === 'delivered');
   const totalCA = paidOrders.reduce((sum, o) => sum + (o.total_price || 0), 0);
   const nbCmds = paidOrders.length;
-  
-  // Commandes aujourd'hui (payées et livrées)
-  const today = new Date();
-  const todayOrders = paidOrders.filter(o => {
-    const orderDate = new Date(o.created_at);
-    return orderDate.toDateString() === today.toDateString();
-  });
-  const todayCA = todayOrders.reduce((sum, o) => sum + (o.total_price || 0), 0);
-  
-  // Commandes cette semaine (payées et livrées)
-  const weekStart = new Date(today);
-  weekStart.setDate(today.getDate() - today.getDay());
-  const weekOrders = paidOrders.filter(o => {
-    const orderDate = new Date(o.created_at);
-    return orderDate >= weekStart;
-  });
-  const weekCA = weekOrders.reduce((sum, o) => sum + (o.total_price || 0), 0);
-  
-  // Meilleur produit (par nombre de commandes payées et livrées)
-  const productStats = {};
-  paidOrders.forEach(order => {
-    // Vérifier si la commande a des produits associés
-    if (order.products && order.products.length > 0) {
-      order.products.forEach(product => {
-        const productName = product.name || 'Produit inconnu';
-        if (!productStats[productName]) {
-          productStats[productName] = { count: 0, revenue: 0 };
-        }
-        productStats[productName].count += product.quantity || 1;
-        productStats[productName].revenue += (product.price || 0) * (product.quantity || 1);
-      });
-    } else {
-      // Fallback pour les anciennes commandes
-      const productName = order.product?.name || 'Produit inconnu';
-      if (!productStats[productName]) {
-        productStats[productName] = { count: 0, revenue: 0 };
-      }
-      productStats[productName].count++;
-      productStats[productName].revenue += order.total_price || 0;
-    }
-  });
-  
-  const bestProduct = Object.entries(productStats)
-    .sort(([,a], [,b]) => b.count - a.count)[0];
 
-  const handleDownloadReport = () => {
-    window.open(`${getBackendUrl()}/api/lives/${live.id}/report`, '_blank');
+  const handleDownloadReport = async () => {
+    try {
+      const token = localStorage.getItem('liveshop_token');
+      const response = await fetch(`${getBackendUrl()}/api/lives/${live.id}/report`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Erreur téléchargement');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `rapport-${live.title || 'session'}.html`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Erreur téléchargement rapport:', err);
+      alert('Erreur lors du téléchargement du rapport');
+    }
   };
 
   const handleDeleteLive = async () => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette session ? Cette action est irréversible.')) {
-      return;
-    }
-    
+    if (!window.confirm('Supprimer cette session ? Cette action est irréversible.')) return;
     try {
       setLoading(true);
       await api.deleteLive(live.id);
-      alert('Session supprimée avec succès !');
       onClose();
     } catch (error) {
-      alert('Erreur lors de la suppression de la session.');
-      console.error('Erreur suppression live:', error);
+      alert('Erreur lors de la suppression.');
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -117,7 +87,6 @@ export default function LiveDetail({ live, onClose }) {
     setError('');
     try {
       await api.associateProductsToLive(live.id, selectedProducts);
-      // Rafraîchir la liste des produits associés
       const prods = await api.getProductsOfLive(live.id);
       setProducts(Array.isArray(prods) ? prods : (prods.products || []));
       setShowAssoc(false);
@@ -129,143 +98,128 @@ export default function LiveDetail({ live, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-purple-600 text-xl">&times;</button>
-        <h2 className="text-xl sm:text-2xl font-bold text-purple-700 dark:text-purple-400 mb-2 pr-8">Détail de la session : {live.title}</h2>
-        <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">{new Date(live.date).toLocaleString()}</div>
-        {loading ? <div>Chargement...</div> : (
-          <>
-            <div className="mb-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-                <h3 className="font-semibold dark:text-white">Produits de la session</h3>
-                <div className="flex gap-2">
-                  <button onClick={() => setShowAssoc(!showAssoc)}
-                    className="bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1 rounded text-sm font-medium border border-purple-200">
-                    {showAssoc ? 'Annuler' : 'Associer des produits'}
-                  </button>
-                  <button onClick={handleDeleteLive}
-                    className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded text-sm font-medium border border-red-200">
-                    Supprimer la session
-                  </button>
-                </div>
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <div className="bg-white dark:bg-gray-800 sm:rounded-2xl rounded-t-2xl w-full sm:max-w-lg max-h-[80vh] mb-16 sm:mb-0 overflow-y-auto relative">
+        {/* Header */}
+        <div className="sticky top-0 bg-white dark:bg-gray-800 px-5 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between z-10">
+          <div className="min-w-0 flex-1 mr-3">
+            <h2 className="text-base font-bold text-gray-900 dark:text-white truncate">{live.title}</h2>
+            <p className="text-xs text-gray-400 mt-0.5">{new Date(live.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleDownloadReport}
+              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition-colors"
+              title="Télécharger le rapport"
+            >
+              <Download className="w-5 h-5" />
+            </button>
+            <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="py-16 flex items-center justify-center">
+            <Loader2 className="w-6 h-6 text-gray-300 animate-spin" />
+          </div>
+        ) : (
+          <div className="px-5 py-4 space-y-5">
+
+            {/* Stats résumé — 3 chiffres clés */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 text-center">
+                <ShoppingBag className="w-4 h-4 text-gray-400 mx-auto mb-1" />
+                <div className="text-lg font-bold text-gray-900 dark:text-white">{nbCmds}</div>
+                <div className="text-[10px] text-gray-400 uppercase tracking-wider">Commandes</div>
               </div>
-              <ul className="list-disc ml-6 text-gray-700 dark:text-gray-300">
-                {products.map(p => <li key={p.id} className="break-words">{p.name}</li>)}
-                {products.length === 0 && <li className="text-gray-400 dark:text-gray-500">Aucun produit associé</li>}
-              </ul>
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 text-center">
+                <TrendingUp className="w-4 h-4 text-gray-400 mx-auto mb-1" />
+                <div className="text-lg font-bold text-gray-900 dark:text-white">{totalCA.toLocaleString()}</div>
+                <div className="text-[10px] text-gray-400 uppercase tracking-wider">FCFA</div>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 text-center">
+                <Package className="w-4 h-4 text-gray-400 mx-auto mb-1" />
+                <div className="text-lg font-bold text-gray-900 dark:text-white">{products.length}</div>
+                <div className="text-[10px] text-gray-400 uppercase tracking-wider">Produits</div>
+              </div>
+            </div>
+
+            {/* Produits de la session */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Produits</h3>
+                <button
+                  onClick={() => setShowAssoc(!showAssoc)}
+                  className="text-xs font-medium text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center gap-1 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  {showAssoc ? 'Annuler' : 'Associer'}
+                </button>
+              </div>
+
+              {products.length === 0 ? (
+                <p className="text-sm text-gray-400 dark:text-gray-500">Aucun produit associé</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {products.map(p => (
+                    <div key={p.id} className="flex items-center gap-2.5 py-2 px-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                      <Package className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{p.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {showAssoc && (
-                <div className="mt-4 p-4 bg-purple-50 dark:bg-purple-900/20 rounded border border-purple-100 dark:border-purple-800">
-                  <h4 className="font-semibold mb-2 text-purple-700 dark:text-purple-300">Sélectionner les produits à associer</h4>
-                  {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
-                  <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
-                    {allProducts.length === 0 && <span className="text-gray-400 dark:text-gray-500 text-sm">Aucun produit disponible</span>}
+                <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
+                  {error && <p className="text-red-500 text-xs mb-2">{error}</p>}
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                    {allProducts.length === 0 && <p className="text-gray-400 text-xs">Aucun produit disponible</p>}
                     {allProducts.map(prod => (
-                      <label key={prod.id} className="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" checked={selectedProducts.includes(prod.id)} onChange={() => handleProductSelect(prod.id)}
-                          className="accent-purple-600 w-4 h-4" />
-                        <span className="break-words dark:text-white">{prod.name}</span>
+                      <label key={prod.id} className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg hover:bg-white dark:hover:bg-gray-600/30 cursor-pointer transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={selectedProducts.includes(prod.id)}
+                          onChange={() => handleProductSelect(prod.id)}
+                          className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{prod.name}</span>
                       </label>
                     ))}
                   </div>
-                  <button onClick={handleSaveProducts} disabled={saving}
-                    className="mt-4 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-medium disabled:opacity-50 w-full sm:w-auto">
+                  <button
+                    onClick={handleSaveProducts}
+                    disabled={saving}
+                    className="mt-3 w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-medium py-2 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:opacity-50"
+                  >
                     {saving ? 'Enregistrement...' : 'Enregistrer'}
                   </button>
                 </div>
               )}
             </div>
-            
-            {/* Statistiques */}
-            <div className="mb-6">
-              <h3 className="font-semibold mb-4 text-purple-700 dark:text-purple-400">📊 Statistiques de la Session</h3>
-              
-              {paidOrders.length === 0 ? (
-                <div className="text-gray-400 dark:text-gray-500 text-center py-8">Aucune commande payée pour cette session.</div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Statistiques générales */}
-                  <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-4 border border-purple-100 ">
-                    <h4 className="font-semibold text-purple-700 mb-3 ">📈 Aperçu Général</h4>
-                    <div className="space-y-2 text-sm ">
-                      <div className="flex justify-between ">
-                        <span>Total commandes :</span>
-                        <span className="font-semibold text-purple-600 ">{nbCmds}</span>
-                      </div>
-                      <div className="flex justify-between ">
-                        <span>Chiffre d'affaires :</span>
-                        <span className="font-semibold text-green-600 ">{totalCA.toLocaleString()} FCFA</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Statistiques temporelles */}
-                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-100 ">
-                    <h4 className="font-semibold text-green-700 mb-3 ">⏰ Aujourd'hui</h4>
-                    <div className="space-y-2 text-sm ">
-                      <div className="flex justify-between ">
-                        <span>Commandes :</span>
-                        <span className="font-semibold text-green-600 ">{todayOrders.length}</span>
-                      </div>
-                      <div className="flex justify-between ">
-                        <span>CA :</span>
-                        <span className="font-semibold text-green-600 ">{todayCA.toLocaleString()} FCFA</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Statistiques hebdomadaires */}
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100 ">
-                    <h4 className="font-semibold text-blue-700 mb-3 ">📅 Cette Semaine</h4>
-                    <div className="space-y-2 text-sm ">
-                      <div className="flex justify-between ">
-                        <span>Commandes :</span>
-                        <span className="font-semibold text-blue-600 ">{weekOrders.length}</span>
-                      </div>
-                      <div className="flex justify-between ">
-                        <span>CA :</span>
-                        <span className="font-semibold text-blue-600 ">{weekCA.toLocaleString()} FCFA</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Meilleur produit */}
-                  <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg p-4 border border-orange-100 ">
-                    <h4 className="font-semibold text-orange-700 mb-3 ">🏆 Meilleur Produit</h4>
-                    <div className="space-y-2 text-sm ">
-                      <div className="flex justify-between ">
-                        <span>Produit :</span>
-                        <span className="font-semibold text-orange-600 ">{bestProduct ? bestProduct[0] : 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between ">
-                        <span>Ventes :</span>
-                        <span className="font-semibold text-orange-600 ">{bestProduct ? bestProduct[1].count : 0}</span>
-                      </div>
-                      <div className="flex justify-between ">
-                        <span>CA :</span>
-                        <span className="font-semibold text-orange-600 ">{bestProduct ? bestProduct[1].revenue.toLocaleString() : 0} FCFA</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            
+
             {/* Actions */}
-            <div className="bg-purple-50 dark:bg-purple-900/20 rounded p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="text-sm text-purple-700 dark:text-purple-300">
-                <span className="font-semibold">Total commandes :</span> {orders.length} | 
-                <span className="font-semibold ml-2">Commandes payées :</span> {nbCmds} | 
-                <span className="font-semibold ml-2">Chiffre d'affaires :</span> {totalCA.toLocaleString()} FCFA
-              </div>
-              <button onClick={handleDownloadReport}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-medium w-full sm:w-auto">
-                📄 Télécharger le rapport
+            <div className="space-y-2 pt-2 pb-2">
+              <button
+                onClick={handleDownloadReport}
+                className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-semibold py-3.5 rounded-2xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                Télécharger le rapport
+              </button>
+              <button
+                onClick={handleDeleteLive}
+                className="w-full flex items-center justify-center gap-2 py-2.5 text-red-500 text-sm font-medium rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                Supprimer la session
               </button>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
   );
-} 
+}

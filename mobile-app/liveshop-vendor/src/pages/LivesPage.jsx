@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -60,6 +61,7 @@ const fadeUp = {
 
 export default function LivesPage() {
   const { seller } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [lives, setLives] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
   const [title, setTitle] = useState('');
@@ -111,6 +113,21 @@ export default function LivesPage() {
       }
     }
     fetchProducts();
+  }, []);
+
+  // Vente flash : ouvrir le formulaire pré-rempli si ?create=flash
+  useEffect(() => {
+    if (searchParams.get('create') === 'flash') {
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      setTitle(`Vente Flash ${pad(now.getDate())}/${pad(now.getMonth() + 1)}`);
+      setDate(dateStr);
+      setShowCreate(true);
+      // Nettoyer le param pour éviter de re-trigger
+      searchParams.delete('create');
+      setSearchParams(searchParams, { replace: true });
+    }
   }, []);
 
   // Fermer le menu contextuel au clic extérieur
