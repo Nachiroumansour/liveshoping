@@ -162,9 +162,17 @@ const Layout = ({ children }) => {
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
-            <Store className="w-5 h-5 text-white" />
-          </div>
+          {seller?.logo_url ? (
+            <img
+              src={seller.logo_url.startsWith('http') ? seller.logo_url : `${(window.location.hostname === 'localhost' ? 'http://localhost:3001' : 'https://api.livelink.store')}${seller.logo_url}`}
+              alt={seller.name}
+              className="w-8 h-8 rounded-lg object-cover bg-gray-100"
+            />
+          ) : (
+            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+              <Store className="w-5 h-5 text-white" />
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <h1 className="font-semibold text-gray-900 dark:text-white truncate">LiveShop Link</h1>
             <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
@@ -263,9 +271,17 @@ const Layout = ({ children }) => {
         {/* Sidebar Header */}
         <div className="p-6 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Store className="w-7 h-7 text-white" />
-            </div>
+            {seller?.logo_url ? (
+              <img
+                src={seller.logo_url.startsWith('http') ? seller.logo_url : `${(window.location.hostname === 'localhost' ? 'http://localhost:3001' : 'https://api.livelink.store')}${seller.logo_url}`}
+                alt={seller.name}
+                className="w-12 h-12 rounded-xl object-cover bg-gray-100 shadow-lg"
+              />
+            ) : (
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Store className="w-7 h-7 text-white" />
+              </div>
+            )}
             <div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">LiveShop Link</h1>
               <p className="text-sm text-gray-600 dark:text-gray-400">

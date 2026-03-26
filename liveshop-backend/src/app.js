@@ -185,8 +185,11 @@ app.use((err, req, res, next) => {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Servir les fichiers statiques (uploads)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Servir les fichiers statiques (uploads) avec CORS
+app.use('/uploads', (req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, '../uploads')));
 
 // Health check (seul endpoint public sans info sensible)
 app.get('/api/health', (req, res) => {
@@ -512,8 +515,8 @@ const startServer = async () => {
     await testConnection();
     
     // Synchronisation des modèles avec la base de données
-    await sequelize.sync({ alter: true });
-    console.log('✅ Base de données synchronisée (alter mode)');
+    await sequelize.sync({ force: false });
+    console.log('✅ Base de données synchronisée');
     
     // Initialiser Redis adapter pour Socket.IO (mode scalable)
     try {

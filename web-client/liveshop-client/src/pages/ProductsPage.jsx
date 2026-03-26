@@ -1,7 +1,7 @@
   import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Star, MessageCircle, Share2, Eye, Package, X } from 'lucide-react';
-import { getPublicLink, getApiUrl } from '../config/domains';
+import { getPublicLink, getApiUrl, getImageUrl } from '../config/domains';
 import realtimeService from '../services/realtimeService';
 import CartModal from '../components/CartModal';
 import MobileHeader from '../components/MobileHeader';
@@ -288,7 +288,7 @@ const ProductsPageContent = () => {
             <div className="flex items-center space-x-3">
               {seller?.logo_url ? (
                 <img
-                  src={seller.logo_url.startsWith('http') ? seller.logo_url : `${import.meta.env.VITE_BACKEND_URL || 'https://api.livelink.store'}${seller.logo_url}`}
+                  src={getImageUrl(seller.logo_url)}
                   alt={seller.name}
                   className="w-10 h-10 rounded-xl object-cover bg-gray-100"
                 />

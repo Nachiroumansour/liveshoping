@@ -238,7 +238,9 @@ router.post('/login', async (req, res) => {
         public_link_id: seller.public_link_id,
         role: seller.role,
         is_active: seller.is_active,
-        credit_balance: seller.credit_balance
+        credit_balance: seller.credit_balance,
+        logo_url: seller.logo_url || null,
+        description: seller.description || null
       }
     });
   } catch (error) {

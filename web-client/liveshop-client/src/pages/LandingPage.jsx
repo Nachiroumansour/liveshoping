@@ -1,908 +1,617 @@
-import React, { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import emailjs from '@emailjs/browser';
-import { EMAILJS_CONFIG } from '@/config/emailjs';
-import SEO from '@/components/SEO';
-import { 
-  Smartphone,
-  BarChart3,
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import SEO from '../components/SEO';
+import {
   Package,
-  ShoppingCart,
-  Bell,
-  TrendingUp,
-  CheckCircle,
-  ArrowRight,
-  Play,
-  Sparkles,
-  Rocket,
-  Target,
-  Award,
-  Globe,
-  Activity,
-  Zap,
-  Shield,
-  Users,
-  Link,
-  Star,
-  MessageCircle,
-  Heart,
-  Share2,
-  Clock,
-  Camera,
-  Video,
   ShoppingBag,
-  CreditCard,
-  Truck,
-  MessageSquare,
-  ThumbsUp,
-  Award as Trophy,
-  Zap as Lightning,
-  Users as Group,
-  TrendingUp as Chart,
-  Smartphone as Device,
-  Monitor,
-  Database,
-  Wifi,
-  Smartphone as Mobile,
-  Phone,
-  Laptop,
-  Server,
-  XCircle,
-  Home,
-  Settings,
-  ArrowLeft,
+  Users,
+  TrendingUp,
+  BarChart3,
+  Zap,
+  ArrowRight,
   ArrowUpRight,
+  Check,
   Menu,
   X,
-  Mail,
-  MapPin,
-  Phone as PhoneIcon
 } from 'lucide-react';
 
-const LandingPage = () => {
-  const { scrollY } = useScroll();
-  const backgroundY = useTransform(scrollY, [0, 1000], [0, 200]);
-  const starsY = useTransform(scrollY, [0, 1000], [0, -150]);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null);
+// ─── Noise texture SVG (inlined for zero latency) ───
+const GRAIN_SVG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E")`;
 
-  // Structured Data
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "LiveShop Link",
-    "description": "L'app qui vend pour vous pendant que vous animez vos lives",
-    "applicationCategory": "BusinessApplication",
-    "operatingSystem": "Mobile",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "XOF"
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "ratingCount": "1000"
-    },
-    "author": {
-      "@type": "Organization",
-      "name": "LiveShop Link"
-    }
-  };
+// ─── Reusable scroll-reveal wrapper ───
+function Reveal({ children, className = '', delay = 0 }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-80px' });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 32 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.7, delay, ease: [0.25, 0.1, 0.25, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// ─── Section label ───
+function SectionLabel({ number, text }) {
+  return (
+    <div className="flex items-center gap-3 mb-12 md:mb-16">
+      <span className="text-[#C8FF6B] font-mono text-sm tracking-widest">{number}</span>
+      <div className="w-12 h-px bg-white/20" />
+      <span className="text-white/40 text-xs tracking-[0.2em] uppercase">{text}</span>
+    </div>
+  );
+}
+
+// ─── Data ───
+const FEATURES = [
+  { icon: Package, title: 'Produits', desc: 'Ajoutez et organisez votre catalogue en quelques secondes.' },
+  { icon: ShoppingBag, title: 'Commandes', desc: 'Notifications instantanées, suivi en temps réel.' },
+  { icon: Users, title: 'Clients', desc: 'Votre communauté, vos données, votre relation directe.' },
+  { icon: TrendingUp, title: 'Live', desc: 'Vendez en direct pendant vos sessions Facebook ou TikTok.' },
+  { icon: BarChart3, title: 'Analytics', desc: 'Comprenez ce qui fonctionne avec des chiffres clairs.' },
+  { icon: Zap, title: 'WhatsApp', desc: 'Intégration native pour communiquer avec vos acheteurs.' },
+];
+
+const STEPS = [
+  { title: 'Créez votre compte', desc: 'Votre numéro WhatsApp suffit. 2 minutes, pas plus.' },
+  { title: 'Ajoutez vos produits', desc: 'Photo, prix, description. Publiez en un tap.' },
+  { title: 'Partagez et vendez', desc: 'Un lien unique. Envoyez-le partout, les commandes arrivent.' },
+];
+
+const PLANS = [
+  {
+    name: 'Découverte',
+    price: 'Gratuit',
+    credits: '5 crédits',
+    items: ['Jusqu\'à 10 produits', 'Commandes illimitées', 'Support communauté', 'Analytics de base'],
+    highlighted: false,
+  },
+  {
+    name: 'Vendeur',
+    price: '20 000 FCFA',
+    credits: '100 crédits',
+    items: ['Produits illimités', 'Sessions live', 'Support prioritaire', 'Analytics avancés'],
+    highlighted: true,
+  },
+  {
+    name: 'Business',
+    price: '50 000 FCFA',
+    credits: '300 crédits',
+    items: ['Tout Vendeur +', 'Multi-utilisateurs', 'API access', 'Support dédié 24/7'],
+    highlighted: false,
+  },
+];
+
+// ─────────────────────────────────────────────
+export default function LandingPage() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { scrollYProgress } = useScroll();
+
+  // Parallax transforms
+  const heroGlowY = useTransform(scrollYProgress, [0, 0.3], [0, -120]);
+  const heroGlowScale = useTransform(scrollYProgress, [0, 0.3], [1, 1.4]);
+  const grain2Y = useTransform(scrollYProgress, [0, 1], [0, 80]);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const handleGetStarted = () => {
-    window.location.href = 'https://space.livelink.store';
-  };
+  const goStart = () => { window.location.href = 'https://space.livelink.store'; };
 
-  const handleContactSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitStatus(null);
-
-    const formData = new FormData(e.target);
-    const data = {
-      from_name: formData.get('name'),
-      from_email: formData.get('email'),
-      phone: formData.get('phone'),
-      message: formData.get('message'),
-      to_email: 'manou4pf@gmail.com'
-    };
-
-    try {
-      if (!EMAILJS_CONFIG.SERVICE_ID || !EMAILJS_CONFIG.TEMPLATE_ID || !EMAILJS_CONFIG.PUBLIC_KEY) {
-        throw new Error('Configuration EmailJS incomplète');
-      }
-      await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID, 
-        EMAILJS_CONFIG.TEMPLATE_ID, 
-        data, 
-        EMAILJS_CONFIG.PUBLIC_KEY
-      );
-      setSubmitStatus('success');
-      e.target.reset();
-    } catch (error) {
-      console.error('Error:', error);
-      setSubmitStatus('error');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDemo = () => {
-    window.open('/demo', '_blank');
-  };
-
-  const scrollToSection = (sectionId) => {
-    const section = document.querySelector(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    setIsMobileMenuOpen(false);
-  };
-
-  const menuItems = [
-    { label: 'Fonctionnalités', id: '#features' },
-    { label: 'Tarifs', id: '#pricing' },
-    { label: 'Témoignages', id: '#testimonials' },
-    { label: 'Comment ça marche', id: '#how-it-works' },
-    { label: 'Contact', id: '#contact' }
-  ];
-
-  // Data Arrays
-  const features = [
-    { icon: BarChart3, title: "Dashboard Temps Réel", description: "Surveillez vos ventes en direct avec des statistiques en temps réel", color: "text-blue-400" },
-    { icon: Package, title: "Gestion Produits", description: "Ajoutez, modifiez et gérez vos produits facilement depuis votre mobile", color: "text-emerald-400" },
-    { icon: Bell, title: "Notifications Instantanées", description: "Recevez vos commandes en temps réel avec des notifications push", color: "text-rose-400" },
-    { icon: Smartphone, title: "Mobile-First", description: "Interface optimisée pour tous les appareils, priorité mobile", color: "text-purple-400" },
-    { icon: Video, title: "Ventes Live", description: "Engagez vos clients avec des ventes en direct interactives", color: "text-pink-400" },
-    { icon: TrendingUp, title: "Analytics Avancées", description: "Comprenez vos performances avec des rapports détaillés", color: "text-cyan-400" }
-  ];
-
-  const howItWorks = [
-    { step: "01", title: "Créez votre boutique", description: "Inscrivez-vous en quelques secondes et personnalisez votre boutique mobile", icon: Rocket, color: "bg-blue-500" },
-    { step: "02", title: "Ajoutez vos produits", description: "Importez vos produits avec photos et descriptions en quelques clics", icon: Package, color: "bg-emerald-500" },
-    { step: "03", title: "Commencez à vendre", description: "Lancez vos ventes en direct et recevez vos commandes en temps réel", icon: TrendingUp, color: "bg-purple-500" }
-  ];
-
-  const testimonials = [
-    { name: "Fatou Diop", role: "Vendeuse de mode", content: "LiveShop Link a transformé mon business. Mes ventes ont augmenté de 60% en 3 mois !", avatar: "👩🏾‍💼", rating: 5 },
-    { name: "Moussa Diallo", role: "Vendeur d'électronique", content: "L'interface mobile est parfaite. Je peux gérer mes ventes n'importe où, n'importe quand.", avatar: "👨🏾‍💻", rating: 5 },
-    { name: "Aminata Ba", role: "Vendeuse de cosmétiques", content: "Les notifications en temps réel m'ont fait gagner beaucoup de temps. Je recommande !", avatar: "👩🏾‍🎨", rating: 5 }
-  ];
-
-  const pricingPlans = [
-    { name: "Découverte", price: "5.000", period: "FCFA", description: "Pour tester la puissance de l'IA", features: ["100 Crédits", "Validité illimitée", "Accès à toutes les fonctionnalités", "Support standard"], popular: false },
-    { name: "Vendeur", price: "20.000", period: "FCFA", description: "Pour les vendeurs réguliers", features: ["500 Crédits", "Bonus +50 Crédits offerts", "Priorité de traitement", "Support prioritaire"], popular: true },
-    { name: "Business", price: "50.000", period: "FCFA", description: "Pour les gros volumes", features: ["1500 Crédits", "Bonus +200 Crédits offerts", "Account Manager dédié", "API Access"], popular: false }
+  const navLinks = [
+    { label: 'Fonctionnalités', href: '#features' },
+    { label: 'Comment ça marche', href: '#process' },
+    { label: 'Tarifs', href: '#pricing' },
   ];
 
   return (
     <>
-      <SEO 
-        title="LiveShop Link - Le Futur du Commerce en Direct"
-        description="L'app qui vend pour vous pendant que vous animez vos lives. Augmentez vos revenus de 40% avec notre écosystème communautaire."
-        keywords="commerce en direct, live shopping, vente en ligne, mobile, Sénégal, Afrique, e-commerce, vente directe, live commerce"
-        image="/og-image.jpg"
-        url="https://livelink.store"
-        structuredData={structuredData}
+      <SEO
+        title="LiveLink — Vendez en direct"
+        description="La plateforme e-commerce pour vendeurs en Afrique de l'Ouest. Créez votre boutique, vendez en direct, gérez vos commandes."
       />
-      
-      <div className="min-h-screen bg-slate-950 text-slate-200 selection:bg-purple-500/30 font-sans overflow-x-hidden">
-        {/* Ambient Background Effects */}
-        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-slate-950">
-          {/* Main Top Gradient - Fixed but flows with scroll opacity/scale */}
-          <motion.div 
-            style={{ 
-              opacity: useTransform(scrollY, [0, 800], [1, 0]),
-              y: useTransform(scrollY, [0, 800], [0, -400])
-            }}
-            className="absolute top-0 left-0 right-0 h-[800px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-500/40 via-slate-950 to-slate-950"
-          />
-          
-          {/* Flowing Gradient that moves with scroll */}
-          <motion.div 
-            style={{ y: backgroundY }}
-            className="absolute inset-0"
-          >
-            <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-purple-600/30 rounded-full blur-[120px] mix-blend-screen" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-blue-600/30 rounded-full blur-[120px] mix-blend-screen" />
-          </motion.div>
 
-          {/* Stars with Parallax */}
-          <motion.div 
-            style={{ 
-              y: starsY,
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='400' height='400' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.6'%3E%3Ccircle cx='200' cy='200' r='2'/%3E%3Ccircle cx='50' cy='100' r='1'/%3E%3Ccircle cx='350' cy='300' r='1.5'/%3E%3Ccircle cx='150' cy='350' r='1'/%3E%3Ccircle cx='300' cy='50' r='1.5'/%3E%3Ccircle cx='100' cy='250' r='1.2'/%3E%3Ccircle cx='350' cy='150' r='1.2'/%3E%3Ccircle cx='50' cy='350' r='1'/%3E%3Ccircle cx='250' cy='50' r='1.5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-            }} 
-            className="absolute inset-0 opacity-90"
-          />
-        </div>
+      {/* ─── Fixed background ─── */}
+      <div className="fixed inset-0 bg-[#060910] pointer-events-none" style={{ zIndex: -2 }}>
+        {/* Grain overlay */}
+        <div className="absolute inset-0" style={{ backgroundImage: GRAIN_SVG, backgroundRepeat: 'repeat', backgroundSize: '256px 256px' }} />
 
-        {/* Navigation */}
-        <motion.nav 
-          initial={{ y: -100 }}
-          animate={{ y: 0 }}
-          className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-            isScrolled ? 'bg-slate-950/95 backdrop-blur-xl border-b border-white/10 shadow-lg' : 'bg-transparent'
+        {/* Slow parallax glow — top-left warm */}
+        <motion.div
+          className="absolute -top-32 -left-48 w-[600px] h-[600px] rounded-full"
+          style={{
+            background: 'radial-gradient(circle, rgba(200,255,107,0.06) 0%, transparent 70%)',
+            y: heroGlowY,
+            scale: heroGlowScale,
+          }}
+        />
+
+        {/* Secondary glow — bottom-right cold */}
+        <motion.div
+          className="absolute -bottom-48 -right-32 w-[500px] h-[500px] rounded-full"
+          style={{
+            background: 'radial-gradient(circle, rgba(100,140,255,0.04) 0%, transparent 70%)',
+            y: grain2Y,
+          }}
+        />
+      </div>
+
+      {/* ─── Content ─── */}
+      <div className="relative" style={{ zIndex: 1 }}>
+
+        {/* ━━━ Navbar ━━━ */}
+        <motion.header
+          initial={{ opacity: 0, y: -24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+            scrolled
+              ? 'bg-[#060910]/80 backdrop-blur-2xl border-b border-white/[0.04]'
+              : ''
           }`}
         >
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
-                <div className="relative w-10 h-10">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl blur opacity-50" />
-                  <img src="/liveshop.png" alt="Logo" className="relative w-full h-full object-contain rounded-xl" />
-                </div>
-                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-                  LiveShop Link
-                </span>
-              </div>
+          <div className="max-w-6xl mx-auto flex items-center justify-between px-6 md:px-8 h-16">
+            {/* Logo */}
+            <a href="/" className="flex items-center gap-2 group">
+              <span className="text-white font-black text-lg tracking-tight">Live</span>
+              <span className="text-white/60 font-light text-lg tracking-tight">Link</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#C8FF6B] mt-0.5 group-hover:scale-150 transition-transform" />
+            </a>
 
-              {/* Desktop Menu */}
-              <div className="hidden lg:flex items-center gap-8">
-                {menuItems.map((item) => (
-                  <button
-                    key={item.label}
-                    onClick={() => scrollToSection(item.id)}
-                    className="text-sm font-medium text-slate-400 hover:text-white transition-colors"
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
+            {/* Desktop links */}
+            <nav className="hidden md:flex items-center gap-8">
+              {navLinks.map(l => (
+                <a key={l.href} href={l.href} className="text-white/40 hover:text-white text-[13px] tracking-wide transition-colors duration-300">{l.label}</a>
+              ))}
+            </nav>
 
-              {/* CTA & Mobile Toggle */}
-              <div className="flex items-center gap-4">
-                <div className="hidden md:flex items-center gap-4">
-                  <button onClick={handleDemo} className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
-                    Démo
-                  </button>
-                  <Button 
-                    onClick={handleGetStarted}
-                    className="bg-white text-black hover:bg-slate-200 rounded-full px-6 font-semibold transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-                  >
-                    Commencer
-                  </Button>
-                </div>
-                <button 
-                  className="lg:hidden text-white p-2"
-                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                >
-                  {isMobileMenuOpen ? <X /> : <Menu />}
-                </button>
-              </div>
-            </div>
+            {/* Desktop CTA */}
+            <button
+              onClick={goStart}
+              className="hidden md:flex items-center gap-2 px-5 py-2 bg-white text-[#060910] text-[13px] font-semibold rounded-full hover:bg-[#C8FF6B] transition-colors duration-300"
+            >
+              Commencer
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Mobile burger */}
+            <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-white/70">
+              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
 
-          {/* Mobile Menu */}
-          <motion.div 
-            initial={false}
-            animate={{ height: isMobileMenuOpen ? 'auto' : 0, opacity: isMobileMenuOpen ? 1 : 0 }}
-            className="lg:hidden overflow-hidden bg-slate-950/95 backdrop-blur-xl border-b border-white/10"
-          >
-            <div className="px-6 py-8 space-y-6">
-              {menuItems.map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => scrollToSection(item.id)}
-                  className="block w-full text-left text-lg font-medium text-slate-300 hover:text-white"
-                >
-                  {item.label}
-                </button>
-              ))}
-              <div className="pt-6 border-t border-white/10 space-y-4">
-                <Button onClick={handleDemo} variant="outline" className="w-full border-white/20 text-white hover:bg-white/10">
-                  Voir la démo
-                </Button>
-                <Button onClick={handleGetStarted} className="w-full bg-white text-black hover:bg-slate-200">
+          {/* Mobile drawer */}
+          {menuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="md:hidden bg-[#060910]/95 backdrop-blur-2xl border-t border-white/[0.04] px-6 pb-6 pt-4"
+            >
+              <div className="flex flex-col gap-4">
+                {navLinks.map(l => (
+                  <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)} className="text-white/60 hover:text-white text-sm transition-colors">{l.label}</a>
+                ))}
+                <button onClick={goStart} className="mt-2 px-5 py-2.5 bg-white text-[#060910] text-sm font-semibold rounded-full w-full">
                   Commencer
-                </Button>
+                </button>
               </div>
-            </div>
-          </motion.div>
-        </motion.nav>
+            </motion.div>
+          )}
+        </motion.header>
 
-        {/* Hero Section */}
-        <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-6 overflow-hidden">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <motion.div 
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8 }}
-                className="space-y-8 text-center lg:text-left relative z-10"
-              >
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                  </span>
-                  <span className="text-xs font-medium text-slate-300">Nouvelle version disponible</span>
-                </div>
-                
-                <h1 className="text-5xl lg:text-7xl font-bold leading-tight tracking-tight">
-                  Le Futur du <br />
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 animate-gradient-x">
-                    Live Commerce
-                  </span>
-                </h1>
-                
-                <p className="text-lg text-slate-400 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                  Transformez vos lives en machine à vendre. Une suite d'outils IA puissants pour maximiser vos revenus et automatiser votre gestion.
-                </p>
+        {/* ━━━ Hero ━━━ */}
+        <section className="min-h-screen flex items-center pt-16 pb-20 px-6 md:px-8">
+          <div className="max-w-6xl mx-auto w-full">
+            <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-16 lg:gap-20 items-center">
 
-                <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
-                  <Button 
-                    onClick={handleGetStarted}
-                    className="h-14 px-8 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold text-lg shadow-[0_0_30px_rgba(124,58,237,0.3)] transition-all hover:scale-105"
+              {/* Left — copy */}
+              <div>
+                {/* Overline */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="flex items-center gap-3 mb-8"
+                >
+                  <span className="inline-block w-2 h-2 rounded-full bg-[#C8FF6B] animate-pulse" />
+                  <span className="text-white/30 text-xs tracking-[0.25em] uppercase font-medium">E-commerce en direct</span>
+                </motion.div>
+
+                {/* Headline */}
+                <motion.h1
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="text-white font-black leading-[0.92] tracking-[-0.03em] mb-8"
+                  style={{ fontSize: 'clamp(3rem, 7vw, 5.5rem)' }}
+                >
+                  Vendez<br />
+                  en direct<span className="text-[#C8FF6B]">.</span>
+                </motion.h1>
+
+                {/* Subline */}
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.5 }}
+                  className="text-white/35 text-base md:text-lg leading-relaxed max-w-md mb-10"
+                >
+                  Créez votre boutique en ligne, partagez votre lien, et recevez les commandes en temps réel. Conçu pour les vendeurs en Afrique de l'Ouest.
+                </motion.p>
+
+                {/* CTAs */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.6 }}
+                  className="flex flex-wrap gap-4 mb-14"
+                >
+                  <button
+                    onClick={goStart}
+                    className="group flex items-center gap-2.5 px-7 py-3.5 bg-white text-[#060910] font-bold text-sm rounded-full hover:bg-[#C8FF6B] transition-all duration-300"
                   >
                     Créer ma boutique
-                    <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                  <Button 
-                    onClick={handleDemo}
-                    variant="outline"
-                    className="h-14 px-8 rounded-full border-white/10 bg-white/5 hover:bg-white/10 text-white backdrop-blur-sm transition-all"
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                  <a
+                    href="#process"
+                    className="flex items-center gap-2 px-7 py-3.5 border border-white/[0.12] text-white/70 hover:text-white hover:border-white/[0.25] font-medium text-sm rounded-full transition-all duration-300"
                   >
-                    <Play className="mr-2 w-5 h-5" />
-                    Voir la démo
-                  </Button>
-                </div>
+                    En savoir plus
+                  </a>
+                </motion.div>
 
-                <div className="pt-8 flex items-center justify-center lg:justify-start gap-8 border-t border-white/5">
-                  <div>
-                    <div className="text-2xl font-bold text-white">10M+</div>
-                    <div className="text-sm text-slate-500">Utilisateurs</div>
-                  </div>
-                  <div className="w-px h-10 bg-white/10" />
-                  <div>
-                    <div className="text-2xl font-bold text-white">4.9/5</div>
-                    <div className="text-sm text-slate-500">Note moyenne</div>
-                  </div>
-                </div>
-              </motion.div>
+                {/* Stats row */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.8 }}
+                  className="flex gap-10"
+                >
+                  {[
+                    { val: '500+', label: 'vendeurs' },
+                    { val: '48h', label: 'pour démarrer' },
+                    { val: '0 FCFA', label: 'pour commencer' },
+                  ].map((s, i) => (
+                    <div key={i}>
+                      <div className="text-white font-black text-xl md:text-2xl">{s.val}</div>
+                      <div className="text-white/25 text-xs mt-1">{s.label}</div>
+                    </div>
+                  ))}
+                </motion.div>
+              </div>
 
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.8 }}
+              {/* Right — abstract composition */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.92 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="relative z-10"
+                transition={{ duration: 1, delay: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+                className="hidden lg:block relative"
+                style={{ height: 480 }}
               >
-                <div className="relative mx-auto w-[280px] sm:w-[320px]">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-purple-500 to-blue-500 rounded-[3rem] blur-2xl opacity-30 animate-pulse" />
-                  <img 
-                    src="/imgHero.png" 
-                    alt="App Interface" 
-                    className="relative z-10 w-full h-auto drop-shadow-2xl transform hover:rotate-[-2deg] transition-transform duration-500"
-                  />
-                  
-                  {/* Floating Elements */}
-                  <motion.div 
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                    className="absolute -right-12 top-20 p-4 bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl z-20 hidden sm:block"
+                {/* Abstract floating panels */}
+                {[
+                  { w: 200, h: 240, top: 0, left: 60, rotate: -3, delay: 0.6, z: 3 },
+                  { w: 180, h: 160, top: 40, left: 220, rotate: 2, delay: 0.75, z: 2 },
+                  { w: 220, h: 140, top: 260, left: 20, rotate: 1, delay: 0.9, z: 2 },
+                  { w: 160, h: 200, top: 200, left: 240, rotate: -2, delay: 1.05, z: 1 },
+                ].map((panel, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 30, rotate: panel.rotate * 2 }}
+                    animate={{ opacity: 1, y: 0, rotate: panel.rotate }}
+                    transition={{ duration: 0.8, delay: panel.delay, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="absolute rounded-2xl border border-white/[0.06] overflow-hidden"
+                    style={{
+                      width: panel.w,
+                      height: panel.h,
+                      top: panel.top,
+                      left: panel.left,
+                      zIndex: panel.z,
+                      background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
+                      backdropFilter: 'blur(20px)',
+                    }}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                        <TrendingUp className="w-5 h-5 text-green-400" />
-                      </div>
+                    {/* Inner abstract content */}
+                    <div className="p-5 h-full flex flex-col justify-between">
+                      {/* Top — fake label */}
                       <div>
-                        <div className="text-xs text-slate-400">Revenus</div>
-                        <div className="text-lg font-bold text-white">+24.5%</div>
+                        <div className="w-8 h-1 bg-white/10 rounded-full mb-3" />
+                        <div className="w-16 h-1 bg-white/[0.06] rounded-full" />
                       </div>
+                      {/* Bottom — fake metric or shape */}
+                      {i === 0 && (
+                        <div className="space-y-2">
+                          {[70, 45, 90, 30].map((w, j) => (
+                            <div key={j} className="h-1.5 rounded-full bg-white/[0.05]" style={{ width: `${w}%` }} />
+                          ))}
+                        </div>
+                      )}
+                      {i === 1 && (
+                        <div className="flex items-end gap-1.5 h-16">
+                          {[40, 65, 35, 80, 55, 70].map((h, j) => (
+                            <div key={j} className="flex-1 rounded-sm bg-white/[0.06]" style={{ height: `${h}%` }} />
+                          ))}
+                        </div>
+                      )}
+                      {i === 2 && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full border border-[#C8FF6B]/30 flex items-center justify-center">
+                            <div className="w-3 h-3 rounded-full bg-[#C8FF6B]/40" />
+                          </div>
+                          <div>
+                            <div className="w-14 h-1 bg-white/10 rounded-full mb-2" />
+                            <div className="w-10 h-1 bg-white/[0.06] rounded-full" />
+                          </div>
+                        </div>
+                      )}
+                      {i === 3 && (
+                        <div className="space-y-2.5">
+                          {[1, 2, 3].map(j => (
+                            <div key={j} className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-lg bg-white/[0.04] border border-white/[0.06]" />
+                              <div className="flex-1 h-1 bg-white/[0.06] rounded-full" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </motion.div>
+                ))}
 
-                  <motion.div 
-                    animate={{ y: [0, 10, 0] }}
-                    transition={{ duration: 4, repeat: Infinity }}
-                    className="absolute -left-12 bottom-40 p-4 bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl z-20 hidden sm:block"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                        <Bell className="w-5 h-5 text-purple-400" />
-                      </div>
-                      <div>
-                        <div className="text-xs text-slate-400">Nouvelle commande</div>
-                        <div className="text-sm font-bold text-white">À l'instant</div>
-                      </div>
-                    </div>
-                  </motion.div>
-                </div>
+                {/* Accent glow behind panels */}
+                <div
+                  className="absolute rounded-full blur-3xl"
+                  style={{
+                    width: 200,
+                    height: 200,
+                    top: 120,
+                    left: 140,
+                    background: 'radial-gradient(circle, rgba(200,255,107,0.08) 0%, transparent 70%)',
+                  }}
+                />
               </motion.div>
             </div>
           </div>
         </section>
 
-        {/* Problem/Solution Section */}
-        <section className="py-32 relative border-y border-white/5 bg-slate-900/30">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <motion.div 
-                initial={{ opacity: 0, x: -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="space-y-8"
+        {/* ━━━ Features ━━━ */}
+        <section id="features" className="py-24 md:py-32 px-6 md:px-8">
+          <div className="max-w-6xl mx-auto">
+            <Reveal>
+              <SectionLabel number="01" text="Fonctionnalités" />
+            </Reveal>
+
+            <Reveal delay={0.1}>
+              <h2
+                className="text-white font-black tracking-[-0.02em] leading-[1.05] mb-6"
+                style={{ fontSize: 'clamp(2rem, 4vw, 3.2rem)' }}
               >
-                <Badge className="bg-red-500/10 text-red-400 border-red-500/20">
-                  Le Problème
-                </Badge>
-                <h2 className="text-3xl md:text-4xl font-bold text-white">
-                  La gestion des lives est un <span className="text-red-400">cauchemar</span>
-                </h2>
-                <div className="space-y-6">
-                  {[
-                    { title: "Commandes perdues", desc: "Les commentaires défilent trop vite, impossible de tout noter." },
-                    { title: "Paiements incertains", desc: "Courir après les clients pour le paiement après le live." },
-                    { title: "Stock non synchronisé", desc: "Vendre le même article à plusieurs personnes par erreur." }
-                  ].map((item, i) => (
-                    <motion.div 
-                      key={i} 
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: i * 0.1 }}
-                      className="flex gap-4 p-4 rounded-xl bg-red-500/5 border border-red-500/10"
-                    >
-                      <div className="shrink-0 w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center text-red-400">
-                        <XCircle className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-white">{item.title}</h3>
-                        <p className="text-slate-400 text-sm">{item.desc}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-
-              <motion.div 
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="space-y-8"
-              >
-                <Badge className="bg-green-500/10 text-green-400 border-green-500/20">
-                  La Solution
-                </Badge>
-                <h2 className="text-3xl md:text-4xl font-bold text-white">
-                  L'automatisation <span className="text-green-400">intelligente</span>
-                </h2>
-                <div className="space-y-6">
-                  {[
-                    { title: "Gestion des commandes", desc: "Notifications instantanées et suivi des commandes via WhatsApp." },
-                    { title: "Rapports par session", desc: "Statistiques claires par vente en direct: commandes, produits, revenus." },
-                    { title: "Lien public partageable", desc: "Partage facile sur WhatsApp, Instagram et Facebook en un clic." }
-                  ].map((item, i) => (
-                    <motion.div 
-                      key={i} 
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: i * 0.1 }}
-                      className="flex gap-4 p-4 rounded-xl bg-green-500/5 border border-green-500/10"
-                    >
-                      <div className="shrink-0 w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-400">
-                        <CheckCircle className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-white">{item.title}</h3>
-                        <p className="text-slate-400 text-sm">{item.desc}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
-        {/* Demo Section */}
-        <section className="py-32 relative overflow-hidden">
-          <div className="max-w-5xl mx-auto px-6 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 mb-6">
-                Démonstration
-              </Badge>
-              <h2 className="text-3xl md:text-5xl font-bold text-white mb-8">
-                Voyez la magie en action
+                Tout ce qu'il faut.<br />
+                <span className="text-white/30">Rien de superflu.</span>
               </h2>
-            </motion.div>
-            
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-slate-900 aspect-video group cursor-pointer"
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10" />
-              
-              {/* Placeholder for Video */}
-              <div className="absolute inset-0 flex items-center justify-center bg-slate-800/50 group-hover:bg-slate-800/40 transition-all">
-                <div className="w-20 h-20 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 group-hover:scale-110 transition-transform">
-                  <Play className="w-8 h-8 text-white fill-white ml-1" />
-                </div>
-              </div>
-              
-              {/* Fake UI Elements to look like a video player */}
-              <div className="absolute bottom-0 left-0 right-0 p-6 z-20 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-slate-800 animate-pulse" />
-                  <div className="space-y-2">
-                    <div className="w-32 h-3 bg-slate-800 rounded animate-pulse" />
-                    <div className="w-20 h-2 bg-slate-800 rounded animate-pulse" />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Features Grid */}
-        <section id="features" className="py-32 relative">
-          <div className="max-w-7xl mx-auto px-6">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-20"
-            >
-              <Badge className="bg-purple-500/10 text-purple-400 border-purple-500/20 mb-4 hover:bg-purple-500/20">
-                Fonctionnalités
-              </Badge>
-              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
-                Tout ce dont vous avez besoin
-              </h2>
-              <p className="text-slate-400 max-w-2xl mx-auto">
-                Une suite complète d'outils conçus pour propulser votre commerce vers de nouveaux sommets.
+              <p className="text-white/30 text-sm md:text-base max-w-lg mb-16">
+                Chaque outil est conçu pour les vendeurs qui vendent via les réseaux sociaux en Afrique de l'Ouest.
               </p>
-            </motion.div>
+            </Reveal>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {features.map((feature, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-all duration-300 group h-full">
-                    <CardContent className="p-8">
-                      <div className={`w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 ${feature.color}`}>
-                        <feature.icon className="w-6 h-6" />
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {FEATURES.map((f, i) => {
+                const Icon = f.icon;
+                return (
+                  <Reveal key={i} delay={i * 0.06}>
+                    <div className="group relative p-6 rounded-2xl border border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.1] transition-all duration-500 cursor-default">
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-[#C8FF6B]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#C8FF6B]/20 transition-colors duration-500">
+                          <Icon className="w-5 h-5 text-[#C8FF6B]/80" />
+                        </div>
+                        <div>
+                          <h3 className="text-white font-semibold text-[15px] mb-1.5">{f.title}</h3>
+                          <p className="text-white/30 text-[13px] leading-relaxed">{f.desc}</p>
+                        </div>
                       </div>
-                      <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
-                      <p className="text-slate-400 leading-relaxed">{feature.description}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                    </div>
+                  </Reveal>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ━━━ How it works ━━━ */}
+        <section id="process" className="py-24 md:py-32 px-6 md:px-8">
+          <div className="max-w-6xl mx-auto">
+            <Reveal>
+              <SectionLabel number="02" text="Comment ça marche" />
+            </Reveal>
+
+            <Reveal delay={0.1}>
+              <h2
+                className="text-white font-black tracking-[-0.02em] leading-[1.05] mb-20"
+                style={{ fontSize: 'clamp(2rem, 4vw, 3.2rem)' }}
+              >
+                Trois étapes<span className="text-[#C8FF6B]">.</span><br />
+                <span className="text-white/30">C'est tout.</span>
+              </h2>
+            </Reveal>
+
+            <div className="grid md:grid-cols-3 gap-8 md:gap-6 relative">
+              {/* Connecting line (desktop) */}
+              <div className="hidden md:block absolute top-6 left-[16.67%] right-[16.67%] h-px bg-gradient-to-r from-white/[0.08] via-white/[0.12] to-white/[0.08]" />
+
+              {STEPS.map((step, i) => (
+                <Reveal key={i} delay={i * 0.15}>
+                  <div className="relative">
+                    {/* Number circle */}
+                    <div className="w-12 h-12 rounded-full border border-white/[0.12] flex items-center justify-center mb-6 bg-[#060910] relative z-10">
+                      <span className="text-white/60 font-mono text-sm">{String(i + 1).padStart(2, '0')}</span>
+                    </div>
+                    <h3 className="text-white font-bold text-base mb-2">{step.title}</h3>
+                    <p className="text-white/30 text-[13px] leading-relaxed max-w-xs">{step.desc}</p>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
         </section>
 
-        {/* How It Works */}
-        <section id="how-it-works" className="py-32 bg-slate-900/50 relative overflow-hidden">
-          <div className="max-w-7xl mx-auto px-6 relative z-10">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-20"
-            >
-              <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 mb-4">
-                Processus
-              </Badge>
-              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
-                Simple comme bonjour
-              </h2>
-            </motion.div>
+        {/* ━━━ Pricing ━━━ */}
+        <section id="pricing" className="py-24 md:py-32 px-6 md:px-8">
+          <div className="max-w-6xl mx-auto">
+            <Reveal>
+              <SectionLabel number="03" text="Tarifs" />
+            </Reveal>
 
-            <div className="grid md:grid-cols-3 gap-12">
-              {howItWorks.map((step, idx) => (
-                <motion.div 
-                  key={idx} 
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.2 }}
-                  className="relative text-center group"
-                >
-                  {idx < howItWorks.length - 1 && (
-                    <div className="hidden md:block absolute top-12 left-1/2 w-full h-px bg-gradient-to-r from-white/20 to-transparent" />
-                  )}
-                  <div className={`w-24 h-24 mx-auto rounded-3xl ${step.color} flex items-center justify-center mb-8 shadow-lg transform group-hover:rotate-6 transition-transform duration-300`}>
-                    <step.icon className="w-10 h-10 text-white" />
-                  </div>
-                  <div className="text-6xl font-bold text-white/5 absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 select-none">
-                    {step.step}
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-4 relative z-10">{step.title}</h3>
-                  <p className="text-slate-400 relative z-10">{step.description}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Pricing */}
-        <section id="pricing" className="py-32 relative">
-          <div className="max-w-7xl mx-auto px-6">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-16"
-            >
-              <Badge className="bg-green-500/10 text-green-400 border-green-500/20 mb-4">
-                Tarifs
-              </Badge>
-              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
-                Payez à l'utilisation
+            <Reveal delay={0.1}>
+              <h2
+                className="text-white font-black tracking-[-0.02em] leading-[1.05] mb-6"
+                style={{ fontSize: 'clamp(2rem, 4vw, 3.2rem)' }}
+              >
+                Transparent<span className="text-[#C8FF6B]">.</span>
               </h2>
-              <p className="text-slate-400 max-w-2xl mx-auto">
-                Pas d'abonnement mensuel. Achetez des crédits et utilisez-les quand vous voulez.
+              <p className="text-white/30 text-sm md:text-base max-w-md mb-16">
+                Pas d'abonnement. Achetez des crédits quand vous en avez besoin.
               </p>
-            </motion.div>
+            </Reveal>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              {pricingPlans.map((plan, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                >
-                  <Card 
-                    className={`bg-white/5 border-white/10 relative overflow-hidden transition-all duration-300 hover:-translate-y-2 h-full ${
-                      plan.popular ? 'ring-2 ring-purple-500 shadow-[0_0_40px_rgba(168,85,247,0.15)]' : ''
+            <div className="grid md:grid-cols-3 gap-4">
+              {PLANS.map((plan, i) => (
+                <Reveal key={i} delay={i * 0.08}>
+                  <div
+                    className={`relative p-7 rounded-2xl transition-all duration-500 h-full flex flex-col ${
+                      plan.highlighted
+                        ? 'bg-white/[0.04] border border-[#C8FF6B]/30 hover:border-[#C8FF6B]/50'
+                        : 'bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.1]'
                     }`}
                   >
-                    {plan.popular && (
-                      <div className="absolute top-0 right-0 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl">
-                        POPULAIRE
+                    {plan.highlighted && (
+                      <div className="absolute -top-3 right-6 px-3 py-1 bg-[#C8FF6B] text-[#060910] text-[10px] font-bold tracking-wider uppercase rounded-full">
+                        Populaire
                       </div>
                     )}
-                    <CardContent className="p-8 flex flex-col h-full">
-                      <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
-                      <div className="flex items-baseline gap-1 mb-6">
-                        <span className="text-4xl font-bold text-white">{plan.price}</span>
-                        <span className="text-slate-400">{plan.period}</span>
-                      </div>
-                      <p className="text-slate-400 mb-8 text-sm">{plan.description}</p>
-                      
-                      <ul className="space-y-4 mb-8 flex-grow">
-                        {plan.features.map((feat, i) => (
-                          <li key={i} className="flex items-center gap-3 text-slate-300 text-sm">
-                            <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
-                            {feat}
-                          </li>
-                        ))}
-                      </ul>
 
-                      <Button 
-                        onClick={handleGetStarted}
-                        className={`w-full rounded-xl py-6 ${
-                          plan.popular 
-                            ? 'bg-purple-600 hover:bg-purple-500 text-white' 
-                            : 'bg-white/10 hover:bg-white/20 text-white'
-                        }`}
-                      >
-                        Choisir ce plan
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials */}
-        <section id="testimonials" className="py-32 bg-slate-900/30 relative z-10">
-          <div className="max-w-7xl mx-auto px-6">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-5xl font-bold text-white text-center mb-16"
-            >
-              Ils nous font confiance
-            </motion.h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              {testimonials.map((t, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                >
-                  <Card className="bg-white/5 border-white/10 p-6 h-full hover:bg-white/10 transition-colors">
-                    <div className="flex items-center gap-4 mb-6">
-                      <div className="text-4xl">{t.avatar}</div>
-                      <div>
-                        <div className="font-bold text-white">{t.name}</div>
-                        <div className="text-sm text-slate-400">{t.role}</div>
-                      </div>
+                    {/* Plan name */}
+                    <div className="mb-6">
+                      <h3 className="text-white font-semibold text-base mb-1">{plan.name}</h3>
+                      <p className="text-white/25 text-xs">{plan.credits}</p>
                     </div>
-                    <div className="flex gap-1 mb-4">
-                      {[...Array(t.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+
+                    {/* Price */}
+                    <div className="mb-8">
+                      <span className="text-white font-black text-3xl tracking-tight">{plan.price}</span>
+                    </div>
+
+                    {/* CTA */}
+                    <button
+                      onClick={goStart}
+                      className={`w-full py-3 text-[13px] font-semibold rounded-xl transition-all duration-300 mb-8 ${
+                        plan.highlighted
+                          ? 'bg-white text-[#060910] hover:bg-[#C8FF6B]'
+                          : 'border border-white/[0.1] text-white/70 hover:text-white hover:border-white/[0.2]'
+                      }`}
+                    >
+                      Choisir ce plan
+                    </button>
+
+                    {/* Features */}
+                    <div className="space-y-3 mt-auto">
+                      {plan.items.map((item, j) => (
+                        <div key={j} className="flex items-center gap-2.5">
+                          <Check className="w-3.5 h-3.5 text-[#C8FF6B]/60 flex-shrink-0" />
+                          <span className="text-white/40 text-[13px]">{item}</span>
+                        </div>
                       ))}
                     </div>
-                    <p className="text-slate-300 italic">"{t.content}"</p>
-                  </Card>
-                </motion.div>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Contact */}
-        <section id="contact" className="py-32 relative overflow-hidden">
-          {/* Background elements for contact */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[100px] -z-10" />
-          
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              {/* Left Column: Info */}
-              <motion.div 
-                initial={{ opacity: 0, x: -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="space-y-8"
-              >
-                <Badge className="bg-purple-500/10 text-purple-400 border-purple-500/20">
-                  Contact
-                </Badge>
-                <h2 className="text-4xl md:text-5xl font-bold text-white">
-                  Parlons de votre <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-                    Projet
-                  </span>
+        {/* ━━━ Final CTA ━━━ */}
+        <section className="py-24 md:py-32 px-6 md:px-8">
+          <div className="max-w-6xl mx-auto">
+            <Reveal>
+              <div className="text-center">
+                <h2
+                  className="text-white font-black tracking-[-0.02em] leading-[1.05] mb-6"
+                  style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}
+                >
+                  Prêt à vendre<span className="text-[#C8FF6B]">?</span>
                 </h2>
-                <p className="text-slate-400 text-lg leading-relaxed">
-                  Vous avez des questions sur LiveShop Link ? Notre équipe est là pour vous aider à démarrer votre aventure dans le live commerce.
+                <p className="text-white/30 text-sm md:text-base max-w-md mx-auto mb-10">
+                  Rejoignez les centaines de vendeurs qui ont déjà choisi LiveLink.
                 </p>
-                
-                <div className="space-y-6 pt-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-purple-400">
-                      <Mail className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="text-sm text-slate-400">Email</div>
-                      <div className="text-white font-medium">contact@livelink.store</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-blue-400">
-                      <MessageCircle className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="text-sm text-slate-400">Support</div>
-                      <div className="text-white font-medium">Disponible 7j/7</div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Right Column: Form */}
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.2 }}
-              >
-                <Card className="bg-slate-900/50 backdrop-blur-xl border-white/10 p-2 relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <CardContent className="p-8 relative z-10">
-                    <form onSubmit={handleContactSubmit} className="space-y-6">
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-slate-300">Nom</label>
-                          <input name="name" required className="w-full bg-slate-950/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition-all placeholder:text-slate-600" placeholder="Votre nom" />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-slate-300">Email</label>
-                          <input name="email" type="email" required className="w-full bg-slate-950/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition-all placeholder:text-slate-600" placeholder="votre@email.com" />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-300">Message</label>
-                        <textarea name="message" required rows="4" className="w-full bg-slate-950/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition-all placeholder:text-slate-600" placeholder="Comment pouvons-nous vous aider ?" />
-                      </div>
-
-                      {submitStatus === 'success' && (
-                        <div className="p-4 bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg text-center">
-                          Message envoyé avec succès !
-                        </div>
-                      )}
-                      {submitStatus === 'error' && (
-                        <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-center">
-                          Erreur lors de l'envoi.
-                        </div>
-                      )}
-
-                      <Button 
-                        type="submit" 
-                        disabled={isSubmitting}
-                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white py-6 text-lg font-semibold rounded-xl shadow-lg shadow-purple-500/20 transition-all hover:scale-[1.02]"
-                      >
-                        {isSubmitting ? 'Envoi...' : 'Envoyer le message'}
-                        <ArrowRight className="ml-2 w-5 h-5" />
-                      </Button>
-                    </form>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </div>
+                <button
+                  onClick={goStart}
+                  className="group inline-flex items-center gap-2.5 px-8 py-4 bg-white text-[#060910] font-bold text-sm rounded-full hover:bg-[#C8FF6B] transition-all duration-300"
+                >
+                  Créer ma boutique gratuitement
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </Reveal>
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="border-t border-white/10 bg-black pt-20 pb-10 relative z-10">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="grid md:grid-cols-4 gap-12 mb-16">
-              <div className="col-span-2">
-                <div className="flex items-center gap-3 mb-6">
-                  <img src="/liveshop.png" alt="Logo" className="w-10 h-10 rounded-lg" />
-                  <span className="text-xl font-bold text-white">LiveShop Link</span>
+        {/* ━━━ Footer ━━━ */}
+        <footer className="border-t border-white/[0.04] py-12 px-6 md:px-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex flex-col md:flex-row justify-between gap-8">
+              {/* Brand */}
+              <div className="max-w-xs">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-white font-black text-base">Live</span>
+                  <span className="text-white/50 font-light text-base">Link</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#C8FF6B]" />
                 </div>
-                <p className="text-slate-400 max-w-sm">
-                  La plateforme de référence pour le commerce en direct en Afrique.
+                <p className="text-white/25 text-xs leading-relaxed">
+                  La plateforme de vente en direct pour les entrepreneurs en Afrique de l'Ouest.
                 </p>
               </div>
-              <div>
-                <h4 className="font-bold text-white mb-6">Produit</h4>
-                <ul className="space-y-4 text-slate-400">
-                  <li><a href="#features" className="hover:text-purple-400 transition-colors">Fonctionnalités</a></li>
-                  <li><a href="#pricing" className="hover:text-purple-400 transition-colors">Tarifs</a></li>
-                  <li><a href="#" className="hover:text-purple-400 transition-colors">API</a></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-bold text-white mb-6">Légal</h4>
-                <ul className="space-y-4 text-slate-400">
-                  <li><a href="#" className="hover:text-purple-400 transition-colors">Confidentialité</a></li>
-                  <li><a href="#" className="hover:text-purple-400 transition-colors">CGU</a></li>
-                  <li><a href="#" className="hover:text-purple-400 transition-colors">Mentions légales</a></li>
-                </ul>
+
+              {/* Links */}
+              <div className="flex gap-16">
+                <div>
+                  <h4 className="text-white/50 text-[11px] tracking-[0.15em] uppercase font-medium mb-4">Produit</h4>
+                  <ul className="space-y-2.5">
+                    {['Fonctionnalités', 'Tarifs', 'Sécurité'].map(l => (
+                      <li key={l}><a href="#" className="text-white/25 hover:text-white/60 text-[13px] transition-colors">{l}</a></li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-white/50 text-[11px] tracking-[0.15em] uppercase font-medium mb-4">Légal</h4>
+                  <ul className="space-y-2.5">
+                    {['Conditions', 'Confidentialité', 'Contact'].map(l => (
+                      <li key={l}><a href="#" className="text-white/25 hover:text-white/60 text-[13px] transition-colors">{l}</a></li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
-            <div className="text-center text-slate-500 pt-8 border-t border-white/5">
-              © 2024 LiveShop Link. Tous droits réservés.
+
+            {/* Bottom line */}
+            <div className="mt-12 pt-6 border-t border-white/[0.04] flex flex-col md:flex-row justify-between items-center gap-4">
+              <p className="text-white/15 text-[11px]">
+                &copy; {new Date().getFullYear()} LiveLink. Tous droits réservés.
+              </p>
+              <p className="text-white/15 text-[11px]">
+                Dakar, Sénégal
+              </p>
             </div>
           </div>
         </footer>
+
       </div>
     </>
   );
-};
-
-export default LandingPage;
+}

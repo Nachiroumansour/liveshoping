@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCart } from '../contexts/CartContext';
 import { Button } from '@/components/ui/button';
+import { getImageUrl } from '../config/domains';
 import {
   ShoppingCart,
   Share2,
@@ -32,7 +33,7 @@ const MobileHeader = ({
             <div className="flex items-center gap-3 flex-1 min-w-0">
               {seller?.logo_url ? (
                 <img
-                  src={seller.logo_url.startsWith('http') ? seller.logo_url : `${import.meta.env.VITE_BACKEND_URL || 'https://api.livelink.store'}${seller.logo_url}`}
+                  src={getImageUrl(seller.logo_url)}
                   alt={seller.name}
                   className="w-9 h-9 rounded-xl object-cover flex-shrink-0 bg-gray-100"
                   onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
