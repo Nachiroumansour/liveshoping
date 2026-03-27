@@ -1,139 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import { Bell, X, Check, AlertCircle, ShoppingCart } from 'lucide-react';
-import { Button } from './ui/button';
-import { Card, CardContent } from './ui/card';
+import { useState, useEffect } from 'react';
+import { X, ShoppingCart, Bell, TrendingUp } from 'lucide-react';
 
 const NotificationToast = ({ notification, onClose, onViewOrder }) => {
-  const [isVisible, setIsVisible] = useState(true);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Animation d'entrée
-    setIsAnimating(true);
-    
-    // Auto-fermeture après 8 secondes
-    const timer = setTimeout(() => {
-      handleClose();
-    }, 8000);
-
+    requestAnimationFrame(() => setVisible(true));
+    const timer = setTimeout(() => handleClose(), 6000);
     return () => clearTimeout(timer);
   }, []);
 
   const handleClose = () => {
-    setIsAnimating(false);
-    setTimeout(() => {
-      setIsVisible(false);
-      onClose();
-    }, 300);
+    setVisible(false);
+    setTimeout(onClose, 200);
   };
 
-  const handleViewOrder = () => {
+  const handleView = () => {
     if (onViewOrder && notification.data?.order?.id) {
       onViewOrder(notification.data.order.id);
     }
     handleClose();
   };
 
-  const getNotificationIcon = (type) => {
-    switch (type) {
-      case 'new_order':
-        return <ShoppingCart className="w-5 h-5 text-green-600" />;
-      case 'order_status_update':
-        return <Check className="w-5 h-5 text-blue-600" />;
-      default:
-        return <Bell className="w-5 h-5 text-purple-600" />;
-    }
-  };
+  const icon = notification.type === 'new_order'
+    ? <ShoppingCart className="w-4 h-4" />
+    : notification.type === 'order_status_update'
+    ? <TrendingUp className="w-4 h-4" />
+    : <Bell className="w-4 h-4" />;
 
-  const getNotificationColor = (type) => {
-    switch (type) {
-      case 'new_order':
-        return 'border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800';
-      case 'order_status_update':
-        return 'border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800';
-      default:
-        return 'border-purple-200 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-800';
-    }
-  };
-
-  if (!isVisible) return null;
+  const order = notification.data?.order;
 
   return (
-    <div className={`notification-toast toast-enter w-full transition-all duration-300 ${
-      isAnimating ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'
-    }`}>
-      <Card className={`shadow-xl border-2 ${getNotificationColor(notification.type)} rounded-xl backdrop-blur-sm bg-white/95`}
-      >
-        <CardContent className="p-4">
-          <div className="flex items-start space-x-3">
-            <div className="flex-shrink-0 mt-0.5">
-              {getNotificationIcon(notification.type)}
-            </div>
-            
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                  {notification.title}
-                </h4>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleClose}
-                  className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-              
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                {notification.message}
-              </p>
-              
-              {notification.type === 'new_order' && notification.data?.order && (
-                <div className="mt-2 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                      Commande #{notification.data.order.id}
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      {new Date(notification.data.order.created_at).toLocaleTimeString()}
-                    </div>
-                  </div>
-                  <div className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
-                    {notification.data.order.customer_name}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300">
-                    {notification.data.order.product?.name} • {notification.data.order.quantity}x
-                  </div>
-                  <div className="text-sm font-bold text-green-600 dark:text-green-400 mt-1">
-                    {notification.data.order.total_price?.toLocaleString()} FCFA
-                  </div>
-                </div>
-              )}
-              
-              <div className="flex items-center justify-between mt-3">
-                <span className="text-xs text-gray-400">
-                  {new Date(notification.created_at).toLocaleTimeString()}
-                </span>
-                
-                {notification.type === 'new_order' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleViewOrder}
-                    className="text-xs h-8 px-3 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 hover:text-blue-800"
-                  >
-                    <span className="hidden sm:inline">Voir la commande</span>
-                    <span className="sm:hidden">Voir</span>
-                  </Button>
-                )}
-              </div>
-            </div>
+    <div
+      className={`w-full transition-all duration-200 ease-out ${
+        visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+      }`}
+    >
+      <div className="bg-gray-900 dark:bg-white rounded-2xl shadow-xl p-3 flex items-start gap-3">
+        {/* Icon */}
+        <div className="w-8 h-8 rounded-xl bg-white/10 dark:bg-gray-100 flex items-center justify-center flex-shrink-0 text-white dark:text-gray-900 mt-0.5">
+          {icon}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-sm font-semibold text-white dark:text-gray-900 line-clamp-1">
+              {notification.title}
+            </p>
+            <button onClick={handleClose} className="p-0.5 text-white/40 dark:text-gray-400 hover:text-white/70 dark:hover:text-gray-600 flex-shrink-0">
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
-        </CardContent>
-      </Card>
+
+          {order ? (
+            <div className="mt-1">
+              <p className="text-xs text-white/60 dark:text-gray-500">
+                {order.customer_name} — {order.total_price?.toLocaleString()} FCFA
+              </p>
+            </div>
+          ) : (
+            <p className="text-xs text-white/60 dark:text-gray-500 line-clamp-1 mt-0.5">
+              {notification.message}
+            </p>
+          )}
+
+          {notification.type === 'new_order' && (
+            <button
+              onClick={handleView}
+              className="mt-2 text-xs font-medium text-white dark:text-gray-900 bg-white/15 dark:bg-gray-100 hover:bg-white/25 dark:hover:bg-gray-200 px-3 py-1 rounded-lg transition-colors"
+            >
+              Voir la commande
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
 
-export default NotificationToast; 
+export default NotificationToast;

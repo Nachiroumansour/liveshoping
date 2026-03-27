@@ -10,7 +10,10 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
+      registerType: 'prompt',
       includeAssets: ['favicon.jpg', 'apple-touch-icon.png'],
       manifest: {
         name: 'LiveShop Link - Espace Vendeur',
@@ -47,49 +50,10 @@ export default defineConfig({
           }
         ]
       },
-      workbox: {
-        // Désactiver le navigateFallback pour éviter les faux "hors ligne"
-        navigateFallback: null,
-        runtimeCaching: [
-          {
-            // Assets statiques : cache avec revalidation
-            urlPattern: ({ request }) => ['script', 'style', 'font'].includes(request.destination),
-            handler: 'StaleWhileRevalidate',
-            options: { 
-              cacheName: 'assets',
-              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 7 } // 7 jours
-            }
-          },
-          {
-            // Images : cache first avec expiration
-            urlPattern: ({ request }) => request.destination === 'image',
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'images',
-              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 }
-            }
-          },
-          {
-            // API calls : toujours NetworkFirst avec timeout court
-            urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
-            handler: 'NetworkFirst',
-            options: { 
-              cacheName: 'api',
-              networkTimeoutSeconds: 3, // Timeout court pour éviter faux hors-ligne
-              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 5 } // 5 minutes
-            }
-          },
-          {
-            // Pages HTML : NetworkFirst pour éviter le cache des pages
-            urlPattern: ({ request }) => request.destination === 'document',
-            handler: 'NetworkFirst',
-            options: { 
-              cacheName: 'pages',
-              networkTimeoutSeconds: 3,
-              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 5 }
-            }
-          }
-        ]
+      injectManifest: {
+        globPatterns: ['**/*.{js,css,html,ico,svg,woff2}'],
+        globIgnores: ['**/images/onboarding/**'],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024
       }
     })
   ],

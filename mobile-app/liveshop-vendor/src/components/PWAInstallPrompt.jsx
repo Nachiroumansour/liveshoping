@@ -3,88 +3,83 @@ import { X, Download } from 'lucide-react'
 
 export default function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState(null)
-  const [isInstallable, setIsInstallable] = useState(false)
-  const [isIOS, setIsIOS] = useState(false)
-  const [isStandalone, setIsStandalone] = useState(false)
-  const [hidden, setHidden] = useState(true) // hidden by default, show after delay
+  const [show, setShow] = useState(false)
+  const [isIOS] = useState(() => /iphone|ipad|ipod/i.test(navigator.userAgent))
+  const [isStandalone] = useState(() =>
+    window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true
+  )
 
   useEffect(() => {
-    setIsIOS(/iphone|ipad|ipod/i.test(window.navigator.userAgent))
-    setIsStandalone(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true)
+    // Already installed → never show
+    if (isStandalone) return
 
-    // Check snooze
-    try {
-      const snoozeUntil = localStorage.getItem('pwa_prompt_snooze_until')
-      if (snoozeUntil && Date.now() < Number(snoozeUntil)) {
-        return // stay hidden
-      }
-    } catch {}
+    // Already shown this session → don't show again
+    if (sessionStorage.getItem('pwa_prompt_shown')) return
 
-    // Show prompt after 30 seconds delay (don't annoy users immediately)
-    const timer = setTimeout(() => setHidden(false), 30000)
+    // User dismissed before → don't show until next login
+    if (sessionStorage.getItem('pwa_prompt_dismissed')) return
 
     const handler = (e) => {
       e.preventDefault()
       setDeferredPrompt(e)
-      setIsInstallable(true)
     }
     window.addEventListener('beforeinstallprompt', handler)
+
+    // Show once, 5s after page load
+    const timer = setTimeout(() => {
+      sessionStorage.setItem('pwa_prompt_shown', '1')
+      setShow(true)
+    }, 5000)
+
+    const onInstalled = () => setShow(false)
+    window.addEventListener('appinstalled', onInstalled)
+
     return () => {
       clearTimeout(timer)
       window.removeEventListener('beforeinstallprompt', handler)
+      window.removeEventListener('appinstalled', onInstalled)
     }
-  }, [])
+  }, [isStandalone])
 
-  if (isStandalone || hidden) return null
+  if (!show) return null
 
-  const onInstallClick = async () => {
+  const handleInstall = async () => {
     if (!deferredPrompt) return
     deferredPrompt.prompt()
     const { outcome } = await deferredPrompt.userChoice
-    if (outcome === 'accepted') {
-      setIsInstallable(false)
-      setDeferredPrompt(null)
-      setHidden(true)
-    }
+    if (outcome === 'accepted') setShow(false)
   }
 
-  const onClose = () => {
-    setHidden(true)
-    try {
-      // Snooze for 30 days
-      const thirtyDays = 30 * 24 * 60 * 60 * 1000
-      localStorage.setItem('pwa_prompt_snooze_until', String(Date.now() + thirtyDays))
-    } catch {}
+  const handleClose = () => {
+    setShow(false)
+    sessionStorage.setItem('pwa_prompt_dismissed', '1')
   }
 
   return (
-    <div className="fixed bottom-20 lg:bottom-4 inset-x-0 px-4 z-[55] animate-in slide-in-from-bottom-4 duration-300">
-      <div className="mx-auto max-w-sm rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 shadow-lg flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-gray-900 dark:bg-white flex items-center justify-center flex-shrink-0">
+    <div className="fixed bottom-20 lg:bottom-4 inset-x-0 px-4 z-[55]">
+      <div className="mx-auto max-w-sm rounded-2xl bg-gray-900 dark:bg-white px-4 py-3 shadow-lg flex items-center gap-3">
+        <div className="w-8 h-8 rounded-xl bg-white/10 dark:bg-gray-100 flex items-center justify-center flex-shrink-0">
           <Download className="w-4 h-4 text-white dark:text-gray-900" />
         </div>
         <div className="flex-1 min-w-0">
           {isIOS ? (
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              <span className="font-semibold text-gray-900 dark:text-white">Installer l'app</span> — Partager → Écran d'accueil
+            <p className="text-xs text-white/70 dark:text-gray-500">
+              <span className="font-semibold text-white dark:text-gray-900">Installer</span> — Partager → Écran d'accueil
             </p>
           ) : (
-            <>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white">Installer l'app</p>
-              <p className="text-[11px] text-gray-400">Accès rapide et hors-ligne</p>
-            </>
+            <p className="text-sm font-medium text-white dark:text-gray-900">Installer l'app</p>
           )}
         </div>
-        {isInstallable && !isIOS && (
+        {deferredPrompt && !isIOS && (
           <button
-            onClick={onInstallClick}
-            className="px-3 py-1.5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-semibold hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors flex-shrink-0"
+            onClick={handleInstall}
+            className="px-3 py-1.5 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-xs font-semibold flex-shrink-0"
           >
             Installer
           </button>
         )}
-        <button onClick={onClose} className="p-1 text-gray-300 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0">
-          <X className="w-4 h-4" />
+        <button onClick={handleClose} className="p-1 text-white/30 dark:text-gray-300 flex-shrink-0">
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>

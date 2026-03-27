@@ -9,6 +9,7 @@ const Notification = require('./Notification');
 const CreditTransaction = require('./CreditTransaction');
 const Comment = require('./Comment');
 const AdminSetting = require('./AdminSetting');
+const PushSubscription = require('./PushSubscription');
 
 // Définition des associations
 Seller.hasMany(Product, { 
@@ -95,6 +96,18 @@ Seller.hasMany(Comment, {
   onDelete: 'CASCADE'
 });
 
+// Associations pour les push subscriptions
+Seller.hasMany(PushSubscription, {
+  foreignKey: 'seller_id',
+  as: 'pushSubscriptions',
+  onDelete: 'CASCADE'
+});
+
+PushSubscription.belongsTo(Seller, {
+  foreignKey: 'seller_id',
+  as: 'seller'
+});
+
 module.exports = {
   Seller,
   Product,
@@ -106,6 +119,7 @@ module.exports = {
   Notification,
   CreditTransaction,
   Comment,
-  AdminSetting
+  AdminSetting,
+  PushSubscription
 };
 

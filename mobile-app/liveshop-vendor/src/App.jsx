@@ -33,6 +33,8 @@ import SettingsPage from './pages/SettingsPage';
 import TestImageUpload from './components/TestImageUpload';
 import { AdminRoute, SellerRoute, AuthRoute } from './components/ProtectedRoute';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
+import UpdatePrompt from './components/UpdatePrompt';
+import pushService from './services/pushService';
 
 const AppContent = () => {
   const { isAuthenticated, loading, isAdmin, token } = useAuth();
@@ -48,12 +50,14 @@ const AppContent = () => {
     }
   }, [token]);
 
-  // Demander la permission pour les notifications push
+  // Subscribe to push notifications when authenticated
   useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
+    if (isAuthenticated && token && pushService.isSupported()) {
+      // Delay to not block initial render
+      const timer = setTimeout(() => pushService.subscribe(), 3000);
+      return () => clearTimeout(timer);
     }
-  }, []);
+  }, [isAuthenticated, token]);
 
   if (loading) {
     return (
@@ -68,14 +72,28 @@ const AppContent = () => {
 
   return (
     <>
+      <UpdatePrompt />
       <PWAInstallPrompt />
-      <Toaster 
-        position="top-right"
-        richColors
-        closeButton
-        duration={8000}
-        expand={true}
-        limit={3}
+      <Toaster
+        position="top-center"
+        duration={4000}
+        expand={false}
+        limit={2}
+        gap={8}
+        toastOptions={{
+          className: '!rounded-2xl !shadow-lg !border-0 !px-4 !py-3 !text-sm !font-medium',
+          style: {
+            background: '#111827',
+            color: '#fff',
+            border: 'none',
+          },
+          classNames: {
+            success: '!bg-gray-900 !text-white',
+            error: '!bg-red-600 !text-white',
+            warning: '!bg-amber-500 !text-white',
+            info: '!bg-gray-900 !text-white',
+          }
+        }}
       />
       <Routes>
         {/* Routes publiques */}
