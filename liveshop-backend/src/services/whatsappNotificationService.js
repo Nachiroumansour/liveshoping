@@ -110,11 +110,11 @@ ${seller?.name || 'Le vendeur'} vous contactera pour la livraison.`;
   getOrderCreatedSellerMessage(order, product, customer) {
     const orderUrl = `${this.appUrl}/orders?status=pending`;
 
-    return `🔔 Nouvelle commande #${order.id}
+    return `🔔 *Nouvelle commande #${order.id}*
 ${order.customer_name} — ${order.customer_phone}
-${product?.name || 'Produit'} × ${order.quantity} — ${order.total_price?.toLocaleString()} FCFA${order.comment ? `\n"${order.comment}"` : ''}
+${product?.name || 'Produit'} × ${order.quantity} — *${order.total_price?.toLocaleString()} FCFA*${order.comment ? `\n💬 "${order.comment}"` : ''}
 
-👉 ${orderUrl}`;
+${orderUrl}`;
   }
 
   /**

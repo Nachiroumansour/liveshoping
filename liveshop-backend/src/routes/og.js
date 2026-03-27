@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { Seller, Product, Live } = require('../models');
 
+const FAVICON_URL = 'https://livelink.store/favicon.jpg';
+const BASE_URL = 'https://livelink.store';
+
 // Helper: escape HTML entities
 const esc = (str) => {
   if (!str) return '';
@@ -12,7 +15,29 @@ const esc = (str) => {
     .replace(/"/g, '&quot;');
 };
 
-// Helper: generate OG HTML page
+// Helper: get first product image
+const getProductImage = (product) => {
+  if (product.image_url) return product.image_url;
+  if (product.images) {
+    try {
+      const imgs = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
+      if (Array.isArray(imgs) && imgs.length > 0) {
+        const url = typeof imgs[0] === 'string' ? imgs[0] : imgs[0].url || imgs[0].optimizedUrl || '';
+        if (url) return url;
+      }
+    } catch {}
+  }
+  return null;
+};
+
+// Helper: ensure absolute URL
+const absUrl = (url) => {
+  if (!url) return FAVICON_URL;
+  if (url.startsWith('http')) return url;
+  return `https://api.livelink.store${url}`;
+};
+
+// Helper: generate OG HTML
 const renderOgPage = ({ title, description, image, url, siteName, redirectUrl }) => {
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -35,6 +60,7 @@ const renderOgPage = ({ title, description, image, url, siteName, redirectUrl })
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(description)}">
 <meta name="twitter:image" content="${esc(image)}">
+<link rel="icon" href="${FAVICON_URL}">
 <meta http-equiv="refresh" content="0;url=${esc(redirectUrl || url)}">
 </head>
 <body>
@@ -43,7 +69,9 @@ const renderOgPage = ({ title, description, image, url, siteName, redirectUrl })
 </html>`;
 };
 
+// ═══════════════════════════════════════
 // OG for shop page: /og/:linkId
+// ═══════════════════════════════════════
 router.get('/:linkId', async (req, res) => {
   try {
     const { linkId } = req.params;
@@ -53,10 +81,9 @@ router.get('/:linkId', async (req, res) => {
     });
 
     if (!seller) {
-      return res.redirect(`https://livelink.store/${linkId}`);
+      return res.redirect(`${BASE_URL}/${linkId}`);
     }
 
-    // Get product count and first product images for richer preview
     const products = await Product.findAll({
       where: { seller_id: seller.id },
       attributes: ['name', 'price', 'image_url', 'images'],
@@ -68,53 +95,28 @@ router.get('/:linkId', async (req, res) => {
       where: { seller_id: seller.id }
     });
 
-    const baseUrl = 'https://livelink.store';
-    const shopUrl = `${baseUrl}/${linkId}`;
+    const shopUrl = `${BASE_URL}/${linkId}`;
 
-    // Build description
-    const priceRange = products.length > 0
-      ? products.map(p => p.price).filter(Boolean)
-      : [];
-    const minPrice = priceRange.length > 0 ? Math.min(...priceRange) : null;
-    const maxPrice = priceRange.length > 0 ? Math.max(...priceRange) : null;
+    // Image: logo vendeur → sinon favicon LiveShop
+    const ogImage = absUrl(seller.logo_url || null);
 
-    let description = seller.description || '';
-    if (!description && productCount > 0) {
-      description = `${productCount} produit${productCount > 1 ? 's' : ''} disponible${productCount > 1 ? 's' : ''}`;
-      if (minPrice && maxPrice && minPrice !== maxPrice) {
-        description += ` — ${minPrice.toLocaleString()} à ${maxPrice.toLocaleString()} FCFA`;
-      } else if (minPrice) {
-        description += ` — à partir de ${minPrice.toLocaleString()} FCFA`;
+    // Title comme SamaPanier: "NomBoutique — description courte"
+    const title = seller.description
+      ? `${seller.name} — ${seller.description}`
+      : `${seller.name} — Boutique en ligne + commande par lien`;
+
+    // Description: infos produits
+    let description = `Boutique en ligne + commande par lien.`;
+    if (productCount > 0) {
+      const prices = products.map(p => p.price).filter(Boolean);
+      const minPrice = prices.length > 0 ? Math.min(...prices) : null;
+      description += ` ${productCount} produit${productCount > 1 ? 's' : ''} disponible${productCount > 1 ? 's' : ''}.`;
+      if (minPrice) {
+        description += ` Payez en FCFA.`;
       }
+    } else {
+      description += ' Payez en FCFA.';
     }
-    if (!description) {
-      description = 'Boutique en ligne — Commandez par lien, payez en FCFA';
-    }
-
-    // Use seller logo, or first product image, or default
-    let ogImage = seller.logo_url || '';
-    if (!ogImage && products.length > 0) {
-      for (const p of products) {
-        if (p.image_url) { ogImage = p.image_url; break; }
-        if (p.images) {
-          try {
-            const imgs = typeof p.images === 'string' ? JSON.parse(p.images) : p.images;
-            if (Array.isArray(imgs) && imgs.length > 0) {
-              ogImage = typeof imgs[0] === 'string' ? imgs[0] : imgs[0].url || imgs[0].optimizedUrl || '';
-              if (ogImage) break;
-            }
-          } catch {}
-        }
-      }
-    }
-    if (!ogImage) ogImage = `${baseUrl}/liveshop.png`;
-
-    // Ensure absolute URL
-    if (ogImage && !ogImage.startsWith('http')) {
-      ogImage = `https://api.livelink.store${ogImage}`;
-    }
-
-    const title = `${seller.name} — Boutique en ligne`;
 
     res.set('Content-Type', 'text/html; charset=utf-8');
     res.send(renderOgPage({
@@ -128,11 +130,13 @@ router.get('/:linkId', async (req, res) => {
 
   } catch (error) {
     console.error('OG route error:', error);
-    res.redirect(`https://livelink.store/${req.params.linkId}`);
+    res.redirect(`${BASE_URL}/${req.params.linkId}`);
   }
 });
 
+// ═══════════════════════════════════════
 // OG for live session: /og/:linkId/live/:liveSlug
+// ═══════════════════════════════════════
 router.get('/:linkId/live/:liveSlug', async (req, res) => {
   try {
     const { linkId, liveSlug } = req.params;
@@ -142,15 +146,14 @@ router.get('/:linkId/live/:liveSlug', async (req, res) => {
     });
 
     if (!seller) {
-      return res.redirect(`https://livelink.store/${linkId}/live/${liveSlug}`);
+      return res.redirect(`${BASE_URL}/${linkId}/live/${liveSlug}`);
     }
 
     const live = await Live.findOne({
       where: { sellerId: seller.id, slug: liveSlug }
     });
 
-    const baseUrl = 'https://livelink.store';
-    const liveUrl = `${baseUrl}/${linkId}/live/${liveSlug}`;
+    const liveUrl = `${BASE_URL}/${linkId}/live/${liveSlug}`;
 
     // Get products from the live session
     let ogImage = '';
@@ -165,24 +168,14 @@ router.get('/:linkId/live/:liveSlug', async (req, res) => {
       for (const p of liveProducts) {
         productNames.push(p.name);
         if (!ogImage) {
-          if (p.image_url) ogImage = p.image_url;
-          else if (p.images) {
-            try {
-              const imgs = typeof p.images === 'string' ? JSON.parse(p.images) : p.images;
-              if (Array.isArray(imgs) && imgs.length > 0) {
-                ogImage = typeof imgs[0] === 'string' ? imgs[0] : imgs[0].url || imgs[0].optimizedUrl || '';
-              }
-            } catch {}
-          }
+          const img = getProductImage(p);
+          if (img) ogImage = img;
         }
       }
     }
 
-    if (!ogImage && seller.logo_url) ogImage = seller.logo_url;
-    if (!ogImage) ogImage = `${baseUrl}/liveshop.png`;
-    if (ogImage && !ogImage.startsWith('http')) {
-      ogImage = `https://api.livelink.store${ogImage}`;
-    }
+    // Live: photo produit → sinon logo vendeur → sinon favicon
+    ogImage = absUrl(ogImage || seller.logo_url || null);
 
     const title = live?.title
       ? `${live.title} — ${seller.name}`
@@ -192,9 +185,9 @@ router.get('/:linkId/live/:liveSlug', async (req, res) => {
     if (productNames.length > 0) {
       description = productNames.slice(0, 3).join(', ');
       if (productNames.length > 3) description += ` +${productNames.length - 3} autres`;
-      description += ' — Achetez maintenant';
+      description += '. Commandez en ligne, payez en FCFA.';
     } else {
-      description = `Vente en direct par ${seller.name} — Commandez en ligne`;
+      description = `Vente en direct par ${seller.name}. Commandez en ligne, payez en FCFA.`;
     }
 
     res.set('Content-Type', 'text/html; charset=utf-8');
@@ -209,7 +202,7 @@ router.get('/:linkId/live/:liveSlug', async (req, res) => {
 
   } catch (error) {
     console.error('OG live route error:', error);
-    res.redirect(`https://livelink.store/${req.params.linkId}/live/${req.params.liveSlug}`);
+    res.redirect(`${BASE_URL}/${req.params.linkId}/live/${req.params.liveSlug}`);
   }
 });
 

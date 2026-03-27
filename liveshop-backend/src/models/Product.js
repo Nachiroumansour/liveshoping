@@ -45,7 +45,7 @@ const Product = sequelize.define('Product', {
     allowNull: false,
     defaultValue: 'general',
     validate: {
-      isIn: [['general', 'vetements', 'tissus', 'bijoux', 'alimentation', 'services', 'accessoires', 'chaussures', 'cosmetiques', 'maison']]
+      isIn: [['general', 'vetements', 'tissus', 'bijoux', 'alimentation', 'services', 'accessoires', 'chaussures', 'cosmetiques', 'maison', 'electronique', 'telephones', 'sacs', 'parfums', 'sport', 'bebe', 'auto', 'artisanat', 'informatique', 'decoration']]
     }
   },
   // Attributs dynamiques stockés en JSON

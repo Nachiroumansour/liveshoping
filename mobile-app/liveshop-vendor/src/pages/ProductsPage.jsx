@@ -372,20 +372,30 @@ const ProductsPage = () => {
     return false;
   });
 
-  // Helper: extraire l'URL d'image principale
-  const getMainImageUrl = (product) => {
+  // Helper: extraire toutes les URLs d'images d'un produit
+  const getAllImageUrls = (product) => {
     let images = product.images;
     if (typeof images === 'string') {
       try { images = JSON.parse(images); } catch { images = []; }
     }
     if (!Array.isArray(images)) images = [];
 
-    if (images.length > 0) {
-      const mainImage = images[0];
-      if (typeof mainImage === 'object' && mainImage.url) return mainImage.url;
-      if (typeof mainImage === 'string') return mainImage;
+    const urls = images.map(img => {
+      if (typeof img === 'object' && img.url) return img.url;
+      if (typeof img === 'string') return img;
+      return null;
+    }).filter(Boolean);
+
+    if (urls.length === 0 && product.image_url) {
+      urls.push(product.image_url);
     }
-    return product.image_url || null;
+    return urls;
+  };
+
+  // Helper: extraire l'URL d'image principale
+  const getMainImageUrl = (product) => {
+    const urls = getAllImageUrls(product);
+    return urls.length > 0 ? urls[0] : null;
   };
 
   // Helper: compter les produits avec images
@@ -451,7 +461,7 @@ const ProductsPage = () => {
             {/* Image */}
             <div
               className="relative w-28 h-28 shrink-0 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 cursor-pointer"
-              onClick={() => mainImageUrl && setLightboxImage({ url: mainImageUrl, name: product.name })}
+              onClick={() => mainImageUrl && setLightboxImage({ url: mainImageUrl, images: getAllImageUrls(product), name: product.name })}
             >
               {mainImageUrl ? (
                 <img
@@ -486,6 +496,16 @@ const ProductsPage = () => {
               {product.stock_quantity === 0 && (
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                   <span className="text-[10px] font-bold text-white bg-red-500 px-2 py-0.5 rounded-full">Rupture</span>
+                </div>
+              )}
+
+              {/* Multi-image counter */}
+              {getAllImageUrls(product).length > 1 && (
+                <div className="absolute bottom-1.5 right-1.5 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
+                  <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
+                  </svg>
+                  {getAllImageUrls(product).length}
                 </div>
               )}
             </div>
@@ -571,7 +591,7 @@ const ProductsPage = () => {
                     <Star className="w-4 h-4" /> {product.is_pinned ? 'Désépingler' : 'Épingler'}
                   </button>
                   <button
-                    onClick={() => { setActiveMenu(null); mainImageUrl && setLightboxImage({ url: mainImageUrl, name: product.name }); }}
+                    onClick={() => { setActiveMenu(null); mainImageUrl && setLightboxImage({ url: mainImageUrl, images: getAllImageUrls(product), name: product.name }); }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                   >
                     <Eye className="w-4 h-4" /> Voir image
@@ -595,7 +615,7 @@ const ProductsPage = () => {
             {/* Image */}
             <div
               className="relative aspect-square overflow-hidden cursor-pointer bg-gray-100 dark:bg-gray-800"
-              onClick={() => mainImageUrl && setLightboxImage({ url: mainImageUrl, name: product.name })}
+              onClick={() => mainImageUrl && setLightboxImage({ url: mainImageUrl, images: getAllImageUrls(product), name: product.name })}
             >
               {mainImageUrl ? (
                 <img
@@ -1089,6 +1109,7 @@ const ProductsPage = () => {
       {/* ─── LIGHTBOX ─── */}
       <ImageLightbox
         imageUrl={lightboxImage?.url}
+        images={lightboxImage?.images || []}
         productName={lightboxImage?.name}
         isOpen={!!lightboxImage}
         onClose={() => setLightboxImage(null)}

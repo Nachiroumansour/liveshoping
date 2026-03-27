@@ -26,14 +26,18 @@ const OrderPage = () => {
   const [error, setError] = useState(null);
   const [copiedPhone, setCopiedPhone] = useState(false);
 
-  const [formData, setFormData] = useState({
-    customer_name: '',
-    customer_phone: '',
-    customer_address: '',
-    quantity: 1,
-    payment_method: '',
-    payment_proof_url: '',
-    comment: ''
+  const [formData, setFormData] = useState(() => {
+    const saved = localStorage.getItem('liveshop_client_info');
+    const client = saved ? JSON.parse(saved) : {};
+    return {
+      customer_name: client.customer_name || '',
+      customer_phone: client.customer_phone || '',
+      customer_address: client.customer_address || '',
+      quantity: 1,
+      payment_method: '',
+      payment_proof_url: '',
+      comment: ''
+    };
   });
 
   const [paymentMethods, setPaymentMethods] = useState({
@@ -81,7 +85,17 @@ const OrderPage = () => {
   }, [fetchProduct, fetchPaymentMethods]);
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      if (['customer_name', 'customer_phone', 'customer_address'].includes(field)) {
+        localStorage.setItem('liveshop_client_info', JSON.stringify({
+          customer_name: updated.customer_name,
+          customer_phone: updated.customer_phone,
+          customer_address: updated.customer_address
+        }));
+      }
+      return updated;
+    });
   };
 
   const handlePaymentMethodSelect = (method) => {
@@ -254,7 +268,7 @@ const OrderPage = () => {
             <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Vos informations</h2>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-500">Nom complet *</label>
+              <label className="text-sm font-semibold text-gray-700">Nom complet *</label>
               <div className="relative">
                 <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -269,7 +283,7 @@ const OrderPage = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-500">Numéro de téléphone *</label>
+              <label className="text-sm font-semibold text-gray-700">Numéro de téléphone *</label>
               <div className="relative">
                 <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -284,7 +298,7 @@ const OrderPage = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-500">Adresse de livraison</label>
+              <label className="text-sm font-semibold text-gray-700">Adresse de livraison</label>
               <div className="relative">
                 <MapPin className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                 <textarea
@@ -398,7 +412,7 @@ const OrderPage = () => {
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-gray-500">Référence de transaction</label>
+                  <label className="text-sm font-semibold text-gray-700">Référence de transaction</label>
                   <input
                     value={paymentReference}
                     onChange={(e) => setPaymentReference(e.target.value)}
@@ -408,7 +422,7 @@ const OrderPage = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-gray-500">Preuve de paiement</label>
+                  <label className="text-sm font-semibold text-gray-700">Preuve de paiement</label>
                   <div className="mt-1">
                     <ImageCapture
                       onImageCaptured={(imageUrl) => handleInputChange('payment_proof_url', imageUrl)}

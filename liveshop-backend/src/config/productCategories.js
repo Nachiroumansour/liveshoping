@@ -285,6 +285,259 @@ const productCategories = {
         options: ['Salon', 'Cuisine', 'Chambre', 'Salle de bain', 'Bureau', 'Jardin', 'Balcon']
       }
     ]
+  },
+  electronique: {
+    name: 'Électronique',
+    description: 'Appareils électroniques et gadgets',
+    attributes: [
+      {
+        name: 'brand',
+        label: 'Marque',
+        type: 'text',
+        required: false
+      },
+      {
+        name: 'condition',
+        label: 'État',
+        type: 'select',
+        required: false,
+        options: ['Neuf', 'Reconditionné', 'Occasion']
+      },
+      {
+        name: 'warranty',
+        label: 'Garantie',
+        type: 'text',
+        required: false
+      }
+    ]
+  },
+  telephones: {
+    name: 'Téléphones & Tablettes',
+    description: 'Smartphones, tablettes et accessoires',
+    attributes: [
+      {
+        name: 'brand',
+        label: 'Marque',
+        type: 'select',
+        required: false,
+        options: ['Samsung', 'iPhone', 'Xiaomi', 'Tecno', 'Infinix', 'Huawei', 'Oppo', 'Realme', 'Autre']
+      },
+      {
+        name: 'storage',
+        label: 'Stockage',
+        type: 'select',
+        required: false,
+        options: ['16 Go', '32 Go', '64 Go', '128 Go', '256 Go', '512 Go', '1 To']
+      },
+      {
+        name: 'condition',
+        label: 'État',
+        type: 'select',
+        required: false,
+        options: ['Neuf', 'Reconditionné', 'Occasion']
+      },
+      {
+        name: 'color',
+        label: 'Couleur',
+        type: 'text',
+        required: false
+      }
+    ]
+  },
+  sacs: {
+    name: 'Sacs & Bagages',
+    description: 'Sacs à main, valises et bagages',
+    attributes: [
+      {
+        name: 'type',
+        label: 'Type',
+        type: 'select',
+        required: false,
+        options: ['Sac à main', 'Sac à dos', 'Pochette', 'Valise', 'Sacoche', 'Cabas', 'Besace', 'Trousse']
+      },
+      {
+        name: 'material',
+        label: 'Matériau',
+        type: 'select',
+        required: false,
+        options: ['Cuir', 'Simili cuir', 'Tissu', 'Toile', 'Nylon', 'Plastique']
+      },
+      {
+        name: 'color',
+        label: 'Couleur',
+        type: 'text',
+        required: false
+      }
+    ]
+  },
+  parfums: {
+    name: 'Parfums',
+    description: 'Parfums et eaux de toilette',
+    attributes: [
+      {
+        name: 'volume',
+        label: 'Volume (ml)',
+        type: 'text',
+        required: false
+      },
+      {
+        name: 'type',
+        label: 'Type',
+        type: 'select',
+        required: false,
+        options: ['Eau de parfum', 'Eau de toilette', 'Brume', 'Huile parfumée', 'Encens', 'Thiouraye']
+      },
+      {
+        name: 'gender',
+        label: 'Genre',
+        type: 'select',
+        required: false,
+        options: ['Homme', 'Femme', 'Unisexe']
+      }
+    ]
+  },
+  sport: {
+    name: 'Sport & Fitness',
+    description: 'Équipements et vêtements de sport',
+    attributes: [
+      {
+        name: 'type',
+        label: 'Type',
+        type: 'select',
+        required: false,
+        options: ['Vêtement sport', 'Équipement', 'Chaussure sport', 'Accessoire', 'Nutrition sportive']
+      },
+      {
+        name: 'size',
+        label: 'Taille',
+        type: 'select',
+        required: false,
+        options: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Unique']
+      }
+    ]
+  },
+  bebe: {
+    name: 'Bébé & Enfants',
+    description: 'Articles pour bébés et enfants',
+    attributes: [
+      {
+        name: 'age_range',
+        label: 'Tranche d\'âge',
+        type: 'select',
+        required: false,
+        options: ['0-3 mois', '3-6 mois', '6-12 mois', '1-2 ans', '2-4 ans', '4-8 ans', '8-12 ans']
+      },
+      {
+        name: 'type',
+        label: 'Type',
+        type: 'select',
+        required: false,
+        options: ['Vêtement', 'Jouet', 'Puériculture', 'Couches', 'Alimentation', 'Accessoire']
+      },
+      {
+        name: 'gender',
+        label: 'Genre',
+        type: 'select',
+        required: false,
+        options: ['Garçon', 'Fille', 'Mixte']
+      }
+    ]
+  },
+  auto: {
+    name: 'Auto & Moto',
+    description: 'Pièces et accessoires véhicules',
+    attributes: [
+      {
+        name: 'type',
+        label: 'Type',
+        type: 'select',
+        required: false,
+        options: ['Pièce détachée', 'Accessoire', 'Huile & Lubrifiant', 'Pneu', 'Entretien', 'Décoration']
+      },
+      {
+        name: 'vehicle',
+        label: 'Véhicule',
+        type: 'select',
+        required: false,
+        options: ['Voiture', 'Moto', 'Scooter', 'Camion', 'Universel']
+      }
+    ]
+  },
+  artisanat: {
+    name: 'Artisanat',
+    description: 'Produits artisanaux et fait main',
+    attributes: [
+      {
+        name: 'technique',
+        label: 'Technique',
+        type: 'select',
+        required: false,
+        options: ['Couture', 'Crochet', 'Tricot', 'Poterie', 'Vannerie', 'Sculpture', 'Peinture', 'Broderie', 'Teinture']
+      },
+      {
+        name: 'material',
+        label: 'Matériau',
+        type: 'text',
+        required: false
+      },
+      {
+        name: 'origin',
+        label: 'Origine',
+        type: 'text',
+        required: false
+      }
+    ]
+  },
+  informatique: {
+    name: 'Informatique',
+    description: 'Ordinateurs et accessoires informatiques',
+    attributes: [
+      {
+        name: 'brand',
+        label: 'Marque',
+        type: 'text',
+        required: false
+      },
+      {
+        name: 'type',
+        label: 'Type',
+        type: 'select',
+        required: false,
+        options: ['Ordinateur portable', 'Ordinateur bureau', 'Écran', 'Clavier', 'Souris', 'Imprimante', 'Câble', 'Disque dur', 'Clé USB', 'Autre']
+      },
+      {
+        name: 'condition',
+        label: 'État',
+        type: 'select',
+        required: false,
+        options: ['Neuf', 'Reconditionné', 'Occasion']
+      }
+    ]
+  },
+  decoration: {
+    name: 'Décoration',
+    description: 'Articles de décoration intérieure',
+    attributes: [
+      {
+        name: 'type',
+        label: 'Type',
+        type: 'select',
+        required: false,
+        options: ['Tableau', 'Cadre', 'Vase', 'Coussin', 'Tapis', 'Rideau', 'Miroir', 'Bougie', 'Plante artificielle', 'Autre']
+      },
+      {
+        name: 'color',
+        label: 'Couleur',
+        type: 'text',
+        required: false
+      },
+      {
+        name: 'dimensions',
+        label: 'Dimensions',
+        type: 'text',
+        required: false
+      }
+    ]
   }
 };
 

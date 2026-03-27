@@ -306,24 +306,34 @@ const ImageCapture = ({
     onImageRemove?.(newImages);
   }, [images, onImageRemove]);
 
-  // Fonction pour gérer la sélection de fichier
-  const handleGallerySelect = useCallback((event) => {
+  // Fonction pour gérer la sélection de fichier (supporte multi-sélection)
+  const handleGallerySelect = useCallback(async (event) => {
     const files = Array.from(event.target.files || []);
     console.debug('Gallery select files:', files.map(f => ({ name: f.name, size: f.size, type: f.type })));
-    if (files.length > 0) {
+
+    if (files.length === 0) return;
+
+    // Limiter au nombre d'images restantes autorisées
+    const remainingSlots = multiple ? maxImages - images.length : 1;
+    const filesToUpload = files.slice(0, remainingSlots);
+
+    if (files.length > remainingSlots) {
+      setError(`${remainingSlots} image(s) ajoutée(s) sur ${files.length} — maximum ${maxImages} atteint`);
+    }
+
+    // Upload séquentiel pour éviter de surcharger le serveur
+    for (const file of filesToUpload) {
       try {
-        handleImageUpload(files[0]).catch(err => {
-          console.error('handleImageUpload error (gallery):', err);
-          setError(err.message || 'Erreur lors de l\'upload depuis la galerie');
-        });
+        await handleImageUpload(file);
       } catch (err) {
-        console.error('Unexpected error handling gallery file:', err);
-        setError('Erreur inattendue lors de la sélection de la galerie');
+        console.error('handleImageUpload error (gallery):', err);
+        setError(err.message || 'Erreur lors de l\'upload depuis la galerie');
       }
     }
+
     // Reset value so selecting same file again triggers change
     event.target.value = '';
-  }, [handleImageUpload]);
+  }, [handleImageUpload, multiple, maxImages, images.length]);
 
   const handleCameraSelect = useCallback((event) => {
     const files = Array.from(event.target.files || []);
@@ -353,14 +363,23 @@ const ImageCapture = ({
     event.target.value = '';
   }, [handleImageUpload]);
 
-  // Fonction pour gérer le drag & drop
-  const handleDrop = useCallback((event) => {
+  // Fonction pour gérer le drag & drop (supporte multi-fichiers)
+  const handleDrop = useCallback(async (event) => {
     event.preventDefault();
     const files = Array.from(event.dataTransfer.files || []);
-    if (files.length > 0) {
-      handleImageUpload(files[0]);
+    if (files.length === 0) return;
+
+    const remainingSlots = multiple ? maxImages - images.length : 1;
+    const filesToUpload = files.slice(0, remainingSlots);
+
+    for (const file of filesToUpload) {
+      try {
+        await handleImageUpload(file);
+      } catch (err) {
+        console.error('handleImageUpload error (drop):', err);
+      }
     }
-  }, [handleImageUpload]);
+  }, [handleImageUpload, multiple, maxImages, images.length]);
 
   const handleDragOver = useCallback((event) => {
     event.preventDefault();
