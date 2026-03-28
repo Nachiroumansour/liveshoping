@@ -81,6 +81,25 @@ router.post('/test', authenticateToken, async (req, res) => {
   }
 });
 
+// Notifier TOUS les vendeurs d'une mise à jour (admin ou script post-deploy)
+router.post('/notify-update', async (req, res) => {
+  try {
+    const secret = req.headers['x-deploy-secret'];
+    if (secret !== (process.env.DEPLOY_SECRET || 'liveshop-deploy-2024')) {
+      return res.status(403).json({ success: false, error: 'Non autorisé' });
+    }
+
+    const { message } = req.body;
+    const result = await webPushService.notifyAllUpdate(message);
+
+    console.log('📢 Push update envoyée:', result);
+    res.json({ success: true, result });
+  } catch (error) {
+    console.error('❌ Erreur notify-update:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Statistiques Web Push
 router.get('/stats', authenticateToken, async (req, res) => {
   try {

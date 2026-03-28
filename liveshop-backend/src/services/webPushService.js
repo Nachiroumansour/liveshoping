@@ -127,6 +127,8 @@ class WebPushService {
         return `${baseUrl}/products`;
       case 'credits_updated':
         return `${baseUrl}/credits`;
+      case 'app_update':
+        return baseUrl;
       default:
         return baseUrl;
     }
@@ -162,6 +164,33 @@ class WebPushService {
       message: 'Les notifications push fonctionnent correctement.',
       data: {}
     });
+  }
+
+  /**
+   * Envoyer une notification de mise à jour à TOUS les vendeurs abonnés
+   */
+  async notifyAllUpdate(message) {
+    if (!this.isConfigured) return { successful: 0, failed: 0, total: 0 };
+
+    const PushSubscription = this.getModel();
+    // Récupérer tous les seller_id distincts
+    const rows = await PushSubscription.findAll({
+      attributes: [[require('sequelize').fn('DISTINCT', require('sequelize').col('seller_id')), 'seller_id']],
+      raw: true
+    });
+    const sellerIds = rows.map(r => r.seller_id);
+
+    if (sellerIds.length === 0) return { successful: 0, failed: 0, total: 0 };
+
+    const notification = {
+      id: Date.now(),
+      type: 'app_update',
+      title: 'LiveShop Link mis à jour',
+      message: message || 'Une nouvelle version est disponible. Ouvrez l\'app pour profiter des améliorations.',
+      data: {}
+    };
+
+    return await this.sendBulkPushNotifications(sellerIds, notification);
   }
 
   async getStats() {

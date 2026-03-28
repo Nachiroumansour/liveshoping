@@ -107,14 +107,17 @@ ${seller?.name || 'Le vendeur'} vous contactera pour la livraison.`;
   /**
    * 🆕 Nouvelle commande - Message au VENDEUR
    */
-  getOrderCreatedSellerMessage(order, product, customer) {
-    const orderUrl = `${this.appUrl}/orders?status=pending`;
+  getOrderCreatedSellerMessage(order, product, seller) {
+    // Utiliser le lien public de la boutique (a un OG preview propre sur WhatsApp)
+    const shopUrl = seller?.public_link_id
+      ? `https://livelink.store/${seller.public_link_id}`
+      : `${this.appUrl}/orders?status=pending`;
 
     return `🔔 *Nouvelle commande #${order.id}*
 ${order.customer_name} — ${order.customer_phone}
 ${product?.name || 'Produit'} × ${order.quantity} — *${order.total_price?.toLocaleString()} FCFA*${order.comment ? `\n💬 "${order.comment}"` : ''}
 
-${orderUrl}`;
+${shopUrl}`;
   }
 
   /**
@@ -199,7 +202,7 @@ Merci pour votre achat chez ${seller?.name || 'notre boutique'} !`;
     const sellerPhone = seller?.phone_number || seller?.phoneNumber || seller?.phone;
     if (sellerPhone) {
       console.log('📤 Envoi au VENDEUR:', sellerPhone);
-      const sellerMessage = this.getOrderCreatedSellerMessage(order, product, order);
+      const sellerMessage = this.getOrderCreatedSellerMessage(order, product, seller);
       results.seller = await this.sendMessage(sellerPhone, sellerMessage);
       console.log('✉️ Résultat vendeur:', results.seller);
     } else {
