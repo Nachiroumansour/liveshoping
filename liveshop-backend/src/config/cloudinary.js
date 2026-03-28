@@ -61,6 +61,20 @@ const avatarStorage = new CloudinaryStorage({
   }
 });
 
+// Configuration du storage Cloudinary pour les logos boutique
+const logoStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'liveshop/logos',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [
+      { width: 500, height: 500, crop: 'limit', quality: 'auto' },
+      { fetch_format: 'auto' }
+    ],
+    resource_type: 'image'
+  }
+});
+
 // Configuration du storage Cloudinary pour les bannières de lives
 const liveBannerStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
@@ -110,6 +124,21 @@ const uploadAvatar = multer({
   storage: avatarStorage,
   limits: {
     fileSize: 2 * 1024 * 1024 // 2MB max
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Seules les images sont autorisées'), false);
+    }
+  }
+});
+
+// Middleware Multer pour les logos boutique
+const uploadLogoImage = multer({
+  storage: logoStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB max
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
@@ -179,6 +208,7 @@ module.exports = {
   uploadProductImage,
   uploadPaymentProof,
   uploadAvatar,
+  uploadLogoImage,
   uploadLiveBanner,
   deleteImage,
   optimizeImageUrl,

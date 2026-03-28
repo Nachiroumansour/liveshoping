@@ -1,8 +1,8 @@
 const express = require('express');
 const { Seller } = require('../models');
 const { authenticateToken } = require('../middleware/auth');
-const { uploadQRCode, uploadLogo, handleUploadError } = require('../middleware/upload');
-const path = require('path');
+const { uploadQRCode, handleUploadError } = require('../middleware/upload');
+const { uploadLogoImage, deleteImage } = require('../config/cloudinary');
 
 const router = express.Router();
 
@@ -301,23 +301,28 @@ router.put('/slug', authenticateToken, async (req, res) => {
   }
 });
 
-// POST /api/sellers/upload-logo - Upload du logo boutique
-router.post('/upload-logo', authenticateToken, uploadLogo, handleUploadError, async (req, res) => {
+// POST /api/sellers/upload-logo - Upload du logo boutique (Cloudinary)
+router.post('/upload-logo', authenticateToken, uploadLogoImage.single('logo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
 
     const seller = await Seller.findByPk(req.seller.id);
     if (!seller) return res.status(404).json({ error: 'Vendeur non trouvé' });
 
-    // Supprimer l'ancien logo s'il existe
-    if (seller.logo_url) {
-      const oldPath = path.join(__dirname, '../../', seller.logo_url);
-      if (require('fs').existsSync(oldPath)) {
-        require('fs').unlinkSync(oldPath);
+    // Supprimer l'ancien logo de Cloudinary s'il existe
+    if (seller.logo_url && seller.logo_url.includes('cloudinary.com')) {
+      try {
+        const parts = seller.logo_url.split('/');
+        const folderAndFile = parts.slice(parts.indexOf('liveshop')).join('/');
+        const publicId = folderAndFile.replace(/\.[^/.]+$/, '');
+        await deleteImage(publicId);
+      } catch (err) {
+        console.warn('Ancien logo non supprimé de Cloudinary:', err.message);
       }
     }
 
-    const logoUrl = `/uploads/logos/${req.file.filename}`;
+    // req.file.path contient l'URL Cloudinary
+    const logoUrl = req.file.path;
     await seller.update({ logo_url: logoUrl });
 
     res.json({
@@ -338,9 +343,16 @@ router.delete('/logo', authenticateToken, async (req, res) => {
     if (!seller) return res.status(404).json({ error: 'Vendeur non trouvé' });
 
     if (seller.logo_url) {
-      const filePath = path.join(__dirname, '../../', seller.logo_url);
-      if (require('fs').existsSync(filePath)) {
-        require('fs').unlinkSync(filePath);
+      // Supprimer de Cloudinary si c'est une URL Cloudinary
+      if (seller.logo_url.includes('cloudinary.com')) {
+        try {
+          const parts = seller.logo_url.split('/');
+          const folderAndFile = parts.slice(parts.indexOf('liveshop')).join('/');
+          const publicId = folderAndFile.replace(/\.[^/.]+$/, '');
+          await deleteImage(publicId);
+        } catch (err) {
+          console.warn('Logo non supprimé de Cloudinary:', err.message);
+        }
       }
       await seller.update({ logo_url: null });
     }
