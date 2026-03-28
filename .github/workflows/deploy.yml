@@ -19,6 +19,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          envs: DEPLOY_SECRET
           script_stop: true
           script: |
             set -e
@@ -50,9 +51,12 @@ jobs:
             docker image prune -f
 
             echo "📢 Notifying vendors of update..."
+            DEPLOY_KEY="${DEPLOY_SECRET:-liveshop-deploy-2024}"
             curl -s -X POST "https://api.livelink.store/api/push/notify-update" \
               -H "Content-Type: application/json" \
-              -H "X-Deploy-Secret: ${{ secrets.DEPLOY_SECRET }}" \
+              -H "X-Deploy-Secret: ${DEPLOY_KEY}" \
               -d '{"message": "Nouvelle mise à jour disponible ! Ouvrez l'\''app pour en profiter."}' || echo "Push notify skipped (non-blocking)"
 
             echo "✅ Deployment complete!"
+        env:
+          DEPLOY_SECRET: ${{ secrets.DEPLOY_SECRET }}
