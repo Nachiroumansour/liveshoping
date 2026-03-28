@@ -49,4 +49,10 @@ jobs:
             echo "🧹 Cleanup..."
             docker image prune -f
 
+            echo "📢 Notifying vendors of update..."
+            curl -s -X POST "https://api.livelink.store/api/push/notify-update" \
+              -H "Content-Type: application/json" \
+              -H "X-Deploy-Secret: ${{ secrets.DEPLOY_SECRET }}" \
+              -d '{"message": "Nouvelle mise à jour disponible ! Ouvrez l'\''app pour en profiter."}' || echo "Push notify skipped (non-blocking)"
+
             echo "✅ Deployment complete!"

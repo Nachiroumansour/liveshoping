@@ -34,6 +34,7 @@ import TestImageUpload from './components/TestImageUpload';
 import { AdminRoute, SellerRoute, AuthRoute } from './components/ProtectedRoute';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import UpdatePrompt from './components/UpdatePrompt';
+import PushPermissionBanner from './components/PushPermissionBanner';
 import pushService from './services/pushService';
 
 const AppContent = () => {
@@ -50,12 +51,16 @@ const AppContent = () => {
     }
   }, [token]);
 
-  // Subscribe to push notifications when authenticated
+  // Subscribe to push notifications when authenticated (if permission already granted)
   useEffect(() => {
     if (isAuthenticated && token && pushService.isSupported()) {
-      // Delay to not block initial render
-      const timer = setTimeout(() => pushService.subscribe(), 3000);
-      return () => clearTimeout(timer);
+      const permission = pushService.getPermissionStatus();
+      if (permission === 'granted') {
+        // Permission already granted — sync subscription silently
+        const timer = setTimeout(() => pushService.subscribe(), 2000);
+        return () => clearTimeout(timer);
+      }
+      // If 'default', PushPermissionBanner will handle asking
     }
   }, [isAuthenticated, token]);
 
@@ -74,6 +79,7 @@ const AppContent = () => {
     <>
       <UpdatePrompt />
       <PWAInstallPrompt />
+      {isAuthenticated && <PushPermissionBanner />}
       <Toaster
         position="top-center"
         duration={4000}

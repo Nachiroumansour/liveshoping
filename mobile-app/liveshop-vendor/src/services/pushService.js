@@ -2,52 +2,73 @@ import { getBackendUrl } from '../config/domains'
 
 class PushService {
   constructor() {
-    this.subscribed = false
+    this._subscribing = false
   }
 
   isSupported() {
     return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
   }
 
-  async getPermissionStatus() {
+  getPermissionStatus() {
     if (!this.isSupported()) return 'unsupported'
     return Notification.permission // 'granted', 'denied', 'default'
   }
 
   async requestPermission() {
     if (!this.isSupported()) return 'unsupported'
-    const result = await Notification.requestPermission()
-    return result
+    return await Notification.requestPermission()
   }
 
+  /**
+   * Subscribe to push notifications.
+   * - Requests permission if not yet granted
+   * - Creates push subscription with VAPID key
+   * - Sends subscription to backend
+   * - Always re-sends to backend (handles device switch, token change)
+   */
   async subscribe() {
     if (!this.isSupported()) return false
-    if (this.subscribed) return true
+    if (this._subscribing) return false // prevent parallel calls
+
+    this._subscribing = true
 
     try {
-      const permission = await this.requestPermission()
+      // 1. Check / request permission
+      let permission = Notification.permission
+      if (permission === 'default') {
+        permission = await Notification.requestPermission()
+      }
       if (permission !== 'granted') {
-        console.log('Push permission denied')
+        console.log('Push permission not granted:', permission)
         return false
       }
 
+      // 2. Wait for SW to be ready
       const registration = await navigator.serviceWorker.ready
-      const token = localStorage.getItem('liveshop_token')
-      if (!token) return false
 
-      // Get VAPID public key from backend
+      // 3. Get auth token
+      const token = localStorage.getItem('liveshop_token')
+      if (!token) {
+        console.warn('No auth token for push subscription')
+        return false
+      }
+
+      // 4. Get VAPID public key from backend
       const backendUrl = getBackendUrl()
       const vapidRes = await fetch(`${backendUrl}/api/push/vapid-public-key`)
+      if (!vapidRes.ok) {
+        console.warn('VAPID key endpoint error:', vapidRes.status)
+        return false
+      }
       const vapidData = await vapidRes.json()
       if (!vapidData.success || !vapidData.publicKey) {
         console.warn('VAPID key not available')
         return false
       }
 
-      // Convert VAPID key to Uint8Array
       const vapidKey = this.urlBase64ToUint8Array(vapidData.publicKey)
 
-      // Check existing subscription
+      // 5. Get or create push subscription
       let subscription = await registration.pushManager.getSubscription()
 
       if (!subscription) {
@@ -55,9 +76,10 @@ class PushService {
           userVisibleOnly: true,
           applicationServerKey: vapidKey
         })
+        console.log('New push subscription created')
       }
 
-      // Send subscription to backend
+      // 6. Always send subscription to backend (ensures it's registered even after reinstall/clear)
       const res = await fetch(`${backendUrl}/api/push/subscribe`, {
         method: 'POST',
         headers: {
@@ -68,15 +90,17 @@ class PushService {
       })
 
       if (res.ok) {
-        this.subscribed = true
-        console.log('Push subscription registered')
+        console.log('Push subscription synced with backend')
         return true
       }
 
+      console.warn('Backend push subscribe failed:', res.status)
       return false
     } catch (error) {
       console.error('Push subscribe error:', error)
       return false
+    } finally {
+      this._subscribing = false
     }
   }
 
@@ -99,8 +123,6 @@ class PushService {
           }
         })
       }
-
-      this.subscribed = false
     } catch (error) {
       console.error('Push unsubscribe error:', error)
     }
