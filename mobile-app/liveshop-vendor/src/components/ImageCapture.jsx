@@ -1,8 +1,113 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Camera, Upload, X, RotateCcw, Check } from 'lucide-react';
+import { Camera, Upload, X, Check, Lock, ImageIcon, Settings } from 'lucide-react';
 import { getBackendDomain } from '../config/domains';
+
+// ─── Modal de permission refusée (caméra ou photos) ───
+function PermissionModal({ type, onClose }) {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+
+  const handleOpenSettings = () => {
+    if (isIOS && isStandalone) {
+      // Sur iOS PWA standalone, cette URL ouvre les Réglages de l'app
+      window.location.href = 'app-settings:';
+    } else if (isIOS) {
+      // Sur iOS Safari, on ne peut pas ouvrir les Réglages directement
+      // On ferme juste la modal et laisse les instructions guider
+      onClose();
+    } else {
+      // Android : tenter d'ouvrir les paramètres du navigateur
+      // (aucun deeplink universel garanti, mais ça marche sur Chrome récent)
+      try {
+        // Chrome Android — ouvre les paramètres du site actuel
+        window.location.href = 'chrome://settings/content/camera';
+      } catch {
+        // Fallback silencieux
+      }
+      onClose();
+    }
+  };
+
+  const isCam = type === 'camera';
+
+  const iosSteps = isCam
+    ? ['Ouvrez l\'app Réglages', 'Appuyez sur Safari (ou votre navigateur)', 'Appuyez sur Caméra', 'Choisissez Autoriser']
+    : ['Ouvrez l\'app Réglages', 'Appuyez sur Confidentialité > Photos', `Appuyez sur Safari (ou votre navigateur)`, 'Choisissez Toutes les photos'];
+
+  const androidSteps = isCam
+    ? ['Appuyez sur les ⋮ dans Chrome', 'Allez dans Paramètres > Paramètres du site', 'Appuyez sur Caméra', 'Autorisez l\'accès']
+    : ['Appuyez sur les ⋮ dans Chrome', 'Allez dans Paramètres > Paramètres du site', 'Appuyez sur Autorisations', 'Autorisez l\'accès aux fichiers'];
+
+  const steps = isIOS ? iosSteps : androidSteps;
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+
+      {/* Modal */}
+      <div className="relative bg-white w-full max-w-sm rounded-t-2xl sm:rounded-2xl px-6 pt-6 pb-8 shadow-2xl">
+        {/* Icône */}
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
+            {isCam
+              ? <Camera className="w-8 h-8 text-red-500" />
+              : <ImageIcon className="w-8 h-8 text-red-500" />
+            }
+            <div className="absolute w-5 h-5 rounded-full bg-red-500 flex items-center justify-center" style={{ marginTop: 28, marginLeft: 28 }}>
+              <Lock className="w-3 h-3 text-white" />
+            </div>
+          </div>
+        </div>
+
+        {/* Titre */}
+        <h3 className="text-center text-lg font-bold text-gray-900 mb-1">
+          {isCam ? 'Accès à la caméra bloqué' : 'Accès aux photos bloqué'}
+        </h3>
+        <p className="text-center text-sm text-gray-500 mb-6">
+          {isCam
+            ? 'LiveShop a besoin d\'accéder à votre caméra pour prendre des photos de produits.'
+            : 'LiveShop a besoin d\'accéder à vos photos pour importer des images de produits.'
+          }
+        </p>
+
+        {/* Étapes */}
+        <div className="bg-gray-50 rounded-xl p-4 mb-6 space-y-2">
+          {steps.map((step, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                {i + 1}
+              </span>
+              <span className="text-sm text-gray-700">{step}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Boutons */}
+        <div className="flex flex-col gap-2">
+          {(isStandalone || !isIOS) && (
+            <button
+              onClick={handleOpenSettings}
+              className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:scale-95 transition-all"
+            >
+              <Settings className="w-4 h-4" />
+              Ouvrir les Réglages
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="w-full py-3 text-gray-500 font-medium text-sm"
+          >
+            Annuler
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const ImageCapture = ({ 
   onImageUpload, 
@@ -17,6 +122,7 @@ const ImageCapture = ({
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [error, setError] = useState(null);
+  const [permissionDenied, setPermissionDenied] = useState(null); // 'camera' | 'photos' | null
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
   const videoRef = useRef(null);
@@ -24,14 +130,20 @@ const ImageCapture = ({
   const [showCamera, setShowCamera] = useState(false);
   const [stream, setStream] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+  // Ref pour lire l'état de permission de façon synchrone dans les click handlers
+  const cameraPermRef = useRef('unknown');
 
-  // Détecter si on est sur mobile
-  React.useEffect(() => {
-    const checkMobile = () => {
-      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      setIsMobile(mobile);
-    };
-    checkMobile();
+  useEffect(() => {
+    const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    setIsMobile(mobile);
+
+    // Pré-charger l'état de permission caméra pour pouvoir le lire de façon synchrone
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: 'camera' }).then((result) => {
+        cameraPermRef.current = result.state;
+        result.onchange = () => { cameraPermRef.current = result.state; };
+      }).catch(() => {});
+    }
   }, []);
 
   // Fonction pour compresser l'image
@@ -255,40 +367,34 @@ const ImageCapture = ({
     }, 'image/jpeg', 0.8);
   }, [handleImageUpload, stopCamera]);
 
-  // Fonction pour démarrer la caméra
-  const startCamera = useCallback(async () => {
-    // Sur mobile, utiliser directement l'input file avec capture (camera)
-    if (isMobile) {
-      // Ouvrir l'input spécifique caméra (avec capture)
-      cameraInputRef.current?.click();
+  // Ouvrir la caméra sur mobile : check synchrone de la permission pré-chargée
+  const handleMobileCameraClick = useCallback((e) => {
+    e.stopPropagation();
+    if (disabled) return;
+    if (cameraPermRef.current === 'denied') {
+      setPermissionDenied('camera');
       return;
     }
+    cameraInputRef.current?.click();
+  }, [disabled]);
 
-    // Sur desktop, utiliser getUserMedia
+  // Fonction pour démarrer la caméra (desktop uniquement — getUserMedia)
+  const startCamera = useCallback(async () => {
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setError('Caméra non supportée sur ce navigateur. Utilisez le bouton Galerie.');
         return;
       }
-
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: 'environment',
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
-        } 
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
       });
-      
       setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
+      if (videoRef.current) videoRef.current.srcObject = mediaStream;
       setShowCamera(true);
     } catch (err) {
       console.error('Erreur accès caméra:', err);
-      
       if (err.name === 'NotAllowedError') {
-        setError('Permission caméra refusée. Autorisez l\'accès dans les paramètres.');
+        setPermissionDenied('camera');
       } else if (err.name === 'NotFoundError') {
         setError('Aucune caméra trouvée. Utilisez le bouton Galerie.');
       } else if (err.name === 'NotReadableError') {
@@ -297,7 +403,7 @@ const ImageCapture = ({
         setError('Impossible d\'accéder à la caméra. Utilisez le bouton Galerie.');
       }
     }
-  }, [isMobile]);
+  }, []);
 
   // Fonction pour supprimer une image
   const removeImage = useCallback((index) => {
@@ -340,9 +446,12 @@ const ImageCapture = ({
     console.debug('Camera select files:', files.map(f => ({ name: f.name, size: f.size, type: f.type })));
 
     if (files.length === 0) {
-      console.warn('Aucun fichier reçu depuis l\'input camera (files length 0)');
-      setError('Aucune image capturée — réessayez ou utilisez la Galerie');
-      // Reset value and exit
+      // Aucun fichier = caméra bloquée ou annulée.
+      // Si la permission est connue comme refusée → afficher la modal settings
+      if (cameraPermRef.current === 'denied') {
+        setPermissionDenied('camera');
+      }
+      // Sinon c'est juste une annulation, on ne fait rien
       event.target.value = '';
       return;
     }
@@ -460,39 +569,31 @@ const ImageCapture = ({
               </div>
 
               <div className="flex justify-center gap-2">
-                <Button
+                {/* Bouton Caméra :
+                    - Mobile : check permission synchrone (ref pré-chargée), puis ouvre le picker natif
+                    - Desktop : getUserMedia avec gestion d'erreur */}
+                <button
                   type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Sur mobile, ouvrir l'input caméra (capture), sinon démarrer getUserMedia
-                    if (isMobile) {
-                      cameraInputRef.current?.click();
-                    } else {
-                      startCamera();
-                    }
-                  }}
+                  onClick={isMobile
+                    ? handleMobileCameraClick
+                    : (e) => { e.stopPropagation(); startCamera(); }
+                  }
                   disabled={disabled}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-md bg-white hover:bg-gray-50 active:scale-95 transition-all select-none ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
-                  <Camera className="h-4 w-4 mr-2" />
+                  <Camera className="h-4 w-4" />
                   Caméra
-                </Button>
-                
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Ouvrir la galerie (input sans capture)
-                    fileInputRef.current?.click();
-                  }}
-                  disabled={disabled}
+                </button>
+
+                {/* Galerie — label natif pour déclencher le file picker sans blocage JS */}
+                <label
+                  htmlFor="gallery-input-native"
+                  onClick={(e) => e.stopPropagation()}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-md bg-white hover:bg-gray-50 cursor-pointer select-none ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
                 >
-                  <Upload className="h-4 w-4 mr-2" />
+                  <Upload className="h-4 w-4" />
                   Galerie
-                </Button>
+                </label>
               </div>
 
               {multiple && (
@@ -505,10 +606,19 @@ const ImageCapture = ({
         </Card>
       )}
 
+      {/* Modal permission refusée (caméra ou photos) */}
+      {permissionDenied && (
+        <PermissionModal
+          type={permissionDenied}
+          onClose={() => setPermissionDenied(null)}
+        />
+      )}
+
       {/* Input file caché - avec capture mobile */}
       {/* Input galerie (sans capture) */}
       <input
         ref={fileInputRef}
+        id="gallery-input-native"
         type="file"
         accept="image/*"
         multiple={multiple}
@@ -516,9 +626,10 @@ const ImageCapture = ({
         className="hidden"
       />
 
-      {/* Input caméra (avec capture) - mobile only: opens camera */}
+      {/* Input caméra (avec capture) — mobile only: opens camera natively */}
       <input
         ref={cameraInputRef}
+        id="camera-input-native"
         type="file"
         accept="image/*"
         capture="environment"

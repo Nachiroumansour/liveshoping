@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Label } from '@/components/ui/label';
-import { Smartphone, Lock, Key, User, ArrowRight } from 'lucide-react';
+import { Smartphone, Key, User, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../services/api';
+import PinInput from '@/components/ui/PinInput';
 
 const RegisterSteps = ({ onDone }) => {
   const [step, setStep] = useState(1);
@@ -275,42 +276,16 @@ const RegisterSteps = ({ onDone }) => {
           className="space-y-5"
         >
           <div className="space-y-2">
-            <Label htmlFor="reg-pin" className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <Label className="text-xs font-medium text-gray-500 uppercase tracking-wider">
               Code PIN
             </Label>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                id="reg-pin"
-                type="password"
-                inputMode="numeric"
-                maxLength={4}
-                placeholder="••••"
-                value={pin}
-                onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-0 rounded-xl text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-center tracking-widest text-lg transition-all"
-                required
-              />
-            </div>
+            <PinInput value={pin} onChange={setPin} length={4} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="reg-pin-confirm" className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <Label className="text-xs font-medium text-gray-500 uppercase tracking-wider">
               Confirmer le code PIN
             </Label>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                id="reg-pin-confirm"
-                type="password"
-                inputMode="numeric"
-                maxLength={4}
-                placeholder="••••"
-                value={pinConfirm}
-                onChange={e => setPinConfirm(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-0 rounded-xl text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900/10 text-center tracking-widest text-lg transition-all"
-                required
-              />
-            </div>
+            <PinInput value={pinConfirm} onChange={setPinConfirm} length={4} />
           </div>
           <motion.div whileTap={{ scale: 0.98 }}>
             <button
