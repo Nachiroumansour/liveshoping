@@ -1,5 +1,5 @@
-import { precacheAndRoute } from 'workbox-precaching'
-import { registerRoute } from 'workbox-routing'
+import { precacheAndRoute, matchPrecache } from 'workbox-precaching'
+import { registerRoute, setCatchHandler } from 'workbox-routing'
 import { StaleWhileRevalidate, CacheFirst, NetworkFirst } from 'workbox-strategies'
 import { ExpirationPlugin } from 'workbox-expiration'
 
@@ -39,15 +39,24 @@ registerRoute(
   })
 )
 
-// HTML pages — NetworkFirst with generous cache fallback (7 days)
+// HTML pages — NetworkFirst avec timeout généreux pour données mobiles lentes (3G/4G)
 registerRoute(
   ({ request }) => request.destination === 'document',
   new NetworkFirst({
     cacheName: 'pages',
-    networkTimeoutSeconds: 3,
+    networkTimeoutSeconds: 8,
     plugins: [new ExpirationPlugin({ maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 7 })]
   })
 )
+
+// Fallback : si réseau échoue ET cache vide → servir index.html depuis le précache
+// Évite la page blanche sur première ouverture avec données mobiles lentes
+setCatchHandler(async ({ request }) => {
+  if (request.destination === 'document') {
+    return matchPrecache('/index.html')
+  }
+  return Response.error()
+})
 
 // ═══════════════════════════════════════════
 // PUSH NOTIFICATIONS
