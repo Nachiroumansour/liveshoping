@@ -132,8 +132,8 @@ Phase 2 (l'extraction copie/adapte). Bascule de la PWA = Phase 3 optionnelle.
 
 - Modèle `PushSubscription` étendu : champ `type` (`'webpush'` | `'expo'`) + token
   Expo. Pas de nouvelle table.
-- Enregistrement du token : endpoint `POST /api/push/expo-token` (ou extension de
-  l'endpoint existant).
+- Enregistrement du token : nouvel endpoint dédié `POST /api/push/expo-token`
+  (authentifié vendeur), l'endpoint Web Push existant reste inchangé.
 - Envoi via `expo-server-sdk` (Expo route vers FCM/APNs ; clé FCM gérée dans la
   config EAS, pas de credentials Firebase côté serveur en V1).
 - Fan-out de `sendRealtimeNotification()` : Socket.IO + Web Push + Expo Push.
