@@ -70,8 +70,9 @@ liveshop-link/
 - Dockerfiles multi-stage : `corepack enable` → copie `pnpm-lock.yaml`,
   `pnpm-workspace.yaml` et les `package.json` du sous-arbre → `pnpm install
   --filter <app>...` → build.
-  - Backend : `pnpm deploy --filter @liveshop/backend` pour une image finale
-    autonome (sans le workspace).
+  - Backend : `pnpm install --filter @liveshop/backend... --prod` (le backend n'a
+    aucune dépendance workspace en Phase 1 ; passage à `pnpm deploy` en Phase 2
+    si des packages partagés entrent dans l'image).
   - Fronts : inchangés après build — nginx sert `dist/`.
 - Workflow GitHub Actions quasi inchangé (il clone et fait `docker compose up -d
   --build`) ; seuls les chemins dans `docker-compose.yml` changent.
