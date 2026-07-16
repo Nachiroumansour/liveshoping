@@ -1,13 +1,3 @@
 packages:
   - "apps/*"
   - "packages/*"
-
-onlyBuiltDependencies:
-  - bcrypt
-  - sqlite3
-  - esbuild
-  - bufferutil
-  - core-js
-  - es5-ext
-  - msgpackr-extract
-  - utf-8-validate
