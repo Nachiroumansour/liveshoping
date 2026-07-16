@@ -1,33 +1,20 @@
-FROM node:18 as build
-WORKDIR /app
+FROM node:20 AS build
+WORKDIR /workspace
 
-# Installer pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10
 
-# Copier les fichiers de dépendances
-COPY package.json pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY apps/vendor-pwa/package.json apps/vendor-pwa/
 
-# Installer les dépendances avec pnpm (sans frozen-lockfile)
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm install --filter @liveshop/vendor-pwa... --no-frozen-lockfile
 
-# Copier le reste du code
-COPY . .
+COPY apps/vendor-pwa apps/vendor-pwa
 
-# Build avec pnpm en mode PRODUCTION (important pour .env.production)
 ENV NODE_ENV=production
-
-# Debug : Afficher le contenu de .env.production
-RUN echo "📋 Contenu de .env.production:" && cat .env.production || echo "❌ Fichier .env.production non trouvé"
-
-RUN pnpm run build
-
-# Debug : Vérifier que l'URL est correcte dans le build
-RUN echo "🔍 Vérification du build..." && \
-    grep -r "localhost:3001" dist/ && echo "⚠️ ATTENTION: localhost:3001 trouvé dans le build!" || echo "✅ Pas de localhost:3001 dans le build" && \
-    grep -r "api.livelink.store" dist/ && echo "✅ api.livelink.store trouvé dans le build" || echo "⚠️ ATTENTION: api.livelink.store NOT FOUND"
+RUN pnpm --filter @liveshop/vendor-pwa build
 
 FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /workspace/apps/vendor-pwa/dist /usr/share/nginx/html
+COPY apps/vendor-pwa/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

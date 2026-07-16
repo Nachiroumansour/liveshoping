@@ -1,23 +1,19 @@
-FROM node:18 as build
-WORKDIR /app
+FROM node:20 AS build
+WORKDIR /workspace
 
-# Installer pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10
 
-# Copier les fichiers de dépendances
-COPY package.json pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY apps/web-buyer/package.json apps/web-buyer/
 
-# Installer les dépendances avec pnpm (sans frozen-lockfile)
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm install --filter @liveshop/web-buyer... --no-frozen-lockfile
 
-# Copier le reste du code
-COPY . .
+COPY apps/web-buyer apps/web-buyer
 
-# Build avec pnpm
-RUN pnpm run build
+RUN pnpm --filter @liveshop/web-buyer build
 
 FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /workspace/apps/web-buyer/dist /usr/share/nginx/html
+COPY apps/web-buyer/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
