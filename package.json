@@ -9,5 +9,17 @@
   },
   "devDependencies": {
     "turbo": "^2.5.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "bcrypt",
+      "bufferutil",
+      "core-js",
+      "es5-ext",
+      "esbuild",
+      "msgpackr-extract",
+      "sqlite3",
+      "utf-8-validate"
+    ]
   }
 }

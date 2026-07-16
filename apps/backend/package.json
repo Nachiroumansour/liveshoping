@@ -1,5 +1,5 @@
 {
-  "name": "liveshop-backend",
+  "name": "@liveshop/backend",
   "version": "1.0.0",
   "description": "Backend API pour LiveShop Link",
   "main": "src/app.js",
