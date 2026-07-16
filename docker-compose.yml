@@ -1,7 +1,9 @@
 # Docker Compose pour déploiement production
 services:
   backend:
-    build: ./liveshop-backend
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
     container_name: livelink-backend
     restart: unless-stopped
     
@@ -29,7 +31,9 @@ services:
       - db
 
   dashboard:
-    build: ./web-client/liveshop-client
+    build:
+      context: .
+      dockerfile: apps/web-buyer/Dockerfile
     container_name: livelink-dashboard
     restart: unless-stopped
     
@@ -53,7 +57,9 @@ services:
       - livelink-front-logs:/app/logs
 
   mobile:
-    build: ./mobile-app/liveshop-vendor
+    build:
+      context: .
+      dockerfile: apps/vendor-pwa/Dockerfile
     container_name: livelink-mobile
     restart: unless-stopped
     

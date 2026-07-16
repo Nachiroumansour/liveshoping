@@ -1,0 +1,13 @@
+**/node_modules
+**/.git
+.git
+**/dist
+**/.turbo
+.turbo
+.npm-cache
+.claude
+docs
+support
+**/*.log
+**/logs
+.DS_Store

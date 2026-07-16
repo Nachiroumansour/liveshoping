@@ -1,0 +1,25 @@
+{
+  "name": "liveshop-link",
+  "private": true,
+  "packageManager": "pnpm@10.4.1",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "bcrypt",
+      "bufferutil",
+      "core-js",
+      "es5-ext",
+      "esbuild",
+      "msgpackr-extract",
+      "sqlite3",
+      "utf-8-validate"
+    ]
+  }
+}
