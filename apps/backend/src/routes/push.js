@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
 const webPushService = require('../services/webPushService');
+const expoPushService = require('../services/expoPushService');
 
 // Obtenir la clé publique VAPID
 router.get('/vapid-public-key', (req, res) => {
@@ -114,6 +115,52 @@ router.get('/stats', authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Erreur lors de la récupération des stats'
+    });
+  }
+});
+
+// Enregistrer un token push Expo (app mobile native)
+router.post('/expo-token', authenticateToken, async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token || !expoPushService.isExpoToken(token)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Token Expo invalide'
+      });
+    }
+
+    await expoPushService.saveToken(req.seller.id, token);
+
+    res.json({
+      success: true,
+      message: 'Token Expo enregistré'
+    });
+  } catch (error) {
+    console.error('❌ Erreur enregistrement token Expo:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erreur lors de l\'enregistrement'
+    });
+  }
+});
+
+// Supprimer un token push Expo (déconnexion de l'app mobile)
+router.delete('/expo-token', authenticateToken, async (req, res) => {
+  try {
+    const { token } = req.body || {};
+    await expoPushService.removeToken(req.seller.id, token || null);
+
+    res.json({
+      success: true,
+      message: 'Token Expo supprimé'
+    });
+  } catch (error) {
+    console.error('❌ Erreur suppression token Expo:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erreur lors de la suppression'
     });
   }
 });

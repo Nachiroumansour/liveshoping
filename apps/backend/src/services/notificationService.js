@@ -2,6 +2,7 @@ const { Notification } = require('../models');
 const { sequelize } = require('../config/database');
 const notificationQueue = require('./notificationQueue');
 const webPushService = require('./webPushService');
+const expoPushService = require('./expoPushService');
 
 class NotificationService {
   constructor() {
@@ -81,7 +82,9 @@ class NotificationService {
       } else {
         // Vendeur offline - Essayer Web Push en fallback
         console.log(`📱 [NOTIF-OFFLINE] Vendeur ${sellerId} offline, tentative Web Push...`);
-        const pushSent = await webPushService.sendPushNotification(sellerId, notification);
+        const webSent = await webPushService.sendPushNotification(sellerId, notification);
+        const expoSent = await expoPushService.sendPushNotification(sellerId, notification);
+        const pushSent = webSent || expoSent;
         
         if (pushSent) {
           console.log(`✅ [NOTIF-PUSH] Notification envoyée via Web Push: ${type} (ID: ${notification.id})`);
