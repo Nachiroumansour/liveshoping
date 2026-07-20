@@ -19,19 +19,30 @@ const PushSubscription = sequelize.define('PushSubscription', {
     type: DataTypes.TEXT,
     allowNull: false
   },
+  // 'webpush' : endpoint = URL push du navigateur, keys_* requis
+  // 'expo'    : endpoint = ExponentPushToken[...], keys_* null
+  type: {
+    type: DataTypes.STRING(10),
+    allowNull: false,
+    defaultValue: 'webpush',
+    validate: {
+      isIn: [['webpush', 'expo']]
+    }
+  },
   keys_p256dh: {
     type: DataTypes.TEXT,
-    allowNull: false
+    allowNull: true
   },
   keys_auth: {
     type: DataTypes.TEXT,
-    allowNull: false
+    allowNull: true
   }
 }, {
   tableName: 'push_subscriptions',
   indexes: [
     { fields: ['seller_id'] },
-    { unique: true, fields: ['endpoint'] }
+    { unique: true, fields: ['endpoint'] },
+    { fields: ['seller_id', 'type'] }
   ]
 });
 
