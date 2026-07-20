@@ -38,8 +38,22 @@ jobs:
               cd /srv/projects/livelink
             fi
 
-            echo "🐳 Building and deploying..."
-            docker compose up -d --build
+            echo "🐳 Building images..."
+            docker compose build
+
+            echo "🗄️ Starting database..."
+            docker compose up -d db
+
+            echo "⏳ Waiting for database to be healthy..."
+            until [ "$(docker inspect -f '{{.State.Health.Status}}' livelink-db 2>/dev/null)" = "healthy" ]; do
+              sleep 2
+            done
+
+            echo "🔧 Running database migrations..."
+            docker compose run --rm backend node src/scripts/migrate-push-type.js
+
+            echo "🚀 Starting services..."
+            docker compose up -d
 
             echo "⏳ Waiting for services..."
             sleep 15
