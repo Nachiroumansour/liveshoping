@@ -531,6 +531,17 @@ importers:
         specifier: ^6.3.5
         version: 6.4.3(@types/node@26.1.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.49.0)
 
+  packages/api-client:
+    dependencies:
+      '@liveshop/shared':
+        specifier: workspace:*
+        version: link:../shared
+      socket.io-client:
+        specifier: ^4.8.1
+        version: 4.8.3(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+
+  packages/shared: {}
+
 packages:
 
   '@apideck/better-ajv-errors@0.3.7':
