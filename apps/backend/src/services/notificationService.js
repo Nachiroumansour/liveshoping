@@ -2,6 +2,7 @@ const { Notification } = require('../models');
 const { sequelize } = require('../config/database');
 const notificationQueue = require('./notificationQueue');
 const webPushService = require('./webPushService');
+const expoPushService = require('./expoPushService');
 
 class NotificationService {
   constructor() {
@@ -81,10 +82,18 @@ class NotificationService {
       } else {
         // Vendeur offline - Essayer Web Push en fallback
         console.log(`📱 [NOTIF-OFFLINE] Vendeur ${sellerId} offline, tentative Web Push...`);
-        const pushSent = await webPushService.sendPushNotification(sellerId, notification);
+        const webSent = await webPushService.sendPushNotification(sellerId, notification).catch((err) => {
+          console.error(`❌ [NOTIF-PUSH] Web Push échoué pour seller ${sellerId}:`, err.message);
+          return false;
+        });
+        const expoSent = await expoPushService.sendPushNotification(sellerId, notification).catch((err) => {
+          console.error(`❌ [NOTIF-PUSH] Expo Push échoué pour seller ${sellerId}:`, err.message);
+          return false;
+        });
+        const pushSent = webSent || expoSent;
         
         if (pushSent) {
-          console.log(`✅ [NOTIF-PUSH] Notification envoyée via Web Push: ${type} (ID: ${notification.id})`);
+          console.log(`✅ [NOTIF-PUSH] Notification envoyée via push (web:${webSent} expo:${expoSent}): ${type} (ID: ${notification.id})`);
           await notification.update({ sent: true, sent_at: new Date() });
         } else {
           // Ajouter à la queue de retry (priorité BullMQ)
