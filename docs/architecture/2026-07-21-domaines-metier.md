@@ -22,6 +22,7 @@
 | 9 | AI Services | **À créer** | Rien |
 | 10 | Marketplace | **À créer** | Rien de cross-boutique (public.js est strictement mono-boutique via linkId) |
 | 11 | Growth & Marketing | **Partiel** | og.js (aperçus réseaux sociaux), stats commandes |
+| 12 | Formation & Mémoire | **À créer** | Rien — ajouté le 21/07 (cycle de vie des employés) |
 
 > **Écart avec la liste des 6 domaines proposée :** la vision omettait **Monétisation** (le modèle économique actuel de la plateforme — les vendeurs consomment des crédits pour agir), **Communication** (déjà un vrai sous-système à 3 canaux : Web Push, Expo Push, WhatsApp) et **Plateforme & Admin**. Inversement, « Live Commerce » existe déjà dans le code alors que la vision n'en parlait pas — à décider : le conserver comme domaine ou le fondre dans Growth & Marketing.
 
@@ -208,6 +209,24 @@ Trois familles de règles :
 
 ---
 
+## 12. Formation & Mémoire — *À créer (ajouté le 21/07 — cycle de vie des employés)*
+
+**Objectif :** ce qui rend chaque employé numérique unique — la mémoire de la boutique et son alimentation. Voir [le cycle de vie des employés](../produit/cycle-de-vie-employes.md), phases 3 et 4.
+
+**Entités à créer :**
+- `Knowledge` — une connaissance : contenu, source (document, note vocale, correction du commerçant), date, statut `proposée | confirmée | active | contestée`
+- `TrainingSession` — un dépôt de formation (fichiers ingérés, informations extraites, questions de confirmation posées)
+- `TrustScore` — le taux de validation par employé **et par type d'action** (alimente les promotions de niveau de confiance)
+
+**Événements consommés :** `TrainingMaterialUploaded`, `KnowledgeConfirmed`, `ProposalValidated`/`ProposalRejected` (signaux de confiance), corrections du commerçant.
+**Événements émis :** `KnowledgeLearned`, `KnowledgeConflictDetected`, `TrustLevelPromotionProposed`, `TrustLevelDemoted`.
+
+**Dépendances :** AI Services (extraction depuis PDF/images/audio — dont wolof), Policy Engine (les niveaux de confiance sont des policies dynamiques recalculées depuis `TrustScore` ; le Policy Engine reste l'unique point de décision).
+
+**Frontières :** la mémoire appartient à la **boutique** (partagée entre ses employés), jamais partagée entre boutiques. La collaboration inter-employés ne passe **pas** par ce domaine : elle passe par le bus d'événements + la lecture de cette mémoire commune — aucun mécanisme dédié.
+
+---
+
 ## Taxonomie d'événements v1 (liste fermée de départ)
 
 Consolidation : la liste proposée dans la vision **+** les événements imposés par l'existant (crédits, lives, OTP) :
@@ -217,9 +236,11 @@ Consolidation : la liste proposée dans la vision **+** les événements imposé
 **Monétisation :** `CreditsConsumed`, `CreditsPurchased`, `CreditsLow`, `PaymentFailed`
 **Live :** `LiveScheduled`, `LiveStarted`, `LiveEnded`
 **IA :** `AIResponseDrafted`*, `AIContentGenerated`*, `AIEscalatedToHuman`*
+**Formation & confiance :** `TrainingMaterialUploaded`*, `KnowledgeLearned`*, `KnowledgeConflictDetected`*, `TrustLevelPromotionProposed`*, `TrustLevelDemoted`*
+**Temporels (planificateur) :** `WeeklySummaryDue`*, `OrderUnpaidReminderDue`*, `DeliveryStalledReminderDue`*
 **Système :** `WorkflowCompleted`, `WorkflowFailed`, `ApprovalRequested`*, `ApprovalGranted`*
 
-\* = suppose des capacités qui n'existent pas encore (statuts de commande étendus, entité livreur, IA, approbations).
+\* = suppose des capacités qui n'existent pas encore (statuts de commande étendus, entité livreur, IA, approbations, formation, événements temporels).
 
 ---
 

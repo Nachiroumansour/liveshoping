@@ -61,11 +61,27 @@
 | **Validation humaine** | Le mécanisme par lequel une action en attente est soumise au commerçant (notification + accepter/refuser). Rien d'irréversible ne se fait sans elle quand une policy l'exige. | À créer (`ApprovalRequest`) |
 | **Escalade** | Le passage de relais d'un employé numérique vers le commerçant quand il ne sait pas ou n'a pas le droit. Une escalade n'est jamais un échec silencieux : elle notifie. | À créer |
 
+## La carrière des employés
+
+| Terme | Définition | Dans le code aujourd'hui |
+|---|---|---|
+| **Recrutement** (embauche) | L'activation d'un employé numérique par le commerçant. Gratuit — c'est le travail qui coûte. Tout employé démarre au niveau de confiance 1. | À créer |
+| **Entretien d'embauche** | La configuration conversationnelle : l'employé pose des questions, chaque réponse devient une policy ou un paramètre. Remplace le formulaire. | À créer |
+| **Formation** | L'acte de donner des connaissances à sa boutique : documents, photos, notes vocales (français/wolof), FAQ, politiques internes. L'employé rend compte de ce qu'il a appris et demande confirmation quand il doute. | À créer (domaine Formation & Mémoire) |
+| **Connaissance** | Une information apprise, avec sa source, sa date et son statut : `proposée → confirmée → active` (ou `contestée`). Seules les connaissances actives servent. | À créer |
+| **Mémoire de boutique** | L'ensemble des connaissances actives d'une boutique. Elle appartient à la boutique, pas à un employé — tous y puisent. Jamais partagée entre boutiques. | À créer |
+| **Niveau de confiance** | Le degré d'autonomie d'un employé sur un **type d'action**, de 1 (tout supervisé) à 5 (autonome dans le périmètre). Monte sur proposition du système (taux de validation) et décision du commerçant ; peut redescendre. Ne débloque jamais les interdits de policy. | À créer (extension Policy Engine) |
+| **Taux de validation** | La part des propositions d'un employé acceptées sans modification — la mesure objective qui alimente les promotions de confiance. | À créer |
+| **Fiche d'évaluation** | Le bilan périodique d'un employé en métriques métier : ce qu'il a coûté (salaire en crédits) et ce qu'il a rapporté (ventes assistées, temps gagné). | À créer |
+| **Suspension** | Mise en pause immédiate d'un employé — tout ce qui est en file est gelé. | À créer |
+| **Licenciement** | Désactivation d'un employé. Sa formation est **conservée** (elle appartient à la boutique) — la réembauche ne coûte pas une nouvelle formation. | À créer |
+
 ## Les canaux
 
 | Terme | Définition | Dans le code aujourd'hui |
 |---|---|---|
 | **Canal** | Un moyen de joindre quelqu'un : temps réel (app ouverte), notification push (web ou native), WhatsApp. | Socket.IO, `webPushService`, `expoPushService`, `whatsappNotificationService` |
+| **Chat boutique** | Le canal entrant client : une conversation intégrée à la page publique du produit/de la boutique, tenue par l'Employé Commercial. Choisi comme premier canal entrant (avant WhatsApp) : contrôle total, attribution question→vente native. Fait naître l'entité Client. | À créer |
 | **Notification** | Un message persisté adressé au commerçant via la cascade de canaux (temps réel → push → file de relance). | Entité `Notification`, `notificationService` |
 
 ---
