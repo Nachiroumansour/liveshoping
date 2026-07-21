@@ -194,6 +194,58 @@ La majorité du travail de chaque employé est de l'**automatisation fiable** (r
 | SAV | ●●○ | ●●● (remboursement interdit) | ●●○ | ●●● | Commerce, Logistics |
 | Comptable & Analyste | ●●○ | ●○○ (lecture seule) | ●●○ (rédaction, tendances) | ●○○ (commerçant seul) | Commerce, Monétisation |
 
+## Les missions — le travail à la demande
+
+Les employés travaillent selon **deux modes** :
+
+1. **En réaction** — un événement survient (commande, question, stock bas), le workflow de l'employé s'exécute. C'est le quotidien automatique.
+2. **En mission** — le commerçant demande un travail : « Fais une campagne pour les sacs. » L'employé décompose, exécute, et **rend son résultat**.
+
+```
+Le commerçant : « Fais une campagne pour les sacs »
+        ↓
+Mission (Employé Marketing)
+        ↓  créer l'affiche
+        ↓  créer le texte
+        ↓  créer la vidéo
+        ↓  publier (selon l'état d'autonomie — brouillon si Assistant)
+        ↓
+Rapport : « Voici ce que j'ai fait, voici les premiers résultats »
+```
+
+**Règles des missions :**
+- Une mission **rend toujours compte** — le commerçant voit ce qui a été fait, jamais de travail invisible.
+- Les policies et l'état d'autonomie s'appliquent **exactement pareil** en mission qu'en réaction : une mission ne contourne aucun garde-fou.
+- Techniquement : une mission est un workflow dont le déclencheur est le commerçant plutôt qu'un événement — même moteur (Automation Engine), aucune machinerie nouvelle.
+- Le commerçant pense en **travaux à réaliser**, pas en états d'employés : la mission est l'unité de langage naturelle (« fais », « prépare », « relance ») ; l'autonomie ne fait que déterminer ce qui part sans validation.
+
+## Le tableau de bord de l'équipe
+
+L'écran d'accueil du commerçant : **qu'a fait mon équipe aujourd'hui ?**
+
+```
+Aujourd'hui
+─────────────────────────────
+Commercial
+  ✓ 43 questions répondues
+  ✓ 18 ventes assistées
+  ✓ 95 % approuvées
+  ⚠ 2 demandes d'aide en attente
+─────────────────────────────
+Marketing
+  ✓ 3 affiches · 2 vidéos · 4 posts
+  ◷ Mission « campagne sacs » en cours
+─────────────────────────────
+Logistique
+  ✓ 17 commandes traitées
+  ✓ 17 livreurs prévenus
+─────────────────────────────
+Comptable
+  ✓ Rapport de la semaine prêt
+```
+
+Quatre zones, par priorité : **demandes d'aide en attente** (l'équipe a besoin du commerçant), **validations en attente** (travaux prêts à partir), **missions en cours**, **le fait du jour** par employé. C'est la preuve quotidienne de valeur — l'écran qui fait dire « mon équipe a travaillé pendant que je vendais en live ».
+
 ## Ordre d'embauche recommandé
 
 Aligné sur l'ordre de construction de l'architecture (l'intelligence arrive en dernier, sur des rails sûrs) :
