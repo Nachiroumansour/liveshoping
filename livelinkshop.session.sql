@@ -1,7 +1,0 @@
-create TABLE sessionsy (
-    id SERIAL PRIMARY KEY,
-    token VARCHAR(255) NOT NULL,
-    user_id INTEGER NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
- 
