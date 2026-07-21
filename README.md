@@ -29,6 +29,7 @@ docker compose up -d --build          # stack complète locale
 
 | Dossier | Contenu |
 |---|---|
+| `docs/produit/` | Fondations produit : dictionnaire métier, employés numériques |
 | `docs/architecture/` | Architecture orientée domaines (base du PRD) |
 | `docs/superpowers/` | Specs et plans d'implémentation (migration monorepo, push Expo) |
 | `docs/legacy/` | Anciens guides pré-monorepo (référence uniquement) |
