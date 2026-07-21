@@ -7,6 +7,10 @@
 
 > *« Cette fonctionnalité permet-elle au commerçant de vendre plus, de gagner du temps ou de réduire ses coûts ? »* Si non → version ultérieure.
 
+**Deux principes d'exécution :**
+1. **La métaphore RH est dosée.** « Recruter », « former », « carrière » servent le marketing et l'onboarding — ils rendent le produit désirable. Mais l'interface quotidienne reste sobre : on *désactive* un employé (on ne le « licencie » pas à chaque clic), on voit *ce qui a été fait aujourd'hui*. Le commerçant veut avant tout que ça marche.
+2. **L'IA est un moteur invisible.** Comme l'ABS d'une voiture : le conducteur dit « elle freine bien », jamais « j'ai acheté un système antiblocage ». Le commerçant dit « j'ai un commercial numérique qui répond à mes clients » — LLM, workflows, policies et bus d'événements travaillent derrière le rideau et n'apparaissent nulle part.
+
 ---
 
 ## Le cycle de vie commun — 7 phases
@@ -42,7 +46,17 @@ L'employé ingère, extrait, puis **rend compte** :
 > « J'ai appris 12 nouvelles informations. En voici le résumé. »
 > « Je ne suis pas certain d'une règle : *livraison gratuite dès 25 000 FCFA* — c'est bien ça ? »
 
-**Règles de la connaissance :**
+**Trois catégories qui ne se mélangent jamais :**
+
+| Catégorie | Exemple | Appartient à | Alimentée par |
+|---|---|---|---|
+| **Connaissance métier** | « Livraison à Dakar : 2 000 FCFA » | La **boutique** — tous les employés y puisent | La formation et les corrections |
+| **Préférence** | « Sois toujours très poli », langue de réponse | **Un employé** — le Commercial peut être formel, le SAV chaleureux | L'entretien d'embauche et les ajustements |
+| **Compétence** | Créer une vidéo, rédiger une description | La **plateforme** — identique pour toutes les boutiques | Les mises à jour du moteur — jamais la formation |
+
+Mélanger ces trois catégories rendrait la mémoire ingérable : un commerçant qui « forme » ne touche que les deux premières, et sait toujours laquelle.
+
+**Règles de la connaissance métier :**
 - Toute connaissance a un statut : `proposée → confirmée → active` (et `contestée` si une contradiction est détectée). Seules les connaissances actives servent aux réponses.
 - Toute connaissance garde sa **source** (quel document, quelle note vocale, quelle date) — le commerçant peut toujours demander « d'où tiens-tu ça ? ».
 - Le commerçant peut consulter la mémoire (« Que sais-tu ? »), corriger, supprimer.
@@ -71,18 +85,18 @@ Le remplacement de l'interrupteur « Activer l'IA » par une **carrière**.
 
 > « Ton Employé Commercial a eu 97 % de ses réponses validées ce mois-ci. Veux-tu l'autoriser à répondre directement aux questions sur les tailles et couleurs ? »
 
-- La confiance peut **redescendre** : une erreur grave ou une chute du taux de validation rétrograde automatiquement le niveau, avec notification et explication.
-- **Plafond absolu :** les interdits de policy (rembourser, modifier les prix, supprimer) ne sont **jamais** débloqués par la confiance. Le niveau 5 n'est pas l'omnipotence — c'est l'autonomie dans le périmètre.
+- La confiance peut **redescendre** : une erreur grave ou une chute du taux de validation rétrograde automatiquement l'état, avec notification et explication.
+- **Plafond absolu :** les interdits de policy (rembourser, modifier les prix, supprimer) ne sont **jamais** débloqués par la confiance. Expert n'est pas l'omnipotence — c'est l'autonomie dans le périmètre.
 
-**Échelle générique :**
+**Trois états — c'est tout :**
 
-| Niveau | Principe | Analogie |
+| État | Principe | Analogie |
 |---|---|---|
-| 1 | Tout est proposé, tout est validé | Stagiaire — premier mois |
-| 2 | Les actions factuelles et réversibles passent seules | Employé confirmé sur les tâches simples |
-| 3 | Les actions courantes du métier passent seules | Titulaire du poste |
-| 4 | Les actions à jugement passent seules dans les bornes | Senior de confiance |
-| 5 | Autonomie complète dans le périmètre autorisé | Bras droit |
+| **Assistant** | Tout est proposé, tout est validé | Le premier mois |
+| **Autonome** | Les actions courantes du métier passent seules | Le titulaire du poste |
+| **Expert** | Les actions à jugement passent seules, dans les bornes | Le bras droit |
+
+Trois mots compréhensibles, pas une échelle numérique. Une gradation plus fine pourra raffiner ces états plus tard si l'usage le demande — la mécanique (par type d'action, promotion proposée, rétrogradation) ne changera pas.
 
 ### Phase 6 — Évaluation (la fiche de performance)
 
@@ -94,67 +108,75 @@ Chaque employé a sa fiche, en **métriques métier** — jamais techniques. La 
 
 Le résumé mensuel de chaque employé est son **entretien d'évaluation** — rédigé par l'Employé Comptable & Analyste (qui évalue aussi ses collègues, en lecture seule, comme tout le reste).
 
-### Phase 7 — Suspension, rétrogradation, licenciement
+### Phase 7 — Suspension, rétrogradation, désactivation
 
 - **Suspension** : un bouton, effet immédiat. Tout ce qui est en file d'attente est gelé, rien ne s'exécute. L'employé indique « suspendu » partout où il apparaissait.
-- **Rétrogradation** : retour manuel ou automatique à un niveau de confiance inférieur, sans perte de mémoire.
-- **Licenciement** : désactivation complète. **La formation est conservée** — réembaucher ne coûte pas une nouvelle formation (la mémoire appartient à la boutique).
-- **Remplacement** : repartir de zéro = effacement explicite de la mémoire concernée. Action irréversible, doublement confirmée.
+- **Rétrogradation** : retour manuel ou automatique à un état de confiance inférieur, sans perte de mémoire.
+- **Désactivation** : arrêt complet. **La formation est conservée** — réactiver ne coûte pas une nouvelle formation (la mémoire appartient à la boutique). *(« Licencier » reste un mot d'onboarding et de marketing — l'interface dit « désactiver ».)*
+- **Remise à zéro** : effacement explicite de la mémoire concernée. Action irréversible, doublement confirmée.
+
+---
+
+## La demande d'aide — la signature du produit
+
+Un bon employé ne répond jamais au hasard : **il reconnaît les limites de son autonomie et sollicite**. C'est le comportement qui distingue un employé numérique d'un chatbot :
+
+> « J'ai reçu une question sur un produit sans prix. »
+> « Je ne connais pas cette politique de retour — que dois-je répondre ? »
+> « Je pense que ce client souhaite une remise exceptionnelle. Veux-tu intervenir ? »
+
+**Règles :**
+- Une demande d'aide n'est jamais un échec silencieux : elle notifie, avec le contexte complet (la question du client, ce que l'employé sait, ce qui lui manque).
+- **Chaque réponse du commerçant forme** : elle devient une connaissance métier (ou une policy), et la même situation ne redéclenchera plus de demande. La boutique s'améliore en travaillant.
+- Le volume de demandes d'aide est une métrique de santé : il doit **décroître naturellement** avec la formation et l'ancienneté — s'il ne décroît pas, c'est un signal (formation insuffisante, ou responsabilité mal calibrée).
+- Les demandes d'aide en attente sont visibles au premier regard sur le tableau de bord de l'équipe.
 
 ---
 
 ## Les carrières par employé (échelles d'autonomie concrètes)
 
 ### Employé Commercial
-| Niveau | Ce qui se débloque |
+| État | Ce qui passe seul |
 |---|---|
-| 1 | Tout en brouillon — chaque réponse validée avant envoi |
-| 2 | Réponses factuelles seules (prix, dispo, variantes — lecture catalogue) |
-| 3 | Relances impayés et accusés de réception seuls |
-| 4 | Réponses rédigées et conseils produit seuls |
-| 5 | Négociation seule dans la fourchette autorisée |
+| Assistant | Rien — chaque réponse est validée avant envoi |
+| Autonome | Réponses factuelles (prix, dispo, variantes), relances impayés, accusés de réception |
+| Expert | Réponses rédigées, conseils produit, négociation dans la fourchette autorisée |
 
 **Formation clé :** catalogue à jour, politiques de remise, ton de la boutique, FAQ clients.
 **Métriques d'évaluation :** temps de première réponse, taux questions→ventes, ventes assistées, taux de validation, escalades.
 
 ### Employé Marketing
-| Niveau | Ce qui se débloque |
+| État | Ce qui passe seul |
 |---|---|
-| 1 | Tout en brouillon |
-| 2 | Publication seule des posts texte récurrents déjà validés une fois |
-| 3 | Publication seule des visuels sur gabarits approuvés |
-| 4 | Campagnes « stock bas » lancées seules |
-| 5 | Calendrier de publication autonome |
+| Assistant | Rien — tout est brouillon soumis à validation |
+| Autonome | Publication des formats déjà validés une fois (posts récurrents, visuels sur gabarits approuvés) |
+| Expert | Campagnes « stock bas » et calendrier de publication autonomes |
 
 **Formation clé :** identité visuelle, produits phares, exemples de posts qui ont marché.
 **Métriques :** contenus produits, publications, clics sur les liens partagés, ventes attribuées aux campagnes.
 
 ### Employé Logistique
-| Niveau | Ce qui se débloque |
+| État | Ce qui passe seul |
 |---|---|
-| 1 | Propose chaque action |
-| 2 | Tickets et notifications de suivi seuls |
-| 3 | Affectation du livreur seule (selon la règle définie) |
-| 4 | Relances livreur et gestion des retards seules |
-| 5 | Orchestration complète — seuls les litiges remontent |
+| Assistant | Rien — chaque action est proposée |
+| Autonome | Tickets, notifications de suivi, affectation du livreur selon la règle définie |
+| Expert | Orchestration complète, relances livreur incluses — seuls les litiges remontent |
 
 **Formation clé :** zones et tarifs de livraison, livreurs et leurs disponibilités, horaires limites.
 **Métriques :** délai commande→livraison, % livraisons sans incident, litiges.
 
 ### Employé SAV
-| Niveau | Ce qui se débloque |
+| État | Ce qui passe seul |
 |---|---|
-| 1 | Tout en brouillon |
-| 2 | Demandes d'avis seules |
-| 3 | Réponses de premier niveau seules |
-| 4 | Gestes commerciaux ≤ seuil seuls |
-| 5 | Clôture seule des réclamations simples |
+| Assistant | Rien — tout en brouillon |
+| Autonome | Demandes d'avis, réponses de premier niveau |
+| Expert | Gestes commerciaux ≤ seuil, clôture des réclamations simples |
 
 **Formation clé :** politique de retour, cas types et leurs résolutions, ton en situation de conflit.
 **Métriques :** temps de première réponse, réclamations résolues sans escalade, avis récoltés, note moyenne.
 
 ### Employé Comptable & Analyste
-Cas particulier : il est **en lecture seule par conception** — sa carrière ne porte pas sur « agir seul » mais sur la **pertinence** : au fil des recommandations suivies (ou pas) par le commerçant, il apprend ce qui intéresse cette boutique. Niveaux 1→5 = du rapport brut standard au conseil personnalisé qui connaît les priorités du commerçant.
+Cas particulier : il est **en lecture seule par conception** — sa carrière ne porte pas sur « agir seul » mais sur la **pertinence** : au fil des recommandations suivies (ou pas) par le commerçant, il apprend ce qui intéresse cette boutique. D'Assistant à Expert = du rapport brut standard au conseil personnalisé qui connaît les priorités du commerçant.
 
 **Métriques :** recommandations suivies et leur effet mesuré, régularité de lecture des rapports.
 
@@ -208,9 +230,9 @@ Ce document ajoute au système :
 
 ## Cadrage MVP (application de la règle)
 
-L'échelle à 5 niveaux et les 7 phases sont la **cible de conception**. Le MVP peut vivre avec :
-- 3 niveaux effectifs (1 = supervisé, 3 = courant, 5 = autonome) — l'échelle affichée reste à 5, les paliers 2/4 s'activent plus tard
+Les 7 phases et les 3 états (Assistant/Autonome/Expert) sont la **cible de conception — et le MVP les implémente tels quels** (trois états, c'est déjà la version simple). Le MVP peut par ailleurs vivre avec :
 - Formation par texte et FAQ d'abord ; **les notes vocales suivent vite** (réalité terrain sénégalaise) ; PDF/images ensuite
 - La fiche d'évaluation réduite à : coût, actions réalisées, taux de validation, ventes assistées
+- Les demandes d'aide dès le premier jour — elles coûtent peu et sont la signature du produit
 
 Chaque élément coupé passe le filtre : il fait gagner du temps *plus tard*, mais ne bloque ni la vente, ni le gain de temps initial.

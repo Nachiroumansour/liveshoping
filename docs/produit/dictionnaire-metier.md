@@ -59,7 +59,7 @@
 | **Policy** (règle de boutique) | Une règle évaluée **avant** l'exécution de toute action : elle autorise, interdit, ou exige une validation humaine. Ex. : « pas de livraison jour-même après 18 h », « validation humaine au-delà de 100 000 FCFA ». | À créer (Policy Engine) |
 | **Permission** | Une policy portant sur ce qu'un employé numérique a le droit de faire seul, jamais, ou avec accord. Définie par le commerçant, avec des valeurs par défaut prudentes. | À créer |
 | **Validation humaine** | Le mécanisme par lequel une action en attente est soumise au commerçant (notification + accepter/refuser). Rien d'irréversible ne se fait sans elle quand une policy l'exige. | À créer (`ApprovalRequest`) |
-| **Escalade** | Le passage de relais d'un employé numérique vers le commerçant quand il ne sait pas ou n'a pas le droit. Une escalade n'est jamais un échec silencieux : elle notifie. | À créer |
+| **Escalade** | Terme technique du passage de relais d'un employé numérique vers le commerçant quand il ne sait pas ou n'a pas le droit. Jamais un échec silencieux : elle notifie. Côté produit, on dit **demande d'aide** (voir « La carrière des employés »). | À créer |
 
 ## La carrière des employés
 
@@ -68,13 +68,17 @@
 | **Recrutement** (embauche) | L'activation d'un employé numérique par le commerçant. Gratuit — c'est le travail qui coûte. Tout employé démarre au niveau de confiance 1. | À créer |
 | **Entretien d'embauche** | La configuration conversationnelle : l'employé pose des questions, chaque réponse devient une policy ou un paramètre. Remplace le formulaire. | À créer |
 | **Formation** | L'acte de donner des connaissances à sa boutique : documents, photos, notes vocales (français/wolof), FAQ, politiques internes. L'employé rend compte de ce qu'il a appris et demande confirmation quand il doute. | À créer (domaine Formation & Mémoire) |
-| **Connaissance** | Une information apprise, avec sa source, sa date et son statut : `proposée → confirmée → active` (ou `contestée`). Seules les connaissances actives servent. | À créer |
-| **Mémoire de boutique** | L'ensemble des connaissances actives d'une boutique. Elle appartient à la boutique, pas à un employé — tous y puisent. Jamais partagée entre boutiques. | À créer |
-| **Niveau de confiance** | Le degré d'autonomie d'un employé sur un **type d'action**, de 1 (tout supervisé) à 5 (autonome dans le périmètre). Monte sur proposition du système (taux de validation) et décision du commerçant ; peut redescendre. Ne débloque jamais les interdits de policy. | À créer (extension Policy Engine) |
+| **Connaissance métier** | Un fait de la boutique (« livraison à Dakar : 2 000 FCFA »), avec sa source, sa date et son statut : `proposée → confirmée → active` (ou `contestée`). Appartient à la **boutique** — tous les employés y puisent. | À créer |
+| **Préférence** | Une manière de faire propre à **un employé** (« sois très poli », ton, langue de réponse). N'entre pas dans la mémoire de boutique. | À créer |
+| **Compétence** | Un savoir-faire fourni par la **plateforme** (créer une vidéo, rédiger une description). Identique pour toutes les boutiques ; ni apprise ni modifiable par la formation. | Catalogue des actions `ai` |
+| **Mémoire de boutique** | L'ensemble des connaissances métier actives d'une boutique. Elle appartient à la boutique, pas à un employé — tous y puisent. Jamais partagée entre boutiques. Les trois catégories (connaissance/préférence/compétence) ne se mélangent jamais. | À créer |
+| **État d'autonomie** | Le degré de confiance accordé à un employé sur un **type d'action** : **Assistant** (tout est proposé et validé) → **Autonome** (les actions courantes passent seules) → **Expert** (les actions à jugement passent seules, dans les bornes). Monte sur proposition du système (taux de validation) et décision du commerçant ; peut redescendre. Ne débloque jamais les interdits de policy. Une échelle plus fine pourra raffiner ces trois états plus tard. | À créer (extension Policy Engine) |
 | **Taux de validation** | La part des propositions d'un employé acceptées sans modification — la mesure objective qui alimente les promotions de confiance. | À créer |
 | **Fiche d'évaluation** | Le bilan périodique d'un employé en métriques métier : ce qu'il a coûté (salaire en crédits) et ce qu'il a rapporté (ventes assistées, temps gagné). | À créer |
 | **Suspension** | Mise en pause immédiate d'un employé — tout ce qui est en file est gelé. | À créer |
-| **Licenciement** | Désactivation d'un employé. Sa formation est **conservée** (elle appartient à la boutique) — la réembauche ne coûte pas une nouvelle formation. | À créer |
+| **Désactivation** | Arrêt d'un employé. Sa formation est **conservée** (elle appartient à la boutique) — le réactiver ne coûte pas une nouvelle formation. Le mot « licencier » est réservé au marketing et à l'onboarding — l'interface quotidienne dit *désactiver*. | À créer |
+| **Mission** | Un travail demandé directement par le commerçant (« fais une campagne pour les sacs ») : une suite d'actions avec un **résultat rendu**. Techniquement, un workflow dont le déclencheur est le commerçant plutôt qu'un événement — mêmes policies, même moteur. | À créer (Automation Engine) |
+| **Demande d'aide** | Le réflexe d'un bon employé face à ses limites : il ne répond jamais au hasard, il sollicite (« J'ai reçu une question sur un produit sans prix », « Je ne connais pas cette politique de retour »). La réponse du commerçant devient une connaissance — chaque demande d'aide forme. Terme technique interne : escalade. | À créer |
 
 ## Les canaux
 
@@ -90,7 +94,9 @@
 
 | Mot proscrit | On dit à la place | Pourquoi |
 |---|---|---|
-| IA, intelligence artificielle *(produit)* | Employé numérique, équipe numérique | Le produit vend du travail accompli, pas une technologie |
+| IA, intelligence artificielle *(produit)* | Employé numérique, équipe numérique | Le produit vend du travail accompli, pas une technologie. L'IA est un moteur invisible — comme l'ABS d'une voiture : on dit « elle freine bien », pas « j'ai acheté un système antiblocage » |
+| Licencier *(usage quotidien)* | Désactiver | La métaphore RH séduit à l'onboarding, elle lasse au quotidien. Le commerçant veut d'abord que ça marche |
+| Niveau 1, 2, 3… *(interface)* | Assistant, Autonome, Expert | Trois mots compréhensibles valent mieux qu'une échelle numérique |
 | Bot, chatbot | Employé commercial | Un bot subit, un employé a des responsabilités et des limites |
 | Event Bus, Aggregate, Engine *(produit)* | Automatisation, règle de boutique | Vocabulaire d'architecte, pas de commerçant |
 | Marketplace *(comme promesse principale)* | « Vos clients découvrent aussi les autres boutiques » | La marketplace est une conséquence, pas le produit |

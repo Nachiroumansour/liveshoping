@@ -132,7 +132,7 @@
 
 **Entités à créer :**
 - `Event` — journal des événements émis (type, payload, source, horodatage) : la source de vérité auditable
-- `WorkflowDefinition` — règle d'une boutique : déclencheur + conditions + suite d'actions
+- `WorkflowDefinition` — règle d'une boutique : déclencheur + conditions + suite d'actions. Deux types de déclencheur : un **événement** (mode réaction) ou une **demande directe du commerçant** (mode *mission* — « fais une campagne pour les sacs ») ; mêmes policies, même exécuteur, une mission rend toujours compte de son résultat
 - `WorkflowRun` — exécution tracée (statut, étapes, erreurs, reprise)
 - `ActionDefinition` — catalogue des actions réutilisables, **chacune typée** : `business_logic` | `automation` | `ai` (décision n°4 de la vision — cette classification est structurante et doit être un champ du modèle, pas une convention)
 
@@ -213,10 +213,13 @@ Trois familles de règles :
 
 **Objectif :** ce qui rend chaque employé numérique unique — la mémoire de la boutique et son alimentation. Voir [le cycle de vie des employés](../produit/cycle-de-vie-employes.md), phases 3 et 4.
 
+**Trois catégories de mémoire, jamais mélangées :** la **connaissance métier** (fait de la boutique, partagée entre employés — ce domaine), la **préférence** (manière de faire propre à un employé — profil d'employé, pas la base de connaissances), la **compétence** (savoir-faire de la plateforme — catalogue d'actions `ai`, hors de ce domaine).
+
 **Entités à créer :**
-- `Knowledge` — une connaissance : contenu, source (document, note vocale, correction du commerçant), date, statut `proposée | confirmée | active | contestée`
+- `Knowledge` — une connaissance métier : contenu, source (document, note vocale, correction du commerçant), date, statut `proposée | confirmée | active | contestée`
+- `EmployeePreference` — les préférences d'un employé (ton, langue, style) — issues de l'entretien d'embauche
 - `TrainingSession` — un dépôt de formation (fichiers ingérés, informations extraites, questions de confirmation posées)
-- `TrustScore` — le taux de validation par employé **et par type d'action** (alimente les promotions de niveau de confiance)
+- `TrustScore` — le taux de validation par employé **et par type d'action** (alimente les promotions d'état d'autonomie : Assistant → Autonome → Expert)
 
 **Événements consommés :** `TrainingMaterialUploaded`, `KnowledgeConfirmed`, `ProposalValidated`/`ProposalRejected` (signaux de confiance), corrections du commerçant.
 **Événements émis :** `KnowledgeLearned`, `KnowledgeConflictDetected`, `TrustLevelPromotionProposed`, `TrustLevelDemoted`.
@@ -238,6 +241,7 @@ Consolidation : la liste proposée dans la vision **+** les événements imposé
 **IA :** `AIResponseDrafted`*, `AIContentGenerated`*, `AIEscalatedToHuman`*
 **Formation & confiance :** `TrainingMaterialUploaded`*, `KnowledgeLearned`*, `KnowledgeConflictDetected`*, `TrustLevelPromotionProposed`*, `TrustLevelDemoted`*
 **Temporels (planificateur) :** `WeeklySummaryDue`*, `OrderUnpaidReminderDue`*, `DeliveryStalledReminderDue`*
+**Missions :** `MissionCreated`*, `MissionCompleted`*, `MissionFailed`*
 **Système :** `WorkflowCompleted`, `WorkflowFailed`, `ApprovalRequested`*, `ApprovalGranted`*
 
 \* = suppose des capacités qui n'existent pas encore (statuts de commande étendus, entité livreur, IA, approbations, formation, événements temporels).
