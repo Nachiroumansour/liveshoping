@@ -7,6 +7,7 @@ const QRCode = require('qrcode');
 const notificationService = require('../services/notificationService');
 const whatsappService = require('../services/whatsappNotificationService');
 const { uploadPaymentProof } = require('../config/cloudinary');
+const eventService = require('../services/eventService');
 
 const router = express.Router();
 
@@ -282,6 +283,31 @@ router.post('/:linkId/orders', validatePublicLink, async (req, res) => {
       return newOrder;
     });
 
+    // Journal d'événements (double écriture, best-effort — jamais bloquant)
+    await eventService.emit(seller.id, 'order_created', {
+      order_id: order.id,
+      customer_name: order.customer_name,
+      product_name: product.name,
+      quantity: order.quantity,
+      total_price: order.total_price
+    });
+
+    const remainingStock = product.stock_quantity > 0
+      ? product.stock_quantity - order.quantity
+      : product.stock_quantity;
+    if (product.stock_quantity > 0 && remainingStock === 0) {
+      await eventService.emit(seller.id, 'stock_out', {
+        product_id: product.id,
+        product_name: product.name
+      });
+    } else if (product.stock_quantity > 5 && remainingStock <= 5 && remainingStock > 0) {
+      await eventService.emit(seller.id, 'stock_low', {
+        product_id: product.id,
+        product_name: product.name,
+        stock_quantity: remainingStock
+      });
+    }
+
     // Envoyer une notification en temps réel au vendeur
     let notificationSent = false;
     
@@ -415,6 +441,11 @@ router.post('/:linkId/comments', validatePublicLink, async (req, res) => {
       content: comment.trim(),
       rating: rating || null,
       is_public: true
+    });
+
+    await eventService.emit(seller.id, 'comment_added', {
+      comment_id: newComment.id,
+      author_name: newComment.customer_name || 'Un client'
     });
 
     res.status(201).json({

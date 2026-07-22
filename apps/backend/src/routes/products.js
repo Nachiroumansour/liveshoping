@@ -2,6 +2,7 @@ const express = require('express');
 const { Product, ProductVariant } = require('../models');
 const { validateProductAttributes } = require('../config/productCategories');
 // Service Supabase supprimé - utilisation de WebSocket natif
+const eventService = require('../services/eventService');
 const router = express.Router();
 
 // Middleware d'authentification
@@ -140,6 +141,12 @@ router.post('/', authenticateToken, ...requireAndConsumeCredits('ADD_PRODUCT', (
     };
 
     const product = await Product.create(productData);
+
+    await eventService.emit(req.seller.id, 'product_created', {
+      product_id: product.id,
+      product_name: product.name,
+      price: product.price
+    });
 
     // Créer les variantes si elles existent
     if (has_variants && variants && variants.length > 0) {

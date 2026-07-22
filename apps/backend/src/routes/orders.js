@@ -5,6 +5,7 @@ const { requireAndConsumeCredits } = require('../middleware/creditMiddleware');
 const { Op } = require('sequelize');
 const notificationService = require('../services/notificationService');
 const whatsappService = require('../services/whatsappNotificationService');
+const eventService = require('../services/eventService');
 
 const router = express.Router();
 
@@ -131,6 +132,14 @@ router.put('/:id/status', authenticateToken, ...requireAndConsumeCredits('PROCES
     }
 
     await order.update({ status });
+
+    if (status === 'paid' || status === 'delivered') {
+      await eventService.emit(order.seller_id, status === 'paid' ? 'order_paid' : 'order_delivered', {
+        order_id: order.id,
+        customer_name: order.customer_name,
+        total_price: order.total_price
+      });
+    }
 
     // Envoyer une notification pour la mise à jour de statut
     try {
