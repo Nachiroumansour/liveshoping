@@ -131,9 +131,10 @@ router.put('/:id/status', authenticateToken, ...requireAndConsumeCredits('PROCES
       });
     }
 
+    const previousStatus = order.status;
     await order.update({ status });
 
-    if (status === 'paid' || status === 'delivered') {
+    if (previousStatus !== status && (status === 'paid' || status === 'delivered')) {
       await eventService.emit(order.seller_id, status === 'paid' ? 'order_paid' : 'order_delivered', {
         order_id: order.id,
         customer_name: order.customer_name,
