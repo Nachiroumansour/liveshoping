@@ -232,6 +232,14 @@ class ApiService {
     return this.request('/orders/stats/summary');
   }
 
+  // Activity (Le pouls de ma boutique)
+  async getActivity(since = null, limit = 30) {
+    const params = new URLSearchParams();
+    if (since) params.append('since', since);
+    params.append('limit', limit);
+    return this.request(`/activity?${params.toString()}`);
+  }
+
   // Lives
   async createLive(liveData) {
     return this.request('/lives', {

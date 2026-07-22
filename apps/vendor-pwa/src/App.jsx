@@ -9,6 +9,7 @@ import RegisterPage from './pages/RegisterPage';
 import ResetPinPage from './pages/ResetPinPage';
 import LogoutPage from './pages/LogoutPage';
 import DashboardPage from './pages/DashboardPage';
+import PulsePage from './pages/PulsePage';
 import OnboardingPage from './pages/OnboardingPage';
 import ProductsPage from './pages/ProductsPage';
 import OrdersPage from './pages/OrdersPage';
@@ -162,6 +163,11 @@ const AppContent = () => {
                   <Route path="dashboard" element={
                     <SellerRoute>
                       <DashboardPage />
+                    </SellerRoute>
+                  } />
+                  <Route path="pulse" element={
+                    <SellerRoute>
+                      <PulsePage />
                     </SellerRoute>
                   } />
                   <Route path="products" element={
