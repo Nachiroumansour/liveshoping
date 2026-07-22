@@ -6,7 +6,8 @@ const { sequelize } = require('../config/database');
 async function migrate() {
   const qi = sequelize.getQueryInterface();
   const tables = await qi.showAllTables();
-  const names = tables.map((t) => (typeof t === 'string' ? t : t.tableName));
+  // showAllTables retourne des strings (SQLite) ou {table_name} (Postgres, snake_case)
+  const names = tables.map((t) => (typeof t === 'string' ? t : (t.tableName || t.table_name)));
 
   if (!names.includes('events')) {
     const Event = require('../models/Event');
