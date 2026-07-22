@@ -85,8 +85,8 @@ const CheckoutPage = () => {
     setError(null);
 
     try {
-      if (!formData.customer_name || !formData.customer_phone || !formData.payment_method) {
-        throw new Error('Veuillez remplir tous les champs obligatoires');
+      if (!formData.customer_name || !formData.customer_phone || !formData.customer_address || !formData.payment_method) {
+        throw new Error('Veuillez remplir tous les champs obligatoires, y compris l\'adresse de livraison');
       }
 
       const combinedComment = `${formData.comment || ''}${paymentReference ? (formData.comment ? ' | ' : '') + 'Réf: ' + paymentReference : ''}`;
@@ -140,7 +140,7 @@ const CheckoutPage = () => {
     }
   };
 
-  const isFormValid = formData.customer_name && formData.customer_phone && formData.payment_method;
+  const isFormValid = formData.customer_name && formData.customer_phone && formData.customer_address && formData.payment_method;
 
   if (items.length === 0) {
     return (
@@ -255,7 +255,7 @@ const CheckoutPage = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-500">Adresse de livraison</label>
+              <label className="text-xs font-medium text-gray-500">Adresse de livraison *</label>
               <div className="relative">
                 <MapPin className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                 <textarea
@@ -264,6 +264,7 @@ const CheckoutPage = () => {
                   placeholder="Adresse, quartier, repères..."
                   rows={2}
                   className="w-full pl-10 pr-4 py-3 bg-gray-50 border-0 rounded-xl text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900/10 resize-none"
+                  required
                 />
               </div>
             </div>
