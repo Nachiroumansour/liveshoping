@@ -81,6 +81,7 @@ const sellerRoutes = require('./routes/sellers');
 const uploadRoutes = require('./routes/upload');
 const pushRoutes = require('./routes/push');
 const ogRoutes = require('./routes/og');
+const activityRoutes = require('./routes/activity');
 
 const notificationService = require('./services/notificationService');
 
@@ -479,6 +480,7 @@ app.use('/api/sellers', sellerRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/og', ogRoutes);
+app.use('/api/activity', activityRoutes);
 
 // Initialiser le middleware de debug après l'enregistrement des routes
 if (debugMiddleware.init) {

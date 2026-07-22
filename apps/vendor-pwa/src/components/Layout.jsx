@@ -18,7 +18,8 @@ import {
   Wallet,
   MessageCircle,
   LogOut,
-  Settings
+  Settings,
+  Activity
 } from 'lucide-react';
 import NotificationToast from './NotificationToast';
 import ThemeToggle from './ThemeToggle';
@@ -63,8 +64,9 @@ const Layout = ({ children }) => {
     { id: 'orders', name: 'Commandes', icon: ShoppingBag, path: '/orders' },
     { id: 'wallet', name: 'Paiement', icon: Wallet, path: '/wallet' },
     { id: 'lives', name: 'Sessions', icon: Store, path: '/lives' },
-    // Stats accessible via menu hamburger
+    // Stats et Pouls accessibles via menu hamburger
     { id: 'stats', name: 'Statistiques', icon: BarChart3, path: '/stats' },
+    { id: 'pulse', name: 'Pouls', icon: Activity, path: '/pulse' },
   ];
 
   // Rafraîchir les crédits périodiquement (seulement pour les vendeurs)
@@ -101,6 +103,7 @@ const Layout = ({ children }) => {
       'stats': 'Stats',
       'lives': 'Sessions',
       'wallet': 'Wallet',
+      'pulse': 'Pouls',
       'settings': 'Paramètres',
       // Admin
       'admin': 'Accueil',
@@ -417,6 +420,7 @@ const Layout = ({ children }) => {
               {activePage === 'stats' && 'Statistiques'}
               {activePage === 'lives' && 'Sessions'}
               {activePage === 'credits' && 'Gérer les crédits'}
+              {activePage === 'pulse' && 'Pouls'}
             </h2>
           </div>
           <div className="flex items-center space-x-4">

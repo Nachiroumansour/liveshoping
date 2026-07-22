@@ -69,6 +69,8 @@ Actées, datées, on ne les rouvre pas :
 | Paiement à l'usage (crédits) — pas d'abonnement mort | 21/07/2026 |
 | Trois états d'autonomie : Assistant / Autonome / Expert | 21/07/2026 |
 | Le produit s'organise par employés (jobs), pas par modules techniques | 21/07/2026 |
+| **Les surfaces du produit** — Vendeur → application mobile (Android/iOS), outil de travail quotidien ; Client → web en priorité (aucune installation requise), invitation à installer l'app pour une meilleure expérience ; Administrateur → web ; Back-office → web. Toute nouvelle fonctionnalité précise sa surface. | 22/07/2026 |
+| **PWA vendeur gelée, conception mobile-first** (corollaire de la décision précédente) — La PWA vendeur ne reçoit plus que corrections, maintenance et bugs critiques : zéro nouvelle interface. Toute nouvelle UI vendeur se construit directement dans l'application Expo. La question de conception n'est jamais « comment adapter cette page web au mobile ? » mais « **si LiveLink naissait aujourd'hui uniquement sur smartphone Android, comment concevrait-on cette fonctionnalité ?** » — notifications natives, gestes, bottom sheets, appareil photo, scanner sont des matériaux de conception de premier rang, pas des extensions. Les démonstrations se font sur Android via Expo Go. | 22/07/2026 |
 
 ---
 
