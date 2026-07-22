@@ -8,7 +8,7 @@ Avant tout travail produit ou fonctionnalité : **`docs/manifesto.md`** — le d
 
 Les fondations produit (`docs/produit/`) sont **gelées v1** : on ne les modifie pas hors découverte terrain. Les catalogues (événements, workflows, policies) se dérivent des scénarios réels (`docs/produit/une-journee-avec-livelink.md`), pas de la théorie.
 
-**Toute UI vendeur se construit dans l'app Expo, jamais dans la PWA (gelée — décision n°11).** Avant de concevoir une interface mobile : lire `docs/ux/README.md` — on construit des **expériences** (notification → son → ouverture → action → retour), pas des écrans, et chaque expérience commence par un **benchmark UX** des meilleures apps du geste concerné. Démos sur Android via Expo Go.
+**Toute UI vendeur se construit dans l'app Expo, jamais dans la PWA (gelée — décision n°11).** Avant de concevoir une interface : lire `docs/ux/README.md` — on construit des **moments** (vendeur ET client), pas des écrans ; benchmark UX obligatoire ; le client ne doit jamais se demander s'il parle à une machine. Chaque jalon se termine par une démo filmée de 30-60 s. Démos sur Android via Expo Go.
 
 ## Repères techniques
 
