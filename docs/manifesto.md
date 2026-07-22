@@ -69,6 +69,7 @@ Actées, datées, on ne les rouvre pas :
 | Paiement à l'usage (crédits) — pas d'abonnement mort | 21/07/2026 |
 | Trois états d'autonomie : Assistant / Autonome / Expert | 21/07/2026 |
 | Le produit s'organise par employés (jobs), pas par modules techniques | 21/07/2026 |
+| **Les surfaces du produit** — Vendeur → application mobile (Android/iOS), outil de travail quotidien ; Client → web en priorité (aucune installation requise), invitation à installer l'app pour une meilleure expérience ; Administrateur → web ; Back-office → web. Toute nouvelle fonctionnalité précise sa surface. | 22/07/2026 |
 
 ---
 
